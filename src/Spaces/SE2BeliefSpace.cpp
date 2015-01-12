@@ -69,6 +69,7 @@ bool SE2BeliefSpace::StateType::isReached(ompl::base::State *state) const
 
     if(norm2 <= reachDist_)
     {
+    	double a = 5.0;
         return true;
     }
 
