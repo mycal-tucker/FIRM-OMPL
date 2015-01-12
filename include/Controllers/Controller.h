@@ -303,7 +303,7 @@ bool Controller<SeparatedControllerType, FilterType>::Execute(const ompl::base::
 
   this->Stabilize(tempEndState, endState, stabilizationCost, constructionMode) ;
 
-  executionCost.v = cost + stabilizationCost.v;
+  executionCost = ompl::base::Cost(cost + stabilizationCost.value());
 
   si_->freeState(internalState);
   si_->freeState(tempEndState);
@@ -364,7 +364,7 @@ bool Controller<SeparatedControllerType, FilterType>::executeOneStep(const ompl:
 
     if(!constructionMode) boost::this_thread::sleep(boost::posix_time::milliseconds(10));
 
-    executionCost.v = cost;
+    executionCost = ompl::base::Cost(cost);
 
     si_->freeState(internalState);
 
@@ -485,7 +485,7 @@ void Controller<SeparatedControllerType, FilterType>::Stabilize(const ompl::base
 
     }
 
-   stabilizationCost.v = cost;
+   stabilizationCost = ompl::base::Cost(cost);
 
    si_->copyState(endState, tempState2);
    si_->freeState(tempState1);
