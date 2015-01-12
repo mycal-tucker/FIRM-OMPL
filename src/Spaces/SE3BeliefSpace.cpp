@@ -163,11 +163,14 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
 
             arma::colvec getArmaData(void) const
             {
-                arma::colvec stateVec(3);
+                arma::colvec stateVec(6);
 
                 stateVec[0] = getX();
                 stateVec[1] = getY();
-                stateVec[2] = getYaw();
+                stateVec[2] = getZ();
+                stateVec[3] = getRoll();
+                stateVec[4] = getPitch();
+                stateVec[5] = getYaw();
                 return stateVec;
             }
 
