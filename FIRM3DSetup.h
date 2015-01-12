@@ -36,26 +36,26 @@
 
 /* Author: Saurav Agarwal */
 
-#ifndef FIRM_2D_SETUP_H
-#define FIRM_2D_SETUP_H
+#ifndef FIRM_3D_SETUP_H
+#define FIRM_3D_SETUP_H
 
 #include <omplapp/geometry/RigidBodyGeometry.h>
 #include "include/Planner/FIRM.h"
 #include "FIRMOMPL.h"
 #include <tinyxml.h>
 
-/** \brief Wrapper for ompl::app::RigidBodyPlanning that plans for rigid bodies in SE2BeliefSpace using FIRM */
-class FIRM2DSetup : public ompl::app::RigidBodyGeometry
+/** \brief Wrapper for ompl::app::RigidBodyPlanning that plans for rigid bodies in SE3BeliefSpace using FIRM */
+class FIRM3DSetup : public ompl::app::RigidBodyGeometry
 {
 
-    typedef SE2BeliefSpace::StateType StateType;
+    typedef SE3BeliefSpace::StateType StateType;
 
 public:
 
-    FIRM2DSetup() : ompl::app::RigidBodyGeometry(ompl::app::Motion_2D),
-    ss_(ompl::base::StateSpacePtr(new SE2BeliefSpace()))
+    FIRM3DSetup() : ompl::app::RigidBodyGeometry(ompl::app::Motion_3D),
+    ss_(ompl::base::StateSpacePtr(new SE3BeliefSpace()))
     {
-        // set static variables
+        // set static variables (unchanged from 2DSetup)
         RHCICreate::setControlQueueSize(10);
         RHCICreate::setTurnOnlyDistance(0.05);
         Controller<RHCICreate, ExtendedKF>::setNodeReachedAngle(30); // degrees
@@ -78,17 +78,20 @@ public:
         // The bounds should be inferred from the geometry files,
         // there is a function in Apputils to do this, so use that.
         // set the bounds for the R^3 part of SE(3)
-        ompl::base::RealVectorBounds bounds(2);
+        ompl::base::RealVectorBounds bounds(3);
         // set X bound
         bounds.setLow(0,0.2);
         bounds.setHigh(0,16.8);
         //set Y bound
         bounds.setLow(1,0.2);
         bounds.setHigh(1,6.8);
-        ss_->as<SE2BeliefSpace>()->setBounds(bounds);
+        //set Z bound
+        bounds.setLow(2,0); //CHECKME: I think this makes the quad fly between 0 and 3 meters high.
+        bounds.setHigh(2, 3);
+        ss_->as<SE3BeliefSpace>()->setBounds(bounds);
 
         //Construct the control space
-        ompl::control::ControlSpacePtr controlspace( new ompl::control::RealVectorControlSpace(ss_,2) ) ;
+        ompl::control::ControlSpacePtr controlspace( new ompl::control::RealVectorControlSpace(ss_,3) ) ;
         cs_ = controlspace;
 
         // construct an instance of space information from this state space
@@ -105,7 +108,7 @@ public:
         setup_ = false;
     }
 
-    virtual ~FIRM2DSetup(void)
+    virtual ~FIRM3DSetup(void)
     {
     }
 
@@ -121,11 +124,11 @@ public:
         this->loadParameters();
     }
 
-    void setStartState(const double X, const double Y, const double Yaw)
+    void setStartState(const double X, const double Y, const double Z, const double Roll, const double Pitch, const double Yaw)
     {
         ompl::base::State *temp = siF_->allocState();
 
-        temp->as<StateType>()->setXYYaw(X,Y,Yaw);
+        temp->as<StateType>()->setXYZRollPitchYaw(X,Y,Z,Roll,Pitch,Yaw); //TODO need new version of 3Dbeliefspace for this method
 
         siF_->copyState(start_, temp);
 
@@ -133,11 +136,11 @@ public:
 
     }
 
-    void setGoalState(const double X, const double Y, const double Yaw)
+    void setGoalState(const double X, const double Y, const double Z, const double Roll, const double Pitch, const double Yaw)
     {
         ompl::base::State *temp = siF_->allocState();
 
-        temp->as<StateType>()->setXYYaw(X,Y,Yaw);
+        temp->as<StateType>()->setXYZRollPitchYaw(X,Y,Z,Roll,Pitch,Yaw);
 
         siF_->copyState(goal_,temp);
 
@@ -165,20 +168,23 @@ public:
                 throw ompl::Exception("Robot/Environment mesh files not setup!");
             }
 
-            ss_->as<SE2BeliefSpace>()->setBounds(inferEnvironmentBounds());
+            ss_->as<SE3BeliefSpace>()->setBounds(inferEnvironmentBounds());
 
             // Create an FCL state validity checker and assign to space information
             const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
             siF_->setStateValidityChecker(fclSVC);
 
             // provide the observation model to the space
+            //TODO must change observation model for this to work
             ObservationModelMethod::ObservationModelPointer om(new CamAruco2DObservationModel(siF_, pathToSetupFile_.c_str()));
             siF_->setObservationModel(om);
 
             // Provide the motion model to the space
+            //TODO must use QuadrotorMotionModel instead of UnicycleMotionModel
             MotionModelMethod::MotionModelPointer mm(new UnicycleMotionModel(siF_, pathToSetupFile_.c_str()));
             siF_->setMotionModel(mm);
 
+            //TODO must use QuadrotorStatePropagator instead of UnicycleStatePropagator
             ompl::control::StatePropagatorPtr prop(ompl::control::StatePropagatorPtr(new UnicycleStatePropagator(siF_)));
             statePropagator_ = prop;
             siF_->setStatePropagator(statePropagator_);
@@ -230,6 +236,7 @@ public:
     }
 
 
+    //TODO I don't understand this method yet. It should probably use FIRM3DSetup and then _1, _2, _3
     ompl::app::GeometricStateExtractor getGeometricStateExtractor(void) const
     {
         return boost::bind(&FIRM2DSetup::getGeometricComponentStateInternal, this, _1, _2);
@@ -306,13 +313,16 @@ protected:
         itemElement = child->ToElement();
         assert( itemElement );
 
-        double startX = 0,startY = 0, startTheta = 0;
+        double startX = 0,startY = 0, startZ = 0, startRoll = 0, startPitch = 0, startYaw = 0;
 
         itemElement->QueryDoubleAttribute("x", &startX);
         itemElement->QueryDoubleAttribute("y", &startY);
-        itemElement->QueryDoubleAttribute("theta", &startTheta);
+        itemElement->QueryDoubleAttribute("z", &startZ);
+        itemElement->QueryDoubleAttribute("roll", &startRoll);
+        itemElement->QueryDoubleAttribute("pitch", &startPitch);
+        itemElement->QueryDoubleAttribute("yaw", &startYaw);
 
-        setStartState(startX, startY, startTheta);
+        setStartState(startX, startY, startZ, startRoll, startPitch, startYaw);
 
         // Read the Goal Pose
         child  = node->FirstChild("GoalPose");
@@ -321,13 +331,16 @@ protected:
         itemElement = child->ToElement();
         assert( itemElement );
 
-        double goalX = 0 , goalY = 0, goalTheta = 0;
+        double goalX = 0 , goalY = 0, goalZ = 0, goalRoll = 0, goalPitch = 0, goalYaw = 0;
 
         itemElement->QueryDoubleAttribute("x", &goalX);
         itemElement->QueryDoubleAttribute("y", &goalY);
-        itemElement->QueryDoubleAttribute("theta", &goalTheta);
+        itemElement->QueryDoubleAttribute("z", &goalZ);
+        itemElement->QueryDoubleAttribute("roll", &goalRoll);
+        itemElement->QueryDoubleAttribute("pitch", &goalPitch);
+        itemElement->QueryDoubleAttribute("yaw", &goalYaw);
 
-        setGoalState(goalX, goalY, goalTheta);
+        setGoalState(goalX, goalY, goalZ, goalRoll, goalPitch, goalYaw);
 
         // read planning time
         child  = node->FirstChild("PlanningTime");
@@ -363,15 +376,18 @@ protected:
         itemElement = child->ToElement();
         assert( itemElement );
 
-        double kX = 0 , kY = 0, kTheta = 0;
+        double kX = 0 , kY = 0, kZ = 0, kRoll = 0, kPitch = 0, kYaw = 0;
 
         itemElement->QueryDoubleAttribute("x", &kX);
         itemElement->QueryDoubleAttribute("y", &kY);
-        itemElement->QueryDoubleAttribute("theta", &kTheta);
+        itemElement->QueryDoubleAttribute("z", &kZ);
+        itemElement->QueryDoubleAttribute("roll", &kRoll);
+        itemElement->QueryDoubleAttribute("pitch", &kPitch);
+        itemElement->QueryDoubleAttribute("yaw", &kYaw);
 
         kidnappedState_ = siF_->allocState();
 
-        kidnappedState_->as<SE2BeliefSpace::StateType>()->setXYYaw(kX, kY, kTheta);
+        kidnappedState_->as<SE3BeliefSpace::StateType>()->setXYZRollPitchYaw(kX, kY, kZ, kRoll, kPitch, kYaw);
 
         OMPL_INFORM("Problem configuration is");
 
@@ -381,9 +397,9 @@ protected:
 
         //std::cout<<"Path to roadmap file: "<<pathToRoadMapFile_<<std::endl;
 
-        std::cout<<"Start Pose X: "<<startX<<" Y: "<<startY<<" Theta: "<<startTheta<<std::endl;
+        std::cout<<"Start Pose X: "<<startX<<" Y: "<<startY<<" Z: "<<startZ<<" Roll: "<<startRoll<<" Pitch: "<<startPitch<<" Yaw: "<<startYaw<<std::endl;
 
-        std::cout<<"Goal Pose X: "<<goalX<<" Y: "<<goalY<<" Theta: "<<goalTheta<<std::endl;
+        std::cout<<"Goal Pose X: "<<goalX<<" Y: "<<goalY<<" Z: "<<goalZ<<" Roll: "<<goalRoll<<" Pitch: "<<goalPitch<<" Yaw: "<<goalYaw<<std::endl;
 
         std::cout<<"Planning Time: "<<planningTime_<<" seconds"<<std::endl;
 
