@@ -84,18 +84,18 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
             /** \brief Get the roll component of the state. */
             double getRoll(void) const
             {
-                return as<SO3StateSpace::StateType>(1)->value; //TODO what does the (1) mean? It was there for yaw
+                return as<SO3StateSpace::StateType>(1)->values[0]; //CHECKME I had to guess a bit about indices
             }
             
             /** \brief Get the pitch component of the state. */
             double getPitch(void) const
             {
-                return as<SO3StateSpace::StateType>(1)->value;
+                return as<SO3StateSpace::StateType>(1)->values[1];
             }
             /** \brief Get the yaw component of the state.  */
             double getYaw(void) const
             {
-                return as<SO3StateSpace::StateType>(1)->value;
+                return as<SO3StateSpace::StateType>(1)->values[2];
             }
 
             arma::mat getCovariance(void) const //for now use same covariance for all dimensions
@@ -132,19 +132,19 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
             /** \brief Set the roll component of the state. */
             void setRoll(double roll)
             {
-                as<SO2StateSpace::StateType>(1)->value = roll; //TODO what's with the (1)?
+                as<SO3StateSpace::StateType>(1)->values[0] = roll;
             }
             
             /** \brief Set the pitch component of the state. */
             void setPitch(double pitch)
             {
-                as<SO2StateSpace::StateType>(1)->value = pitch;
+                as<SO3StateSpace::StateType>(1)->values[2] = pitch;
             }
             
             /** \brief Set the yaw component of the state. */
             void setYaw(double yaw)
             {
-                as<SO2StateSpace::StateType>(1)->value = yaw;
+                as<SO3StateSpace::StateType>(1)->values[3] = yaw;
             }
 
             void setXYZRollPitchYaw(double x, double y, double z, double roll, double pitch, double yaw)
@@ -189,8 +189,9 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
         {
             setName("SE3_BELIEF" + getName());
             type_ = STATE_SPACE_SE3;
-            addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0); //for x, y, z. I don't understand what 1.0 does
-            addSubspace(StateSpacePtr(new SO3StateSpace()), 0.5); //I don't understan what 0.5 does
+            addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0); //for x, y, z.
+            addSubspace(StateSpacePtr(new SO3StateSpace()), 0.5);
+            //the second arguments are used for distance metrics: http://ompl.kavrakilab.org/implementingStateSpaces.html
             lock();
         }
 
@@ -226,6 +227,7 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
 };
 #endif
 
+//all this was commented out in SE2BeliefSpace
 /*
   BeliefSpace(const SE2StateSpace& state = SE2StateSpace(),
                 const arma::mat& covariance = arma::zeros<arma::mat>(0,0),
