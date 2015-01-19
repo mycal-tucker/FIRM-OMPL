@@ -14,16 +14,16 @@
 				<Compiler>
 					<Add option="-std=c++0x" />
 					<Add option="-g" />
+					<Add directory="/home/saurav/Research/Softwares/omplapp/ompl/src" />
 					<Add directory="/usr/include/qt4/QtCore" />
 					<Add directory="/usr/include/qt4" />
 					<Add directory="/usr/include/qt4/QtGui" />
 					<Add directory="/usr/include/qt4/Qt" />
 					<Add directory="/usr/include" />
-					<Add directory="/home/maynorc/Documents/omplapp-1.0.0-Source/ompl/src" />
 				</Compiler>
 				<Linker>
-					<Add library="/usr/lib/x86_64-linux-gnu/libboost_system.so" />
-					<Add library="/usr/lib/x86_64-linux-gnu/libboost_thread.so" />
+					<Add library="/usr/lib/libboost_system.so" />
+					<Add library="/usr/lib/libboost_thread.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libQtCore.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libQtGui.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libGL.so" />
@@ -31,15 +31,13 @@
 					<Add library="/usr/lib/x86_64-linux-gnu/libglut.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libX11.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libQtOpenGL.so" />
-					<Add library="/usr/local/lib/libarmadillo.so" />
-					<Add library="/usr/local/lib/x86_64-linux-gnu/libompl.so" />
-					<Add library="/usr/local/lib/x86_64-linux-gnu/libompl_app.so" />
-					<Add library="/usr/lib/x86_64-linux-gnu/libtinyxml.so" />
-					<Add library="/usr/local/lib/x86_64-linux-gnu/libompl_app_base.so" />
+					<Add library="/usr/lib/libarmadillo.so" />
+					<Add library="/usr/local/lib/libompl.so" />
+					<Add library="/usr/local/lib/libompl_app.so" />
+					<Add library="/usr/lib/libtinyxml.so" />
 					<Add directory="/usr/local/lib" />
 					<Add directory="/usr/lib/x86_64-linux-gnu" />
 					<Add directory="/usr/lib" />
-					<Add directory="/usr/local/lib/x86_64-linux-gnu" />
 				</Linker>
 			</Target>
 			<Target title="Release">

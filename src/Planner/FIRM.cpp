@@ -162,11 +162,7 @@ void FIRM::setMaxNearestNeighbors(unsigned int k)
         nn_.reset(ompl::tools::SelfConfig::getDefaultNearestNeighbors<Vertex>(si_->getStateSpace()));
         nn_->setDistanceFunction(boost::bind(&FIRM::distanceFunction, this, _1, _2));
     }
-    if (!userSetConnectionStrategy_)
-        connectionStrategy_.clear();
-    if (isSetup())
-        setup();
-    //connectionStrategy_ = ompl::geometric::KStrategy<Vertex>(k, nn_);
+    connectionStrategy_ = ompl::geometric::KStrategy<Vertex>(k, nn_);
 }
 
 void FIRM::setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef)
@@ -593,18 +589,18 @@ FIRMWeight FIRM::generateEdgeControllerWithCost(const FIRM::Vertex a, const FIRM
         {
            successCount++;
 
-           edgeCost = ompl::base::Cost(edgeCost.value() + pcost.value()) ;
+           edgeCost.v = edgeCost.v + pcost.v ;
 
         }
 
     }
 
-    if (successCount > 0)  edgeCost = ompl::base::Cost(edgeCost.value() / successCount) ;
-    else edgeCost = ompl::base::Cost(ompl::magic::EXTREMELY_HIGH_EDGE_COST); // extremely high cost if no particle could succeed, we can also simply not add this edge
+    if (successCount > 0)  edgeCost.v = edgeCost.v / successCount ;
+    else edgeCost.v = ompl::magic::EXTREMELY_HIGH_EDGE_COST; // extremely high cost if no particle could succeed, we can also simply not add this edge
 
     double transitionProbability = successCount / numParticles_ ;
 
-    FIRMWeight weight(edgeCost.value(), transitionProbability);
+    FIRMWeight weight(edgeCost.v, transitionProbability);
 
     return weight;
 }
