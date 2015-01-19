@@ -31,54 +31,44 @@
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
+/* Author: Ali-akbar Agha-mohammadi, Saurav Agarwal */
 
-/* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
+#include "../../include/MotionModels/CarrotStatePropagator.h"
+#include "ompl/control/spaces/RealVectorControlSpace.h"
+#include "ompl/util/Exception.h"
+using namespace ompl;
 
-#ifndef RHC_ICREATE_
-#define RHC_ICREATE_
+CarrotStatePropagator::CarrotStatePropagator(const firm::SpaceInformation::SpaceInformationPtr &si) : StatePropagator(si), siF_(si)
+{
+    // The path to this setup file must not be hardcopied, need a better way to do this
+    motionModel_ = siF_->getMotionModel();
+}
 
-#include "SeparatedControllerMethod.h"
-#include <deque>
-
-class RHCICreate : public SeparatedControllerMethod
+void CarrotStatePropagator::propagate(const base::State *state, const control::Control* control, const double duration, base::State *result) const
 {
 
-  public:
-    typedef typename SeparatedControllerMethod::ControlType   ControlType;
-    typedef typename MotionModelMethod::MotionModelPointer MotionModelPointer;
-    //typedef typename MPTraits::LinearSystem   LinearSystem;
-
-    RHCICreate() {}
-
-    RHCICreate(ompl::base::State *goal,
-        const std::vector<ompl::base::State*> &nominalXs,
-        const std::vector<ompl::control::Control*> &nominalUs,
-        const std::vector<LinearSystem>& linearSystems,  // Linear systems are not used in this class but it is here to unify the interface
-        const MotionModelPointer mm) :
-        SeparatedControllerMethod(goal, nominalXs, nominalUs, linearSystems, mm)
-        {
-          assert(controlQueueSize_ > 0 && "Error: RHCICreate control queue size not valid. Please initialize by calling SetControlQueueSize");
-
-         //this->m_reachedFlag = false;
-        }
-
-    ~RHCICreate() {}
-
-    virtual ompl::control::Control* generateFeedbackControl(const ompl::base::State *state, const size_t& _t = 0) ;
-
-    static void setControlQueueSize(const int queueSize)
+    // set the time step
+    if(duration != 0.1)
     {
-      controlQueueSize_ = queueSize;
+        std::cout<<"In state propagator, duration is: (Press Enter to Continue)"<<duration<<std::endl;
+        std::cin.get();
     }
 
-    /*static void setTurnOnlyDistance(const double turnDist)
-    {
-      turnOnlyDistance_ = turnDist;
-    }*/
+    //motionModel_->setTimeStep(duration);
 
-   private:
-    static int controlQueueSize_;
-    //static double turnOnlyDistance_;
-    std::deque<ompl::control::Control*> openLoopControls_;
-};
-#endif
+    typedef CarrotBeliefSpace::StateType StateType;
+
+    ompl::base::State *to = si_->allocState();
+
+    // use the motionmodel to apply the controls
+    motionModel_->Evolve(state, control, motionModel_->getZeroNoise(), to);
+
+    si_->copyState(result,to);
+
+}
+
+bool CarrotStatePropagator::canPropagateBackward(void) const
+{
+    return false;
+}
+

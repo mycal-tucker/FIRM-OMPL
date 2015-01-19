@@ -36,17 +36,17 @@
 
 
 #include <tinyxml.h>
-#include "../../include/Spaces/SE2BeliefSpace.h"
-#include "../../include/MotionModels/UnicycleMotionModel.h"
+#include "../../include/Spaces/SQBeliefSpace.h"
+#include "../../include/MotionModels/SQMotionModel.h"
 #include "../../include/Utils/FIRMUtils.h"
 
 //Produce the next state, given the current state, a control and a noise
-void UnicycleMotionModel::Evolve(const ompl::base::State *state, const ompl::control::Control *control, const NoiseType& w, ompl::base::State *result)
+void SQMotionModel::Evolve(const ompl::base::State *state, const ompl::control::Control *control, const NoiseType& w, ompl::base::State *result)
 {
 
     using namespace arma;
 
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename SQMotionModelMethod::StateType StateType;
 
     arma::colvec u = OMPL2ARMA(control);
 
@@ -56,61 +56,65 @@ void UnicycleMotionModel::Evolve(const ompl::base::State *state, const ompl::con
 
     colvec x = state->as<StateType>()->getArmaData();
 
-    const double c = cos(x[2]);
-    const double s = sin(x[2]);
+    const double c = cos(x[3]);
+    const double s = sin(x[3]);
 
     colvec u2(3);
-    u2 << u[0]*c << u[0]*s << u[1] << endr;
+    u2 << u[0]*c << u[0]*s << u[1] << u[2] << endr;
     colvec Un2(3);
-    Un2 << Un[0]*c << Un[0]*s << Un[1] << endr;
+    Un2 << Un[0]*c << Un[0]*s << Un[1] << Un[2] << endr;
 
     x += (u2*this->dt_) + (Un2*sqrt(this->dt_)) + (Wg*sqrt(this->dt_));
 
     FIRMUtils::normalizeAngleToPiRange(x[2]);
 
-    result->as<StateType>()->setXYYaw(x[0],x[1],x[2]);
+    result->as<StateType>()->setXYZYaw(x[0],x[1],x[2],x[3]);
 }
 
 
-void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *startState,
+void SQMotionModel::generateOpenLoopControls(const ompl::base::State *startState,
                                                   const ompl::base::State *endState,
                                                   std::vector<ompl::control::Control*> &openLoopControls)
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename SQMotionModelMethod::StateType StateType;
 
     colvec start = startState->as<StateType>()->getArmaData(); // turn into colvec (in radian)
     colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec (in radian)
 
-    colvec x_c, y_c;
+    colvec x_c, y_c, z_c;
     x_c << start[0] << endr
       << end[0] << endr;
     y_c << start[1] << endr
       << end[1] << endr;
+    z_c << start[2] << endr
+      << end[3] << endr;
 
     double th_p = 0;
     double delta_th_p_start = 0;
     double delta_th_p_end = 0;
     double delta_disp = 0;
+    double delta_climb = 0;
     double translation_steps = 0;
+    double climb_steps = 0;
     double rotation_steps_start = 0;
     double rotation_steps_end = 0;
     int kf = 0;
 
-    double theta_start = start[2];
-    double th_end = end[2];
+    double theta_start = start[3];
+    double th_end = end[3];
 
-    // connceting line slope
+    // connecting line slope
     th_p = atan2(y_c[1]-y_c[0], x_c[1]-x_c[0]);
 
-    // turining anlge at start
+    // turning angle at start
     delta_th_p_start = th_p - theta_start;
 
     // bringing the delta_th_p_start to the -PI to PI range
     FIRMUtils::normalizeAngleToPiRange(delta_th_p_start);
 
-    // turining anlge at end
+    // turning angle at end
     delta_th_p_end = th_end - th_p;
     FIRMUtils::normalizeAngleToPiRange(delta_th_p_end);
 
@@ -122,8 +126,13 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
     delta_disp = sqrt( pow(y_c[1]-y_c[0], 2) + pow(x_c[1]-x_c[0], 2) );
     translation_steps = fabs(delta_disp/(maxLinearVelocity_*this->dt_));
 
+    //count climb steps
+    delta_climb = z_c[1]-z_c[0];
+    climb_steps = fabs(delta_climb/(maxClimbVelocity_*this->dt_));
+
     // total number of steps
-    kf += ceil(rotation_steps_start) + ceil(translation_steps) + ceil(rotation_steps_end);
+    kf += ceil(rotation_steps_start) + ceil(translation_steps) +
+    ceil(rotation_steps_end) + ceil(climb_steps);
 
     //Generating control signal for start rotation
     const double& rsi = rotation_steps_start;
@@ -157,7 +166,8 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
 
     if(u_const_trans.n_rows == 0) {
       u_const_trans << maxLinearVelocity_ << endr
-                    << 0        << endr;
+                    << 0 << endr
+                    << 0 << endr;
     }
 
     for(int j=0; j<ftsi; ++j, ++ix)
@@ -173,6 +183,31 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
       openLoopControls.push_back(tempControl);
     }
 
+    //Generating control signal for climb
+
+    const double& csi = climb_steps;
+    const double fcsi = floor(tsi);
+
+    static colvec u_const_climb;
+
+    if(u_const_trans.n_rows == 0) {
+      u_const_trans << 0 << endr
+                    << maxClimbVelocity_ << endr
+                    << 0 << endr;
+    }
+
+    for(int j=0; j<ftsi; ++j, ++ix)
+    {
+      ompl::control::Control *tempControl = si_->allocControl();
+      ARMA2OMPL(u_const_trans, tempControl);
+      openLoopControls.push_back(tempControl);
+    }
+    if(ftsi < tsi)
+    {
+      ompl::control::Control *tempControl = si_->allocControl();
+      ARMA2OMPL(u_const_trans*(tsi-ftsi), tempControl);
+      openLoopControls.push_back(tempControl);
+    }
     // Generating control signal for end rotation
 
     const double& rsi_end = rotation_steps_end;
@@ -180,6 +215,7 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
     colvec u_const_rot_end;
 
     u_const_rot_end << 0 << endr
+                    << 0 << endr
                 << maxAngularVelocity_*FIRMUtils::signum(delta_th_p_end) << endr;
 
     for(int j=0; j<frsi_end; ++j, ++ix)
@@ -197,7 +233,7 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
     }
 }
 
-void UnicycleMotionModel::generateOpenLoopControlsForPath(const ompl::geometric::PathGeometric path, std::vector<ompl::control::Control*> &openLoopControls)
+void SQMotionModel::generateOpenLoopControlsForPath(const ompl::geometric::PathGeometric path, std::vector<ompl::control::Control*> &openLoopControls)
 {
     for(int i=0;i<path.getStateCount()-1;i++)
     {
@@ -209,8 +245,8 @@ void UnicycleMotionModel::generateOpenLoopControlsForPath(const ompl::geometric:
     }
 }
 
-typename UnicycleMotionModel::NoiseType
-UnicycleMotionModel::generateNoise(const ompl::base::State *state, const ompl::control::Control* control)
+typename SQMotionModel::NoiseType
+SQMotionModel::generateNoise(const ompl::base::State *state, const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -226,13 +262,13 @@ UnicycleMotionModel::generateNoise(const ompl::base::State *state, const ompl::c
     return noise;
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getStateJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename SQMotionModel::JacobianType
+SQMotionModel::getStateJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
 
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename SQMotionModelMethod::StateType StateType;
 
     arma::colvec u = OMPL2ARMA(control);
 
@@ -241,51 +277,54 @@ UnicycleMotionModel::getStateJacobian(const ompl::base::State *state, const ompl
     assert (xData.n_rows == (size_t)stateDim);
 
     const colvec& Un = w.subvec(0,this->controlDim_-1);
-    double c = cos(xData[2]);
-    double s = sin(xData[2]);
+    double c = cos(xData[3]);
+    double s = sin(xData[3]);
 
-    mat uMat(3,3), UnMat(3,3);
-    uMat  <<  0   << 0 <<   -u[0]*s << endr
-        <<  0   << 0 <<    u[0]*c << endr
-        <<  0   << 0 <<       0    << endr;
+    mat uMat(4,4), UnMat(4,4);
+    uMat << 0 << 0 << 0 << -u[0]*s << endr
+         << 0 << 0 << 0 <<  u[0]*c << endr
+         << 0 << 0 << 0 <<    0    << endr
+         << 0 << 0 << 0 <<    0    << endr;
 
-    UnMat <<  0   << 0 <<   -Un[0]*s << endr
-        <<  0   << 0 <<    Un[0]*c << endr
-        <<  0   << 0 <<       0    << endr;
+    UnMat << 0 << 0 << 0 << -Un[0]*s << endr
+          << 0 << 0 << 0 <<  Un[0]*c << endr
+          << 0 << 0 << 0 <<     0    << endr
+          << 0 << 0 << 0 <<     0    << endr;
 
     JacobianType A = eye(this->stateDim_,this->stateDim_) + uMat*this->dt_ + UnMat*sqrt(this->dt_);
     return A;
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getControlJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename SQMotionModel::JacobianType
+SQMotionModel::getControlJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename SQMotionModelMethod::StateType StateType;
 
     colvec xData = state->as<StateType>()->getArmaData();
     assert (xData.n_rows == (size_t)this->stateDim_);
 
     const double& theta = xData[2];
 
-    mat B(3,2);
+    mat B(4,3);
 
-    B   <<  cos(theta)  <<  0   <<  endr
-      <<  sin(theta)  <<  0   <<  endr
-      <<          0   <<  1   <<  endr;
+    B   << cos(theta) << 0 << 0 << endr
+        << sin(theta) << 0 << 0 <<  endr
+        << 0          << 1 << 0 <<  endr
+        << 0          << 0 << 1 <<  endr;
 
     B *= this->dt_;
     return B;
 
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename SQMotionModel::JacobianType
+SQMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename SQMotionModelMethod::StateType StateType;
 
     colvec xData = state->as<StateType>()->getArmaData();
 
@@ -293,12 +332,14 @@ UnicycleMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl
 
     const double& theta = xData[2];
 
-    mat G(3,5);
+    mat G(4,7);
 
 
-    G   <<  cos(theta) << 0 << 1 << 0 << 0 << endr
-      <<  sin(theta) << 0 << 0 << 1 << 0 << endr
-      <<          0  << 1 << 0 << 0 << 1 << endr;
+    G   << cos(theta) << 0 << 1 << 0 << 0 << 0 << 0 << endr
+        << sin(theta) << 0 << 0 << 1 << 0 << 0 << 0 << endr
+        <<    0       << 1 << 0 << 0 << 1 << 0 << 0 << endr
+        <<    0       << 0 << 0 << 0 << 0 << 1 << 0 << endr
+        <<    0       << 0 << 0 << 0 << 0 << 0 << 1 << endr;
 
 
     G *= sqrt(this->dt_);
@@ -306,7 +347,7 @@ UnicycleMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl
 
 }
 
-arma::mat UnicycleMotionModel::processNoiseCovariance(const ompl::base::State *state, const ompl::control::Control* control)
+arma::mat SQMotionModel::processNoiseCovariance(const ompl::base::State *state, const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -325,7 +366,7 @@ arma::mat UnicycleMotionModel::processNoiseCovariance(const ompl::base::State *s
 }
 
 
-arma::mat UnicycleMotionModel::controlNoiseCovariance(const ompl::control::Control* control)
+arma::mat SQMotionModel::controlNoiseCovariance(const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -340,7 +381,7 @@ arma::mat UnicycleMotionModel::controlNoiseCovariance(const ompl::control::Contr
 }
 
 
-void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
+void SQMotionModel::loadParameters(const char *pathToSetupFile)
 {
     using namespace arma;
 
@@ -362,7 +403,7 @@ void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
 
     TiXmlNode* child = 0;
 
-    child = node->FirstChild("UnicycleMotionModel");
+    child = node->FirstChild("SQMotionModel");
 
     assert( child );
     itemElement = child->ToElement();
@@ -393,7 +434,7 @@ void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
     this->sigma_ << sigmaV << sigmaOmega <<endr;
     this->eta_  << etaV << etaOmega << endr;
 
-    rowvec Wg_root_vec(3);
+    rowvec Wg_root_vec(4);
     Wg_root_vec << windNoisePos << windNoisePos << windNoiseAng*boost::math::constants::pi<double>() / 180.0 << endr;
     P_Wg_ = diagmat(square(Wg_root_vec));
 
@@ -402,21 +443,21 @@ void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
     maxAngularVelocity_ = maxAngularVelocity;
     dt_                 = dt;
 
-    OMPL_INFORM("UnicycleMotionModel: sigma_ = ");
+    OMPL_INFORM("SQMotionModel: sigma_ = ");
     std::cout<<sigma_<<std::endl;
 
-    OMPL_INFORM("UnicycleMotionModel: eta_ = ");
+    OMPL_INFORM("SQMotionModel: eta_ = ");
     std::cout<<eta_<<std::endl;
 
-    OMPL_INFORM("UnicycleMotionModel: P_Wg_ = ");
+    OMPL_INFORM("SQMotionModel: P_Wg_ = ");
     std::cout<<P_Wg_<<std::endl;
 
-    OMPL_INFORM("UnicycleMotionModel: min Linear Velocity (m/s)    = %f", minLinearVelocity_ );
+    OMPL_INFORM("SQMotionModel: min Linear Velocity (m/s)    = %f", minLinearVelocity_ );
 
-    OMPL_INFORM("UnicycleMotionModel: max Linear Velocity (m/s)    = %f", maxLinearVelocity_);
+    OMPL_INFORM("SQMotionModel: max Linear Velocity (m/s)    = %f", maxLinearVelocity_);
 
-    OMPL_INFORM("UnicycleMotionModel: max Angular Velocity (rad/s) = %f",maxAngularVelocity_);
+    OMPL_INFORM("SQMotionModel: max Angular Velocity (rad/s) = %f",maxAngularVelocity_);
 
-    OMPL_INFORM("UnicycleMotionModel: Timestep (seconds) = %f", dt_);
+    OMPL_INFORM("SQMotionModel: Timestep (seconds) = %f", dt_);
 
 }

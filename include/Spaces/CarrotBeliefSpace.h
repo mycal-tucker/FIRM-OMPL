@@ -1,6 +1,4 @@
 /*********************************************************************
-* Based on SE2BeliefSpace.cpp
-*
 * Software License Agreement (BSD License)
 *
 *  Copyright (c) 2014, Texas A&M University
@@ -36,29 +34,28 @@
 
 /* Authors: Saurav Agarwal */
 
-#ifndef BELIEF_SPACE_H_
-#define BELIEF_SPACE_H_
+#ifndef CARROT_BELIEF_SPACE_H_
+#define CARROT_BELIEF_SPACE_H_
 
 // OMPL includes
-// #include "ompl/base/spaces/SE2StateSpace.h" //removed
-#include "ompl/base/spaces/SE3StateSpace.h"
+#include "ompl/base/spaces/RealVectorStateSpace.h"
 //other includes
 #include <boost/math/constants/constants.hpp>
 #include <armadillo>
 
 using namespace ompl::base;
-class SE3BeliefSpace : public ompl::base::CompoundStateSpace
+class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
 {
 
     public:
 
-        /** \brief A belief in SE(3): (x, y, z, roll, pitch, yaw, covariance) */
-        class StateType : public CompoundStateSpace::StateType
+        /** \brief A belief in R3: (x, y, z, covariance) */
+        class StateType : public RealVectorStateSpace::StateType
         {
         public:
-            StateType(void) : CompoundStateSpace::StateType()
+            StateType(void) : RealVectorStateSpace::StateType()
             {
-              covariance_ = arma::zeros<arma::mat>(6,6);
+              covariance_ = arma::zeros<arma::mat>(3,3);
               controllerID_ = -1;
 
             }
@@ -74,31 +71,14 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
             {
                 return as<RealVectorStateSpace::StateType>(0)->values[1];
             }
-            
+
             /** \brief Get the Z component of the state */
             double getZ(void) const
             {
                 return as<RealVectorStateSpace::StateType>(0)->values[2];
             }
-            
-            /** \brief Get the roll component of the state. */
-            double getRoll(void) const
-            {
-                return as<SO3StateSpace::StateType>(1)->values[0]; //CHECKME I had to guess a bit about indices
-            }
-            
-            /** \brief Get the pitch component of the state. */
-            double getPitch(void) const
-            {
-                return as<SO3StateSpace::StateType>(1)->values[1];
-            }
-            /** \brief Get the yaw component of the state.  */
-            double getYaw(void) const
-            {
-                return as<SO3StateSpace::StateType>(1)->values[2];
-            }
 
-            arma::mat getCovariance(void) const //for now use same covariance for all dimensions
+            arma::mat getCovariance(void) const
             {
                 return covariance_;
             }
@@ -114,14 +94,14 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
             {
                 as<RealVectorStateSpace::StateType>(0)->values[1] = y;
             }
-            
-            /** \brief Set the Z component of the state */
+
+            /** \brief Set the Y component of the state */
             void setZ(double z)
             {
                 as<RealVectorStateSpace::StateType>(0)->values[2] = z;
             }
 
-            /** \brief Set the X, Y, and Z components of the state */
+            /** \brief Set the X,Y,Z components of the state */
             void setXYZ(double x, double y, double z)
             {
                 setX(x);
@@ -129,48 +109,18 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
                 setZ(z);
             }
 
-            /** \brief Set the roll component of the state. */
-            void setRoll(double roll)
-            {
-                as<SO3StateSpace::StateType>(1)->values[0] = roll;
-            }
-            
-            /** \brief Set the pitch component of the state. */
-            void setPitch(double pitch)
-            {
-                as<SO3StateSpace::StateType>(1)->values[2] = pitch;
-            }
-            
-            /** \brief Set the yaw component of the state. */
-            void setYaw(double yaw)
-            {
-                as<SO3StateSpace::StateType>(1)->values[3] = yaw;
-            }
 
-            void setXYZRollPitchYaw(double x, double y, double z, double roll, double pitch, double yaw)
-            {
-                setX(x);
-                setY(y);
-                setZ(z);
-                setRoll(roll);
-                setPitch(pitch);
-                setYaw(yaw);
-            }
-
-            void setCovariance(arma::mat cov){ //using just one covariance for all dimensions
+            void setCovariance(arma::mat cov){
                 covariance_ = cov;
             }
 
             arma::colvec getArmaData(void) const
             {
-                arma::colvec stateVec(6);
+                arma::colvec stateVec(3);
 
                 stateVec[0] = getX();
                 stateVec[1] = getY();
                 stateVec[2] = getZ();
-                stateVec[3] = getRoll();
-                stateVec[4] = getPitch();
-                stateVec[5] = getYaw();
                 return stateVec;
             }
 
@@ -188,17 +138,14 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
         };
 
 
-        SE3BeliefSpace(void) : CompoundStateSpace()
+        CarrotBeliefSpace(void) : RealVectorStateSpace()
         {
-            setName("SE3_BELIEF" + getName());
-            type_ = STATE_SPACE_SE3;
-            addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0); //for x, y, z.
-            addSubspace(StateSpacePtr(new SO3StateSpace()), 0.5);
-            //the second arguments are used for distance metrics: http://ompl.kavrakilab.org/implementingStateSpaces.html
-            lock();
+            dimension_ = 3;
+            setName("CARROT_BELIEF" + getName());
+            type_ = STATE_SPACE_CARROT;
         }
 
-        virtual ~SE3BeliefSpace(void)
+        virtual ~CarrotBeliefSpace(void)
         {
         }
 
@@ -230,32 +177,46 @@ class SE3BeliefSpace : public ompl::base::CompoundStateSpace
 };
 #endif
 
-//all this was commented out in SE2BeliefSpace
 /*
   BeliefSpace(const SE2StateSpace& state = SE2StateSpace(),
                 const arma::mat& covariance = arma::zeros<arma::mat>(0,0),
                 double reachDist = 0.0,
                 size_t controllerID = -1);
+
   GaussianBelief& operator-=(const GaussianBelief& b);
   GaussianBelief operator-(const GaussianBelief& b) const;
   GaussianBelief operator-() const;
+
   bool operator==(const GaussianBelief& b) const;
+
   virtual bool equalStates
+
   //virtual const string GetName() const {return "GaussianBelief";}
+
   //template<class DistanceMetricPointer>
   //void GetRandomRay(double _incr, Environment* _env,  DistanceMetricPointer _dm, bool _norm=true);
+
   size_t GetControllerID() const {return controllerID_;}
   void SetControllerID(size_t id){controllerID_ = id;}
+
   void SetCovariance(const arma::mat& covariance) {covariance_ = covariance;}
+
   const arma::mat& GetCovariance() const {return covariance_;}
+
   double Norm();
+
   bool IsReached(const GaussianBelief& b) const;
+
   //void Draw();
+
   static double meanNormWeight_, covNormWeight_;
+
   //virtual ostream& Write(ostream& _os) {return (_os << *this);}
+
   //I/O
   //friend ostream& operator<< (ostream&, const GaussianBelief& _gb);
   //friend istream& operator>> (istream&, GaussianBelief& _gb);
+
 private:
   arma::mat covariance_;
   double reachDist_;

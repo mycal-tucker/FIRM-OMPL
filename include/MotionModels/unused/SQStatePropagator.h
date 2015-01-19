@@ -31,54 +31,48 @@
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
+/* Author: Ali-akbar Agha-mohammadi, Saurav Agarwal */
 
-/* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
+#ifndef SQ_STATE_PROPAGATOR_
+#define SQ_STATE_PROPAGATOR_
 
-#ifndef RHC_ICREATE_
-#define RHC_ICREATE_
+#include "../SpaceInformation/SpaceInformation.h"
+#include "SQMotionModel.h"
 
-#include "SeparatedControllerMethod.h"
-#include <deque>
+/** \brief State propagation for a simple quad motion model.
 
-class RHCICreate : public SeparatedControllerMethod
+   */
+class SQStatePropagator : public ompl::control::StatePropagator
 {
+public:
 
-  public:
-    typedef typename SeparatedControllerMethod::ControlType   ControlType;
-    typedef typename MotionModelMethod::MotionModelPointer MotionModelPointer;
-    //typedef typename MPTraits::LinearSystem   LinearSystem;
+    /** \brief Construct representation of a simple quad state propagator.
+    */
+    SQStatePropagator(const firm::SpaceInformation::SpaceInformationPtr &si);
 
-    RHCICreate() {}
-
-    RHCICreate(ompl::base::State *goal,
-        const std::vector<ompl::base::State*> &nominalXs,
-        const std::vector<ompl::control::Control*> &nominalUs,
-        const std::vector<LinearSystem>& linearSystems,  // Linear systems are not used in this class but it is here to unify the interface
-        const MotionModelPointer mm) :
-        SeparatedControllerMethod(goal, nominalXs, nominalUs, linearSystems, mm)
-        {
-          assert(controlQueueSize_ > 0 && "Error: RHCICreate control queue size not valid. Please initialize by calling SetControlQueueSize");
-
-         //this->m_reachedFlag = false;
-        }
-
-    ~RHCICreate() {}
-
-    virtual ompl::control::Control* generateFeedbackControl(const ompl::base::State *state, const size_t& _t = 0) ;
-
-    static void setControlQueueSize(const int queueSize)
+    virtual ~SQStatePropagator(void)
     {
-      controlQueueSize_ = queueSize;
     }
 
-    /*static void setTurnOnlyDistance(const double turnDist)
-    {
-      turnOnlyDistance_ = turnDist;
-    }*/
 
-   private:
-    static int controlQueueSize_;
-    //static double turnOnlyDistance_;
-    std::deque<ompl::control::Control*> openLoopControls_;
+    /** \brief Will always return false, as the simulation can only proceed forward in time */
+    virtual bool canPropagateBackward(void) const;
+
+    /** \brief Propagate from a state, under a given control, for some specified amount of time.
+        We use the motion model to do the actual number crunching.
+
+    */
+    virtual void propagate(const ompl::base::State *state, const ompl::control::Control* control, const double duration, ompl::base::State *result) const;
+
+protected:
+
+    SQMotionModelMethod::MotionModelPointer motionModel_;
+
+    firm::SpaceInformation::SpaceInformationPtr siF_;
+    /**
+    You can add a simulated environment here where the controls can get applied, useful for
+    showing the graphics, very similar to the concept of ActuationSystem in PMPL.
+    */
 };
+
 #endif
