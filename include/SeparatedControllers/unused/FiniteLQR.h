@@ -34,35 +34,35 @@
 
 /* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
 
-#ifndef RHC_ICREATE_
-#define RHC_ICREATE_
+#ifndef FINITE_LQR_
+#define FINITE_LQR_
 
-#include "SeparatedControllerMethod.h"
+#include "LQRMethod.h"
 #include <deque>
 
-class RHCICreate : public SeparatedControllerMethod
+class FiniteLQR : public LQRMethod
 {
 
   public:
-    typedef typename SeparatedControllerMethod::ControlType   ControlType;
-    typedef typename MotionModelMethod::MotionModelPointer MotionModelPointer;
+    typedef typename LQRMethod::ControlType   ControlType;
+    typedef typename SQMotionModelMethod::MotionModelPointer MotionModelPointer;
     //typedef typename MPTraits::LinearSystem   LinearSystem;
 
-    RHCICreate() {}
+    FiniteLQR() {}
 
-    RHCICreate(ompl::base::State *goal,
+    FiniteLQR(ompl::base::State *goal,
         const std::vector<ompl::base::State*> &nominalXs,
         const std::vector<ompl::control::Control*> &nominalUs,
         const std::vector<LinearSystem>& linearSystems,  // Linear systems are not used in this class but it is here to unify the interface
         const MotionModelPointer mm) :
-        SeparatedControllerMethod(goal, nominalXs, nominalUs, linearSystems, mm)
+        LQRMethod(goal, nominalXs, nominalUs, linearSystems, mm)
         {
           assert(controlQueueSize_ > 0 && "Error: RHCICreate control queue size not valid. Please initialize by calling SetControlQueueSize");
 
          //this->m_reachedFlag = false;
         }
 
-    ~RHCICreate() {}
+    ~FiniteLQR() {}
 
     virtual ompl::control::Control* generateFeedbackControl(const ompl::base::State *state, const size_t& _t = 0) ;
 
@@ -71,14 +71,14 @@ class RHCICreate : public SeparatedControllerMethod
       controlQueueSize_ = queueSize;
     }
 
-    /*static void setTurnOnlyDistance(const double turnDist)
+    static void setTurnOnlyDistance(const double turnDist)
     {
       turnOnlyDistance_ = turnDist;
-    }*/
+    }
 
    private:
     static int controlQueueSize_;
-    //static double turnOnlyDistance_;
+    static double turnOnlyDistance_;
     std::deque<ompl::control::Control*> openLoopControls_;
 };
 #endif

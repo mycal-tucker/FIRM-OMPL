@@ -33,13 +33,14 @@
 *********************************************************************/
 
 /* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
-#include "../../include/SeparatedControllers/RHCICreate.h"
+#include "../../include/SeparatedControllers/FiniteLQR.h"
 
-int RHCICreate::controlQueueSize_ = -1;
+int FiniteLQR::controlQueueSize_ = -1;
 
+double FiniteLQR::turnOnlyDistance_ = -1;
 
 ompl::control::Control*
-RHCICreate::generateFeedbackControl(const ompl::base::State *state, const size_t& _t)
+FiniteLQR::generateFeedbackControl(const ompl::base::State *state, const size_t& _t)
 {
 
   using namespace arma;
@@ -85,7 +86,7 @@ RHCICreate::generateFeedbackControl(const ompl::base::State *state, const size_t
     //cout<<"RHCICreate controller, relativeCfg distance (cm )   : "<<distance*100<<endl;
     //if( distance < 0.20 && !this->m_reachedFlag)  this->m_reachedFlag = true;
 
-    /*if(distance < turnOnlyDistance_){
+    if(distance < turnOnlyDistance_){
 
       ompl::control::Control* newcontrol  = this->motionModel_->getZeroControl();
       //cout<<"Applying Only Turn Control !"<<endl;
@@ -97,7 +98,7 @@ RHCICreate::generateFeedbackControl(const ompl::base::State *state, const size_t
       }
 
       return newcontrol;
-    }*/
+    }
 
     return control;
 }

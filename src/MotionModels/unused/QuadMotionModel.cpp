@@ -36,19 +36,19 @@
 
 
 #include <tinyxml.h>
-#include "../../include/Spaces/SE2BeliefSpace.h"
-#include "../../include/MotionModels/UnicycleMotionModel.h"
+#include "../../include/Spaces/SE3BeliefSpace.h"
+#include "../../include/MotionModels/QuadMotionModel.h"
 #include "../../include/Utils/FIRMUtils.h"
 
 //Produce the next state, given the current state, a control and a noise
-void UnicycleMotionModel::Evolve(const ompl::base::State *state, const ompl::control::Control *control, const NoiseType& w, ompl::base::State *result)
+void QuadMotionModel::Evolve(const ompl::base::State *state, const ompl::control::Control *control, const NoiseType& w, ompl::base::State *result)
 {
 
     using namespace arma;
+//
+    typedef typename 3DMotionModelMethod::StateType StateType;
 
-    typedef typename MotionModelMethod::StateType StateType;
-
-    arma::colvec u = OMPL2ARMA(control);
+    colvec u = OMPL2ARMA(control);
 
     const colvec& Un = w.subvec(0, this->controlDim_-1);
 
@@ -56,19 +56,45 @@ void UnicycleMotionModel::Evolve(const ompl::base::State *state, const ompl::con
 
     colvec x = state->as<StateType>()->getArmaData();
 
-    const double c = cos(x[2]);
-    const double s = sin(x[2]);
+    // gravity vector
+    colvec g(12);
+    g(5) = this->g;
 
+    const double s_phi = sin(x[6]);
+    const double s_the = sin(x[7]);
+    const double s_psi = sin(x[8]);
+    const double c_phi = cos(x[6]);
+    const double c_the = cos(x[7]);
+    const double c_psi = cos(x[8]);
+    //const double c = cos(x[2]);
+    //const double s = sin(x[2]);
+
+    mat A(12,12);
+    A.zeros();
+    A(0,3) = 1; A(1,4) = 1; A(2,5) = 1;
+    A(6,9) = 1; A(7,10) = 1; A(8,11) = 1;
+
+    mat B(12,4);
+    B(0,0) = (s_phi*s_psi+c_phi*c_psi*s_the)/this->mass;
+    B(1,0) = (c_phi*s_the*s_psi-c_psi*s_phi)/this->mass;
+    B(2,0) = c_the*c_phi/this->mass;
+    B(5,0) = 1/this->mass;
+    B(8,0) = 0; B(9,1) = this->len/this->Ixx;
+    B(10,2) = this->len/this->Iyy; B(11,3) = 1/this->Izz;
+    /*
     colvec u2(3);
     u2 << u[0]*c << u[0]*s << u[1] << endr;
     colvec Un2(3);
     Un2 << Un[0]*c << Un[0]*s << Un[1] << endr;
+    */
+    x += A*x*this->dt_ + (B*u-g)*this->dt_ + Wg*sqrt(this->dt_);
 
-    x += (u2*this->dt_) + (Un2*sqrt(this->dt_)) + (Wg*sqrt(this->dt_));
+    FIRMUtils::normalizeAngleToPiRange(x[6]);
+    FIRMUtils::normalizeAngleToPiRange(x[7]);
+    FIRMUtils::normalizeAngleToPiRange(x[8]);
 
-    FIRMUtils::normalizeAngleToPiRange(x[2]);
-
-    result->as<StateType>()->setXYYaw(x[0],x[1],x[2]);
+    // need to make this method in header file
+    result->as<StateType>()->setXYZ(x);
 }
 
 
@@ -78,7 +104,7 @@ void UnicycleMotionModel::generateOpenLoopControls(const ompl::base::State *star
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename 3DMotionModelMethod::StateType StateType;
 
     colvec start = startState->as<StateType>()->getArmaData(); // turn into colvec (in radian)
     colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec (in radian)
@@ -209,8 +235,8 @@ void UnicycleMotionModel::generateOpenLoopControlsForPath(const ompl::geometric:
     }
 }
 
-typename UnicycleMotionModel::NoiseType
-UnicycleMotionModel::generateNoise(const ompl::base::State *state, const ompl::control::Control* control)
+typename QuadMotionModel::NoiseType
+QuadMotionModel::generateNoise(const ompl::base::State *state, const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -226,13 +252,13 @@ UnicycleMotionModel::generateNoise(const ompl::base::State *state, const ompl::c
     return noise;
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getStateJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename QuadMotionModel::JacobianType
+QuadMotionModel::getStateJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
 
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename 3DMotionModelMethod::StateType StateType;
 
     arma::colvec u = OMPL2ARMA(control);
 
@@ -241,6 +267,7 @@ UnicycleMotionModel::getStateJacobian(const ompl::base::State *state, const ompl
     assert (xData.n_rows == (size_t)stateDim);
 
     const colvec& Un = w.subvec(0,this->controlDim_-1);
+    /*
     double c = cos(xData[2]);
     double s = sin(xData[2]);
 
@@ -252,21 +279,73 @@ UnicycleMotionModel::getStateJacobian(const ompl::base::State *state, const ompl
     UnMat <<  0   << 0 <<   -Un[0]*s << endr
         <<  0   << 0 <<    Un[0]*c << endr
         <<  0   << 0 <<       0    << endr;
+    */
+    colvec g(12);
+    g(5) = this->g;
 
-    JacobianType A = eye(this->stateDim_,this->stateDim_) + uMat*this->dt_ + UnMat*sqrt(this->dt_);
+    const double s_phi = sin(x[6]);
+    const double s_the = sin(x[7]);
+    const double s_psi = sin(x[8]);
+    const double c_phi = cos(x[6]);
+    const double c_the = cos(x[7]);
+    const double c_psi = cos(x[8]);
+
+    mat Alin(12,12);
+    Alin.zeros();
+    Alin(0,3) = 1; Alin(1,4) = 1; Alin(2) = 1;
+    Alin(6,9) = 1; Alin(7,10) = 1; Alin(8,11) = 1;
+    Alin(3,6) = (c_phi*s_psi-s_phi*c_psi*s_the)*u[0]/this->mass;
+    Alin(3,7) = (c_the*c_phi*c_psi)*Un[0]/this->mass;
+    Alin(3,8) = (s_phi*c_psi-c_phi*s_psi*s_the)*u[0]/this->mass;
+    Alin(4,6) = (-s_phi*s_the*s_psi-c_psi*c_phi)*u[0]/this->mass;
+    Alin(4,7) = (c_phi*c_the*c_psi)*u[0]/this->mass;
+    Alin(4,8) = (c_phi*s_the*c_psi+s_psi*s_phi)*u[0]/this->mass;
+    Alin(5,6) = -c_the*s_phi*u[0]/this->mass;
+    Alin(5,7) = -s_the*c_phi*u[0]/this->mass;
+
+    mat Anlin(12,12);
+    Anlin.zeros();
+    Anlin(3,6) = (c_phi*s_psi-s_phi*c_psi*s_the)*Un[0]/this->mass;
+    Anlin(3,7) = (c_the*c_phi*c_psi)*Un[0]/this->mass;
+    Anlin(3,8) = (s_phi*c_psi-c_phi*s_psi*s_the)*Un[0]/this->mass;
+    Anlin(4,6) = (-s_phi*s_the*s_psi-c_psi*c_phi)*Un[0]/this->mass;
+    Anlin(4,7) = (c_phi*c_the*c_psi)*Un[0]/this->mass;
+    Anlin(4,8) = (c_phi*s_the*c_psi+s_psi*s_phi)*Un[0]/this->mass;
+    Anlin(5,6) = -c_the*s_phi*Un[0]/this->mass;
+    Anlin(5,7) = -s_the*c_phi*Un[0]/this->mass;
+
+    JacobianType A = eye(this->stateDim_,this->stateDim_) +
+        (Alin-g)*this->dt_ + Anlin*sqrt(this->dt_);
     return A;
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getControlJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename QuadMotionModel::JacobianType
+QuadMotionModel::getControlJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename 3DMotionModelMethod::StateType StateType;
 
-    colvec xData = state->as<StateType>()->getArmaData();
-    assert (xData.n_rows == (size_t)this->stateDim_);
+    colvec x = state->as<StateType>()->getArmaData();
+    assert (x.n_rows == (size_t)this->stateDim_);
 
+    const double s_phi = sin(x[6]);
+    const double s_the = sin(x[7]);
+    const double s_psi = sin(x[8]);
+    const double c_phi = cos(x[6]);
+    const double c_the = cos(x[7]);
+    const double c_psi = cos(x[8]);
+
+    mat B(12,4);
+    B.zeros();
+    B(3,0) = (s_phi*s_psi+c_phi*c_psi*s_the)/this->mass;
+    B(4,0) = (c_phi*s_the*s_psi-c_psi*s_phi)/this->mass;
+    B(5,0) = c_the*c_phi/this->mass;
+    B(9,1) = this->len/this->Ixx;
+    B(10,2) = this->len/this->Iyy;
+    B(10,3) = this->len/this->Izz;
+
+    /*
     const double& theta = xData[2];
 
     mat B(3,2);
@@ -274,23 +353,46 @@ UnicycleMotionModel::getControlJacobian(const ompl::base::State *state, const om
     B   <<  cos(theta)  <<  0   <<  endr
       <<  sin(theta)  <<  0   <<  endr
       <<          0   <<  1   <<  endr;
+    */
 
     B *= this->dt_;
     return B;
 
 }
 
-typename UnicycleMotionModel::JacobianType
-UnicycleMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
+typename QuadMotionModel::JacobianType
+QuadMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::control::Control* control, const NoiseType& w)
 {
 
     using namespace arma;
-    typedef typename MotionModelMethod::StateType StateType;
+    typedef typename 3DMotionModelMethod::StateType StateType;
 
-    colvec xData = state->as<StateType>()->getArmaData();
+    colvec x = state->as<StateType>()->getArmaData();
 
-    assert (xData.n_rows == (size_t)this->stateDim_);
+    assert (x.n_rows == (size_t)this->stateDim_);
 
+    const double s_phi = sin(x[6]);
+    const double s_the = sin(x[7]);
+    const double s_psi = sin(x[8]);
+    const double c_phi = cos(x[6]);
+    const double c_the = cos(x[7]);
+    const double c_psi = cos(x[8]);
+
+    mat G(12,16);
+    G.zeros();
+    G(3,0) = (s_phi*s_psi+c_phi*c_psi*s_the)/this->mass;
+    G(4,0) = (c_phi*s_the*s_psi-c_psi*s_phi)/this->mass;
+    G(5,0) = c_the*c_phi/this->mass;
+    G(9,1) = this->len/this->Ixx;
+    G(10,2) = this->len/this->Iyy;
+    G(10,3) = this->len/this->Izz;
+    G(0,4) = 1; G(1,5) = 1; G(2,6) = 1;
+    G(3,7) = 1; G(4,8) = 1; G(5,9) = 1;
+    G(6,10) = 1; G(7,11) = 1; G(8,12) = 1;
+    G(9,13) = 1; G(10,14) = 1; G(11,15) = 1;
+
+
+    /*
     const double& theta = xData[2];
 
     mat G(3,5);
@@ -299,14 +401,14 @@ UnicycleMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl
     G   <<  cos(theta) << 0 << 1 << 0 << 0 << endr
       <<  sin(theta) << 0 << 0 << 1 << 0 << endr
       <<          0  << 1 << 0 << 0 << 1 << endr;
-
+    */
 
     G *= sqrt(this->dt_);
     return G;
 
 }
 
-arma::mat UnicycleMotionModel::processNoiseCovariance(const ompl::base::State *state, const ompl::control::Control* control)
+arma::mat QuadMotionModel::processNoiseCovariance(const ompl::base::State *state, const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -325,7 +427,7 @@ arma::mat UnicycleMotionModel::processNoiseCovariance(const ompl::base::State *s
 }
 
 
-arma::mat UnicycleMotionModel::controlNoiseCovariance(const ompl::control::Control* control)
+arma::mat QuadMotionModel::controlNoiseCovariance(const ompl::control::Control* control)
 {
 
     using namespace arma;
@@ -340,7 +442,7 @@ arma::mat UnicycleMotionModel::controlNoiseCovariance(const ompl::control::Contr
 }
 
 
-void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
+void QuadMotionModel::loadParameters(const char *pathToSetupFile)
 {
     using namespace arma;
 
@@ -420,3 +522,5 @@ void UnicycleMotionModel::loadParameters(const char *pathToSetupFile)
     OMPL_INFORM("UnicycleMotionModel: Timestep (seconds) = %f", dt_);
 
 }
+
+
