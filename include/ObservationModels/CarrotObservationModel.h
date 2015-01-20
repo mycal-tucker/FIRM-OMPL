@@ -34,8 +34,8 @@
 
 /* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
 
-#ifndef LANDMARK_RANGE_H_
-#define LANDMARK_RANGE_H_
+#ifndef CARROT_LANDMARK_RANGE_H_
+#define CARROT_LANDMARK_RANGE_H_
 
 #include "ObservationModelMethod.h"
 #include <boost/math/constants/constants.hpp>
@@ -93,6 +93,8 @@ class CarrotObservationModel : public ObservationModelMethod
 
         return candidate;
     }
+
+    bool isUnique(const arma::colvec z);
 
     // Jx = dh/dx
     JacobianType getObservationJacobian(const ompl::base::State *state, const ObsNoiseType& v, const ObservationType& z);

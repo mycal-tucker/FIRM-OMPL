@@ -34,13 +34,13 @@
 
 /* Author: Saurav Agarwal */
 
-#include "FIRM2DSetup.h"
-#include "MultiModalSetup.h"
+#include "FIRMCarrotSetup.h"
+//#include "MultiModalSetup.h"
 #include "Tests.h"
 #include <QApplication>
 #include <QtGui/QDesktopWidget>
 #include "include/Visualization/Window.h"
-#include "include/Visualization/Visualizer.h"
+#include "include/Visualization/CarrotVisualizer.h"
 #include <boost/thread.hpp>
 #include <iostream>
 #include <istream>
@@ -50,19 +50,19 @@ using namespace std;
 
 void plan()
 {
-    FIRM2DSetup *mySetup(new FIRM2DSetup);
+    FIRMCarrotSetup *mySetup(new FIRMCarrotSetup);
 
-    std::string setupFilePath = "./SetupFiles/Setup4CornerWorld.xml";
+    std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
 
     mySetup->setup();
 
-    Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
+    CarrotVisualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
 
-    Visualizer::updateSpaceInformation(mySetup->getSpaceInformation());
+    CarrotVisualizer::updateSpaceInformation(mySetup->getSpaceInformation());
 
-    Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
+    CarrotVisualizer::setMode(CarrotVisualizer::VZRDrawingMode::PRMViewMode);
 
     if(mySetup->solve())
     {

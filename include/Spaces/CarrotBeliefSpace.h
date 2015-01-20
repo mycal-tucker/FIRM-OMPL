@@ -63,19 +63,19 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             /** \brief Get the X component of the state */
             double getX(void) const
             {
-                return as<RealVectorStateSpace::StateType>(0)->values[0];
+                return this->values[0];
             }
 
             /** \brief Get the Y component of the state */
             double getY(void) const
             {
-                return as<RealVectorStateSpace::StateType>(0)->values[1];
+                return this->values[1];
             }
 
             /** \brief Get the Z component of the state */
             double getZ(void) const
             {
-                return as<RealVectorStateSpace::StateType>(0)->values[2];
+                return this->values[2];
             }
 
             arma::mat getCovariance(void) const
@@ -86,19 +86,19 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             /** \brief Set the X component of the state */
             void setX(double x)
             {
-                as<RealVectorStateSpace::StateType>(0)->values[0] = x;
+                this->values[0] = x;
             }
 
             /** \brief Set the Y component of the state */
             void setY(double y)
             {
-                as<RealVectorStateSpace::StateType>(0)->values[1] = y;
+                this->values[1] = y;
             }
 
             /** \brief Set the Y component of the state */
             void setZ(double z)
             {
-                as<RealVectorStateSpace::StateType>(0)->values[2] = z;
+                this->values[2] = z;
             }
 
             /** \brief Set the X,Y,Z components of the state */
@@ -138,12 +138,12 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         };
 
 
-        CarrotBeliefSpace(void) : RealVectorStateSpace()
+        /*CarrotBeliefSpace(void) : RealVectorStateSpace()
         {
             dimension_ = 3;
             setName("CARROT_BELIEF" + getName());
-            type_ = STATE_SPACE_CARROT;
-        }
+//            type_ = STATE_SPACE_CARROT;
+        }*/
 
         virtual ~CarrotBeliefSpace(void)
         {
@@ -152,13 +152,13 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         /** \copydoc RealVectorStateSpace::setBounds() */
         void setBounds(const RealVectorBounds &bounds)
         {
-            as<RealVectorStateSpace>(0)->setBounds(bounds);
+            this->setBounds(bounds);
         }
 
         /** \copydoc RealVectorStateSpace::getBounds() */
         const RealVectorBounds& getBounds(void) const
         {
-            return as<RealVectorStateSpace>(0)->getBounds();
+            return this->getBounds();
         }
 
         virtual State* allocState(void) const;

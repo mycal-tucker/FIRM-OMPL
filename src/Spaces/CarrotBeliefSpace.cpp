@@ -69,8 +69,8 @@ bool CarrotBeliefSpace::StateType::isReached(ompl::base::State *state) const
 
 ompl::base::State* CarrotBeliefSpace::allocState(void) const
 {
-    StateType *state = new StateType();
-    allocStateComponents(state);
+    //State *state = new State();
+    State* state = allocState();
     return state;
 }
 
@@ -79,13 +79,12 @@ void CarrotBeliefSpace::copyState(State *destination, const State *source) const
     destination->as<StateType>()->setX(source->as<StateType>()->getX());
     destination->as<StateType>()->setY(source->as<StateType>()->getY());
     destination->as<StateType>()->setZ(source->as<StateType>()->getZ());
-    destination->as<StateType>()->setYaw(source->as<StateType>()->getYaw());
     destination->as<StateType>()->setCovariance(source->as<StateType>()->getCovariance());
 }
 
 void CarrotBeliefSpace::freeState(State *state) const
 {
-    CompoundStateSpace::freeState(state);
+    RealVectorStateSpace::freeState(state);
 }
 
 double CarrotBeliefSpace::distance(const State* state1, const State *state2)

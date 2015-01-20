@@ -39,6 +39,7 @@
 #include "../../include/Spaces/CarrotBeliefSpace.h"
 #include "../../include/MotionModels/CarrotMotionModel.h"
 #include "../../include/Utils/FIRMUtils.h"
+#include <algorithm>
 
 //Produce the next state, given the current state, a control and a noise
 void CarrotMotionModel::Evolve(const ompl::base::State *state, const ompl::control::Control *control, const NoiseType& w, ompl::base::State *result)
@@ -70,8 +71,8 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     using namespace arma;
     typedef typename CarrotMotionModelMethod::StateType StateType;
 
-    colvec start = startState->as<StateType>()->getArmaData(); // turn into colvec 
-    colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec 
+    colvec start = startState->as<StateType>()->getArmaData(); // turn into colvec
+    colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec
 
     colvec x_c, y_c, z_c;
     x_c << start[0] << endr
@@ -103,21 +104,22 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
 
     // total number of steps
     //kf += ceil(x_steps) + ceil(y_steps) + ceil(z_steps);
-   
-    if (x_steps > max(y_steps, z_steps)) {
+
+    const double csi = 0;
+    if (x_steps > std::max(y_steps, z_steps)) {
         const double& si = x_steps;
-        const double csi = ceil(xsi);
-    } else if (y_steps > max(x_steps, z_steps)) {
+        const double csi = ceil(si);
+    } else if (y_steps > std::max(x_steps, z_steps)) {
         const double& si = y_steps;
-        const double csi = ceil(ysi);
+        const double csi = ceil(si);
     } else {
         const double& si = z_steps;
-        const double csi = ceil(zsi);
+        const double csi = ceil(si);
     }
 
-    x_carrot = delta_x/csi
-    y_carrot = delta_y/csi;
-    z_carrot = delta_z/csi;
+    const double x_carrot = delta_x/csi;
+    const double y_carrot = delta_y/csi;
+    const double z_carrot = delta_z/csi;
 
     static colvec u_const_trans;
 
@@ -127,7 +129,7 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
                     << z_carrot<< endr;
     }
 
-    for(int j=0; j<cxsi; ++j, ++ix)
+    for(int j=0; j<csi; ++j)
     {
       ompl::control::Control *tempControl = si_->allocControl();
       ARMA2OMPL(u_const_trans, tempControl);
@@ -324,8 +326,8 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     OMPL_INFORM("CarrotMotionModel: max Y Velocity (m/s)    = %f",
     maxYVelocity_);
 
-    OMPL_INFORM("CarrotMotionModel: max Z Velocity (rad/s) =
-    %f",maxZVelocity_);
+    OMPL_INFORM("CarrotMotionModel: max Z Velocity (rad/s) =%f",
+    maxZVelocity_);
 
     OMPL_INFORM("CarrotMotionModel: Timestep (seconds) = %f", dt_);
 

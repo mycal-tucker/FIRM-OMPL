@@ -48,7 +48,7 @@
  \brief Abstract class interface for defining a 3D motion model.
 **/
 
-class MotionModelMethod
+class CarrotMotionModelMethod
 {
 
 
@@ -56,13 +56,13 @@ class MotionModelMethod
 
 		typedef arma::colvec  ControlType;
 		typedef arma::colvec  NoiseType;
-        typedef SE3BeliefSpace SpaceType;
+        typedef CarrotBeliefSpace SpaceType;
 		typedef SpaceType::StateType StateType;
 		typedef arma::mat     JacobianType;
-        typedef boost::shared_ptr<MotionModelMethod> MotionModelPointer;
+        typedef boost::shared_ptr<CarrotMotionModelMethod> MotionModelPointer;
 
         /** \brief Constructor */
-		MotionModelMethod(const ompl::control::SpaceInformationPtr si, int nDim=0):
+		CarrotMotionModelMethod(const ompl::control::SpaceInformationPtr si, int nDim=0):
             si_(si),
 			stateDim_(si->getStateDimension()),
 			controlDim_((si->getControlSpace())->getDimension()),
@@ -82,7 +82,7 @@ class MotionModelMethod
         void setTimeStep(double timeStep){ dt_ = timeStep;}
 
 		/** \brief Destructor */
-		virtual ~MotionModelMethod() {};
+		virtual ~CarrotMotionModelMethod() {};
 
 
 		/** \brief Propagate the system to the next state, given the current state, a control and a noise. */

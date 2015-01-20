@@ -36,7 +36,7 @@
 #include "../../include/Spaces/CarrotBeliefSpace.h"
 #include "../../include/ObservationModels/CarrotObservationModel.h"
 #include <tinyxml.h>
-#include "../../include/Visualization/Visualizer.h"
+#include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
 
 
@@ -59,8 +59,9 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
     for(unsigned int i = 0; i < landmarks_.size(); i++)
     {
 
+
         double landmarkRange = 0; double landmarkBearing = 0;
-        this->calculateRangeBearingToLandmark(state,landmark,landmarRange,landmarkBearing);
+        this->calculateRangeBearingToLandmark(state,landmarks_[i],landmarkRange,landmarkBearing);
 
         //cout<<"Trying to resize"<<endl;
         z.resize((counter+1)*singleObservationDim ,  1);
@@ -99,7 +100,7 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
 
 }
 
-bool isUnique(const arma::colvec z)
+bool CarrotObservationModel::isUnique(const arma::colvec z)
 {
 
     int singleObservationDim = 3;
@@ -161,7 +162,7 @@ double& bearing)
     //norm is the 2nd Holder norm, i.e. the Euclidean norm
     range = norm(diff+xVec[2],2);
     bearing = atan2(diff[1],diff[0]);
-    FIRM::normalizeAngleToPiRange(bearing);
+    FIRMUtils::normalizeAngleToPiRange(bearing);
 
 }
 
@@ -194,7 +195,7 @@ int CarrotObservationModel::findCorrespondingLandmark(const ompl::base::State *s
 
     double maxLikelihood = -1.0;
 
-    double candidatelandmarkRange = 0; 
+    double candidatelandmarkRange = 0;
     double candidatelandmarkBearing = 0;
 
     int candidateIndx = -1;
@@ -457,7 +458,7 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
 
     OMPL_INFORM("CarrotObservationModel: Total number of landmarks loaded successfully : %u", landmarks_.size() );
 
-    Visualizer::addLandmarks(landmarks_);
+    CarrotVisualizer::addLandmarks(landmarks_);
 }
 
 void CarrotObservationModel::loadParameters(const char *pathToSetupFile)

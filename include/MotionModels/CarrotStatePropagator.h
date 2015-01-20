@@ -36,7 +36,7 @@
 #ifndef CARROT_STATE_PROPAGATOR_
 #define CARROT_STATE_PROPAGATOR_
 
-#include "../SpaceInformation/SpaceInformation.h"
+#include "../SpaceInformation/CarrotSpaceInformation.h"
 #include "CarrotMotionModel.h"
 
 /** \brief State propagation for a simple quad motion model.
@@ -48,7 +48,7 @@ public:
 
     /** \brief Construct representation of a simple quad state propagator.
     */
-    CarrotStatePropagator(const firm::SpaceInformation::SpaceInformationPtr &si);
+    CarrotStatePropagator(const firm::CarrotSpaceInformation::SpaceInformationPtr &si);
 
     virtual ~CarrotStatePropagator(void)
     {
@@ -68,7 +68,7 @@ protected:
 
     CarrotMotionModelMethod::MotionModelPointer motionModel_;
 
-    firm::SpaceInformation::SpaceInformationPtr siF_;
+    firm::CarrotSpaceInformation::SpaceInformationPtr siF_;
     /**
     You can add a simulated environment here where the controls can get applied, useful for
     showing the graphics, very similar to the concept of ActuationSystem in PMPL.
