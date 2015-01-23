@@ -50,16 +50,23 @@ void CarrotMotionModel::Evolve(const ompl::base::State *state, const ompl::contr
     typedef typename CarrotMotionModelMethod::StateType StateType;
 
     arma::colvec u = OMPL2ARMA(control);
+    //std::cout << "control: " << u <<std::endl;
 
     const colvec& Un = w.subvec(0, this->controlDim_-1);
 
     const colvec& Wg = w.subvec(this->controlDim_, this->noiseDim_-1);
+    //std::cout << "process noise: " << Wg << std::endl;
 
     colvec x = state->as<StateType>()->getArmaData();
+        //std::cout << "start state: " << x << std::endl;
 
-    x += (u*this->dt_) + (Un*sqrt(this->dt_)) + (Wg*sqrt(this->dt_));
+    //colvec xPrev = x;
+
+    x += u + Un + Wg;
+    //std::cout << "end state: " << x <<std::endl;
 
     result->as<StateType>()->setXYZ(x[0],x[1],x[2]);
+    //std::cout << "difference" << result->as<StateType>()->getArmaData()-x-u << std::endl;
 }
 
 
@@ -73,6 +80,7 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
 
     colvec start = startState->as<StateType>()->getArmaData(); // turn into colvec
     colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec
+    //std::cout << "start: " << start << " end: " << end << std::endl;
 
     colvec x_c, y_c, z_c;
     x_c << start[0] << endr
@@ -80,7 +88,7 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     y_c << start[1] << endr
       << end[1] << endr;
     z_c << start[2] << endr
-      << end[3] << endr;
+      << end[2] << endr;
 
     double delta_x = 0;
     double delta_y = 0;
@@ -104,30 +112,41 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
 
     // total number of steps
     //kf += ceil(x_steps) + ceil(y_steps) + ceil(z_steps);
+    //std::cout << "x_steps: " << x_steps << std::endl;
+    //std::cout << "y_steps: " << y_steps << std::endl;
+    //std::cout << "z_steps: " << z_steps << std::endl;
 
-    const double csi = 0;
+    double si = 0;
+    double csi = 0;
     if (x_steps > std::max(y_steps, z_steps)) {
-        const double& si = x_steps;
-        const double csi = ceil(si);
+        si = x_steps;
+        csi = ceil(si);
     } else if (y_steps > std::max(x_steps, z_steps)) {
-        const double& si = y_steps;
-        const double csi = ceil(si);
+        si = y_steps;
+        csi = ceil(si);
     } else {
-        const double& si = z_steps;
-        const double csi = ceil(si);
+        si = z_steps;
+        csi = ceil(si);
     }
+
+    //std::cout << "number of steps: " << csi << std::endl;
+    //std::cout << "x_carrot: " << delta_x/csi << std::endl;
+
 
     const double x_carrot = delta_x/csi;
     const double y_carrot = delta_y/csi;
     const double z_carrot = delta_z/csi;
 
-    static colvec u_const_trans;
+    //std::cout << "calculated x_carrot: " << x_carrot << std::endl;
+    colvec u_const_trans;
 
     if(u_const_trans.n_rows == 0) {
       u_const_trans << x_carrot<< endr
                     << y_carrot<< endr
                     << z_carrot<< endr;
     }
+    //std::cout << "delta distance: " << x_carrot+y_carrot+z_carrot <<std::endl;
+    //std::cout << "open loop control: " << u_const_trans << std::endl;
 
     for(int j=0; j<csi; ++j)
     {
@@ -203,8 +222,8 @@ CarrotMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::
 
     colvec xData = state->as<StateType>()->getArmaData();
     assert (xData.n_rows == (size_t)this->stateDim_);
-    const colvec& Un = w.subvec(0,this->controlDim_-1);
-    const colvec& Wg = w.subvec(this->controlDim_,this->noiseDim_-1);
+    //const colvec& Un = w.subvec(0,this->controlDim_-1);
+    //const colvec& Wg = w.subvec(this->controlDim_,this->noiseDim_-1);
 
     mat G(3,6);
     G << 1 << 0 << 0 << 1 << 0 << 0 << endr
@@ -266,7 +285,7 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     TiXmlNode* node = 0;
     TiXmlElement* itemElement = 0;
 
-    node = doc.FirstChild( "CarrotMotionModels" );
+    node = doc.FirstChild( "MotionModels" );
     assert( node );
 
     TiXmlNode* child = 0;
@@ -290,8 +309,8 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
 
     itemElement->QueryDoubleAttribute("sigmaV", &sigmaV) ;
     itemElement->QueryDoubleAttribute("etaV", &etaV) ;
-    itemElement->QueryDoubleAttribute("sigmaOmega", &sigmaOmega) ;
-    itemElement->QueryDoubleAttribute("etaOmega", &etaOmega) ;
+    //itemElement->QueryDoubleAttribute("sigmaOmega", &sigmaOmega) ;
+    //itemElement->QueryDoubleAttribute("etaOmega", &etaOmega) ;
     itemElement->QueryDoubleAttribute("wind_noise_pos", &windNoisePos) ;
     //itemElement->QueryDoubleAttribute("wind_noise_ang", &windNoiseAng) ;
     itemElement->QueryDoubleAttribute("max_x_velocity", &maxXVelocity) ;
@@ -299,8 +318,8 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     itemElement->QueryDoubleAttribute("max_z_velocity", &maxZVelocity) ;
     itemElement->QueryDoubleAttribute("dt", &dt) ;
 
-    this->sigma_ << sigmaV << sigmaOmega <<endr;
-    this->eta_  << etaV << etaOmega << endr;
+    this->sigma_ << sigmaV << sigmaV << sigmaV << endr;
+    this->eta_  << etaV << etaV << etaV << endr;
 
     rowvec Wg_root_vec(3);
     Wg_root_vec << windNoisePos << windNoisePos << windNoisePos << endr;

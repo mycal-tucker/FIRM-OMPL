@@ -67,18 +67,18 @@ CarrotRHC::generateFeedbackControl(const ompl::base::State *state, const size_t&
 
     openLoopControls_.pop_front();
 
-    colvec diff =  (this->goal_)->as<StateType>()->getArmaData() - state->as<StateType>()->getArmaData();
+    //colvec diff =  (this->goal_)->as<StateType>()->getArmaData() - state->as<StateType>()->getArmaData();
 
-    double distance  = norm(diff.subvec(0,2), 2);
+    //double distance  = norm(diff.subvec(0,2), 2);
 
-    SpaceType *space;
-    space =  new SpaceType();
+    SpaceType *space = new SpaceType();
+    //space =  new SpaceType();
 
-    ompl::base::State *relativeState = space->allocState();
+    //ompl::base::State *relativeState = space->allocState();
 
-    space->getRelativeState(state, goal_, relativeState);
+   // space->getRelativeState(state, goal_, relativeState);
 
-    colvec relativeCfg =  relativeState->as<StateType>()->getArmaData();
+    //colvec relativeCfg =  relativeState->as<StateType>()->getArmaData();
 
     //cout<<"RHCICreate controller,                        goal_: "<<endl<<this->goal_.GetArmaData()<<endl;
     //cout<<"RHCICreate controller, relativeCfg bearing (degrees): "<<relativeCfg[2]*180/PI<<endl;

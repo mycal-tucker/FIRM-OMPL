@@ -60,8 +60,8 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
     {
 
 
-        double landmarkRange = 0; double landmarkBearing = 0;
-        this->calculateRangeBearingToLandmark(state,landmarks_[i],landmarkRange,landmarkBearing);
+        double landmarkRange = 0; double landmarkBearing = 0; double landmarkPitch;
+        this->calculateRangeBearingPitchToLandmark(state,landmarks_[i],landmarkRange,landmarkBearing,landmarkPitch);
 
         //cout<<"Trying to resize"<<endl;
         z.resize((counter+1)*singleObservationDim ,  1);
@@ -79,7 +79,7 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
             colvec noise_std = this->etaD_*landmarkRange + this->sigma_;
 
             //generate raw noise
-            colvec randNoiseVec = randn<colvec>(2);
+            colvec randNoiseVec = randn<colvec>(landmarkInfoDim);
 
             //generate noise from a distribution scaled and shifted from
             //normal distribution N(0,1) to N(0,eta*range + sigma)
@@ -90,6 +90,7 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
         z[singleObservationDim*counter] = landmarks_[i](0) ; // id of the landmark
         z[singleObservationDim*counter+1] = landmarkRange + noise[0]; // distance to landmark
         z[singleObservationDim*counter+2] = landmarkBearing + noise[1];
+        z[singleObservationDim*counter+3] = landmarkPitch + noise[2];
         // bearing to landmark
 
 
@@ -103,7 +104,7 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
 bool CarrotObservationModel::isUnique(const arma::colvec z)
 {
 
-    int singleObservationDim = 3;
+    //int singleObservationDim = 3;
     //Need to check if observations are not repeated in Zg.
     for(unsigned int k = 0; k< z.n_rows / singleObservationDim ;k++)
     {
@@ -125,7 +126,7 @@ CarrotObservationModel::getObservationPrediction(const ompl::base::State *state,
 
     using namespace arma;
 
-    colvec xVec =  state->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    //colvec xVec =  state->as<CarrotBeliefSpace::StateType>()->getArmaData();
 
     ObservationType z;
 
@@ -135,12 +136,13 @@ CarrotObservationModel::getObservationPrediction(const ompl::base::State *state,
         colvec candidate;
 
         int candidateIndx = this->findCorrespondingLandmark(state,
-        Zg.subvec(singleObservationDim*k,singleObservationDim*k+1), candidate);
+        Zg.subvec(singleObservationDim*k,singleObservationDim*k+3), candidate);
 
         z.resize((k+1)*singleObservationDim ,  1);
         z[singleObservationDim*k]     = candidate(0)  ; // id of the landmark
         z[singleObservationDim*k + 1] = candidate(1) ;  // distance to landmark
         z[singleObservationDim*k + 2] = candidate(2) ;  // bearing to landmark
+        z[singleObservationDim*k+3]   = candidate(3);   // pitch to landmark
 
 
     }
@@ -149,20 +151,22 @@ CarrotObservationModel::getObservationPrediction(const ompl::base::State *state,
 
 }
 
-void CarrotObservationModel::calculateRangeBearingToLandmark(const
+void CarrotObservationModel::calculateRangeBearingPitchToLandmark(const
 ompl::base::State *state, const arma::colvec& landmark, double& range,
-double& bearing)
+double& bearing, double& pitch)
 {
     using namespace arma;
 
     colvec xVec =  state->as<CarrotBeliefSpace::StateType>()->getArmaData();
-
-    colvec diff =  landmark.subvec(1,2) - xVec.subvec(0,1);
+    colvec diff =  landmark.subvec(1,3) - xVec.subvec(0,2);
 
     //norm is the 2nd Holder norm, i.e. the Euclidean norm
-    range = norm(diff+xVec[2],2);
+    range = norm(diff,2);
     bearing = atan2(diff[1],diff[0]);
+    pitch = -atan2(diff[3],norm(diff.subvec(0,1),2));
+
     FIRMUtils::normalizeAngleToPiRange(bearing);
+    FIRMUtils::normalizeAngleToPiRange(pitch);
 
 }
 
@@ -177,9 +181,16 @@ double CarrotObservationModel::getDataAssociationLikelihood(const arma::colvec t
 
     arma::colvec innov = trueObs-predictedObs;
 
+    FIRMUtils::normalizeAngleToPiRange(innov(1));
+    FIRMUtils::normalizeAngleToPiRange(innov(2));
+
+
+
     arma::mat t = -0.5*trans(innov)*covariance.i()*innov;
 
     weight = std::exp(t(0,0));
+
+    //std::cout << weight << std::endl;
 
     assert(weight >= 0 && "Weight cannot be less than 0!");
 
@@ -197,6 +208,7 @@ int CarrotObservationModel::findCorrespondingLandmark(const ompl::base::State *s
 
     double candidatelandmarkRange = 0;
     double candidatelandmarkBearing = 0;
+    double candidatelandmarkPitch = 0;
 
     int candidateIndx = -1;
 
@@ -204,18 +216,18 @@ int CarrotObservationModel::findCorrespondingLandmark(const ompl::base::State *s
     {
         if(landmarks_[i](0) == landmarkID)
         {
-            double landmarkRange = 0; double landmarkBearing = 0;
+            double landmarkRange = 0; double landmarkBearing = 0; double landmarkPitch = 0;
 
             // get range and bearing to landmark
-            this->calculateRangeBearingToLandmark(state, landmarks_[i],
-            landmarkRange, landmarkBearing);
+            this->calculateRangeBearingPitchToLandmark(state, landmarks_[i],
+            landmarkRange, landmarkBearing, landmarkPitch);
 
             arma::colvec prediction;
 
-            prediction<<landmarkRange<<landmarkBearing<<endr;
+            prediction<<landmarkRange<<landmarkBearing<<landmarkPitch<<endr;
 
             // calculate the likelihood
-            double lkhd = getDataAssociationLikelihood(observedLandmark.subvec(1,2), prediction);
+            double lkhd = getDataAssociationLikelihood(observedLandmark.subvec(1,3), prediction);
 
             if(lkhd > maxLikelihood)
             {
@@ -223,15 +235,18 @@ int CarrotObservationModel::findCorrespondingLandmark(const ompl::base::State *s
                 maxLikelihood = lkhd;
                 candidatelandmarkRange = landmarkRange;
                 candidatelandmarkBearing = landmarkBearing;
+                candidatelandmarkPitch = landmarkPitch;
             }
         }
 
     }
 
+     //std::cout << "max likelihood: " << maxLikelihood << std::endl;
+
     assert(candidateIndx >= 0 && "Candidate index cannot be negative");
 
     // The observation is id, range of the landmark
-    candidateObservation<<landmarkID<<candidatelandmarkRange<<candidatelandmarkBearing<<endr;
+    candidateObservation<<landmarkID<<candidatelandmarkRange<<candidatelandmarkBearing<<candidatelandmarkPitch<<endr;
 
     assert(candidateIndx>=0);
 
@@ -256,20 +271,28 @@ CarrotObservationModel::getObservationJacobian(const ompl::base::State *state, c
         colvec candidate;
 
         int Indx = this->findCorrespondingLandmark(state,
-        z.subvec(i*singleObservationDim,i*singleObservationDim+2), candidate);
+        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
 
-        colvec diff =  landmarks_[Indx].subvec(1,2) - xVec.subvec(0,1);
-
+        colvec diff =  landmarks_[Indx].subvec(1,3) - xVec.subvec(0,2);
+        //xVec[0] = 0; xVec[1] = 0; //fix this eventually
         //double phi = atan2(diff[1], diff[0]);
 
-        double r = norm(diff,2);
+        double r_2 = norm(diff.subvec(0,1),2);
+        double r_3 = norm(diff,2);
 
         mat H_i((landmarkInfoDim),stateDim);
 
-        H_i <<  -diff[0]/r    <<  -diff[1]/r    <<   xVec[2]/r << endr
-            <<   diff[1]/(r*r)  <<  -diff[0]/(r*r)  <<  0 << endr;
+        H_i <<   -diff[0]/r_3    <<  -diff[1]/r_3    <<   -diff[2]/r_3 << endr
+            <<   -diff[1]/(r_2*r_2)  <<  -diff[0]/(r_2*r_2)  <<  0 << endr
+            <<   -diff[0]*diff[2]/(r_2*r_3*r_3)
+            <<   -diff[1]*diff[2]/(r_2*r_3*r_3)
+            <<    r_2/(r_3*r_3) << endr;
 
-        H.submat((landmarkInfoDim)*i, 0, (landmarkInfoDim)*i+1, 2) = H_i;
+       /* H_i <<  -cos(phi)    <<  -sin(phi)   <<   1 << endr
+            <<   sin(phi)/r  <<  -cos(phi)/r  <<  0 << endr;*/
+
+
+        H.submat((landmarkInfoDim)*i, 0, (landmarkInfoDim)*i+2, 2) = H_i;
 
     }
 
@@ -285,7 +308,7 @@ CarrotObservationModel::getNoiseJacobian(const ompl::base::State *state, const O
   //noise jacobian is just an identity matrix
   int number_of_landmarks = z.n_rows / singleObservationDim ;
 
-  mat M = eye(number_of_landmarks*2, number_of_landmarks*2);
+  mat M = eye(number_of_landmarks*3, number_of_landmarks*3);
 
   return M;
 
@@ -310,11 +333,11 @@ arma::mat CarrotObservationModel::getObservationNoiseCovariance(const ompl::base
         colvec candidate;
 
         this->findCorrespondingLandmark(state,
-        z.subvec(i*singleObservationDim,i*singleObservationDim+2), candidate);
+        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
 
         double range = candidate(1);//norm( landmarks_[indx].subvec(1,2) - xVec.subvec(0,1) , 2);
 
-        noise.subvec(2*i, 2*i+1) = this->etaD_*range + this->sigma_;
+        noise.subvec(3*i, 3*i+2) = this->etaD_*range + this->sigma_;
 
     }
 
@@ -357,13 +380,19 @@ CarrotObservationModel::computeInnovation(const ompl::base::State *predictedStat
 
         innov( i*(landmarkInfoDim) ) = Zg(i*singleObservationDim + 1) - Zprd(i*singleObservationDim + 1) ;
 
-        double delta_theta = Zg(i*singleObservationDim + 2) - Zprd(i*singleObservationDim + 2) ;
+        double delta_bearing = Zg(i*singleObservationDim + 2) - Zprd(i*singleObservationDim + 2) ;
 
-        FIRMUtils::normalizeAngleToPiRange(delta_theta);
+        FIRMUtils::normalizeAngleToPiRange(delta_bearing);
 
-        innov( i*(landmarkInfoDim) + 1 ) =  delta_theta;
+        innov( i*(landmarkInfoDim) + 1 ) =  delta_bearing;
 
-        assert(abs(delta_theta) <= boost::math::constants::pi<double>() );
+        double delta_pitch = Zg(i*singleObservationDim + 3) - Zprd(i*singleObservationDim + 3) ;
+
+        FIRMUtils::normalizeAngleToPiRange(delta_pitch);
+
+        innov( i*(landmarkInfoDim) + 2) =  delta_pitch;
+
+        assert(abs(delta_pitch) <= boost::math::constants::pi<double>() );
 
     }
 
@@ -395,6 +424,8 @@ typename CarrotObservationModel::ObservationType CarrotObservationModel::removeS
                 Zcorrected(singleObservationDim*counter+1) =  Zg(i*singleObservationDim+1);
 
                 Zcorrected(singleObservationDim*counter+2) =  Zg(i*singleObservationDim+2);
+
+                Zcorrected(singleObservationDim*counter+3) =  Zg(i*singleObservationDim+3);
 
                 counter++;
                 break;
@@ -451,6 +482,7 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
     landmark[1] = attributeVal;
     itemElement->QueryDoubleAttribute("y", &attributeVal) ;
     landmark[2] = attributeVal;
+    landmark[3] = 0; // all landmarks on ground
 
     this->landmarks_.push_back(landmark);
 
@@ -506,9 +538,10 @@ void CarrotObservationModel::loadParameters(const char *pathToSetupFile)
     itemElement->QueryDoubleAttribute("eta_thetad", &etaThetaD) ;
     itemElement->QueryDoubleAttribute("eta_thetaphi", &etaThetaPhi) ;
 
-    this->sigma_ << sigmaRange << sigmaAngle * boost::math::constants::pi<double>() / 180.0 << endr;
-    this->etaD_  << etaRD << etaThetaD <<endr;
-    this->etaPhi_<< etaRPhi << etaThetaPhi << endr;
+    this->sigma_ << sigmaRange << sigmaAngle * boost::math::constants::pi<double>() / 180.0 <<
+        sigmaAngle * boost::math::constants::pi<double>() / 180.0 << endr;
+    this->etaD_  << etaRD << etaThetaD << etaThetaD << endr;
+    this->etaPhi_<< etaRPhi << etaThetaPhi << etaThetaPhi << endr;
 
 
     OMPL_INFORM("CarrotObservationModel: sigmaRange = %f", sigmaRange );

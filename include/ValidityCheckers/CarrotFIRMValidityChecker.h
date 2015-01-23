@@ -36,6 +36,7 @@
 
 
 #include "../ObservationModels/ObservationModelMethod.h"
+//#include <omplapp/geometry/detail/FCLStateValidityChecker.h>
 /*
 Used to check if a state is in collission or not moreover,
 in FIRM we need to know if a state is observable or not
@@ -48,46 +49,27 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
     typedef ObservationModelMethod::ObservationModelPointer ObservationModelPointer;
     typedef CarrotBeliefSpace::StateType StateType;
 
-    CarrotFIRMValidityChecker(const firm::SpaceInformation::SpaceInformationPtr &si) : ompl::base::StateValidityChecker(si), siF_(si)
+    CarrotFIRMValidityChecker(const firm::CarrotSpaceInformation::SpaceInformationPtr &si) : ompl::base::StateValidityChecker(si), siF_(si)
     {
     }
 
     virtual bool isValid(const ompl::base::State *state) const
     {
-      // states within a box are invalid
-      double x_l =  2.0;
-      double x_r =  14.5;
-      double y_b =  2.0;
-      double y_t =  5;
-
-      arma::colvec pos = state->as<StateType>()->getArmaData();
-
-      if(pos[0]>= 0 && pos[0] <=17)
-      {
-        if(pos[1]>=0 && pos[1]<=7)
-        {
-            return !isInsideBox(state,x_l,x_r, y_b, y_t); // if inside box then not valid
-        }
-      }
-
-      //return true;//siF_->getObservationModel()->isStateObservable(state);
-      return false;
+	return si_->satisfiesBounds(state);
+      //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
+/*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
+      ompl::base::State* se3_state = si->allocState();
+      ompl::base::SO3StateSpace::StateType &so3 = se3_state->as<ompl::base::SE3StateSpace::StateType>()->rotation();
+      so3.x = 1; so3.y = 0; so3.z = 0; so3.w = 0;*/
+ //     if ( ompl::app::FCLStateValidityChecker::isValid(se3_state) )
+  //    {
+        //si->freeState(se3_state);
+        //return siF_->getObservationModel()->isStateObservable(state);
+   //   }
+    // si->freeState(se3_state);
+     // return false;
     }
 
-    /** \brief Checks if the state is within a bounding box */
-    bool isInsideBox(const ompl::base::State *state, double xl, double xr, double yb, double yt) const
-    {
-        arma::colvec pos = state->as<StateType>()->getArmaData();
-        double eps = 0.20;
-        if(pos[0] >= xl-eps && pos[0] <= xr+eps )
-            {
-            if(pos[1] >= yb-eps && pos[1] <= yt+eps)
-            {
-                return true; // inside box
-            }
-        }
-        return false; // outside box
-    }
-    protected:
-        firm::SpaceInformation::SpaceInformationPtr siF_;
+  protected:
+        firm::CarrotSpaceInformation::SpaceInformationPtr siF_;
 };

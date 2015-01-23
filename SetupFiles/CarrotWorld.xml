@@ -164,7 +164,7 @@
     max_angular_velocity= 0.3
     dt= 0.1
     /> <!--No Noise--> 
-  <CarrotleMotionModel
+  <CarrotMotionModel
     sigmaV="0.012"
     etaV="0.05"
     sigmaOmega="0.001"
@@ -173,7 +173,7 @@
     orbit_radius=5.0
     wind_noise_pos="0.000001"
     wind_noise_ang="0.000001" 
-    min_x_velocity= 1.0
+    max_x_velocity= 1.0
     max_y_velocity= 1.0
     max_z_velocity= 0.5
     dt= 0.1

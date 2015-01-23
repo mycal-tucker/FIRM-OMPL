@@ -36,7 +36,7 @@
 
 //#include "../../include/ActuationSystems/SimulatedActuationSystem.h"
 
-/*void SimulatedActuationSystem::applyControl(ControlType& u)
+void SimulatedActuationSystem::applyControl(ControlType& u)
 {
 
   typename MotionModelMethod::NoiseType noise = motionModel_->generateNoise(trueState_, u);
@@ -52,5 +52,5 @@ typename SimulatedActuationSystem::ObservationType
 SimulatedActuationSystem::getObservation()
 {
   return observationModel_->getObservation(trueState_, true);
-}*/
+}
 

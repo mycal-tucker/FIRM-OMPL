@@ -55,6 +55,7 @@ void CarrotExtendedKF::Predict(const ompl::base::State *belief,
     G * ls.getQ() * trans(G);
 
   predictedState->as<StateType>()->setCovariance(covPred);
+//  std::cout << "predicted state: " << predictedState->as<StateType>()->getArmaData() << std::endl;
 
 }
 
@@ -86,14 +87,18 @@ const CarrotLinearSystem& ls, ompl::base::State *updatedState)
   KalmanGain = KalmanGain.t();
 
   colvec xPredVec = belief->as<StateType>()->getArmaData();
+  //std::cout << "Predicted state: " << xPredVec << std::endl;
 
   colvec xEstVec = xPredVec + KalmanGain*innov;
+  //std::cout << "Estimated state: " << xEstVec << std::endl;
 
   updatedState->as<StateType>()->setXYZ(xEstVec[0], xEstVec[1], xEstVec[2]);
 
   mat covEst = covPred - KalmanGain* H * covPred;
 
   updatedState->as<StateType>()->setCovariance(covEst);
+  //std::cout << "updated state: " << updatedState->as<StateType>()->getArmaData() << std::endl;
+
 
 }
 

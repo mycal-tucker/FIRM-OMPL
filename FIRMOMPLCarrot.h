@@ -48,7 +48,7 @@
 
 //Spaces
 #include "include/Spaces/CarrotBeliefSpace.h"
-#include "include/SpaceInformation/SpaceInformation.h"
+#include "include/SpaceInformation/CarrotSpaceInformation.h"
 
 //Observation Models
 #include "include/ObservationModels/ObservationModelMethod.h"

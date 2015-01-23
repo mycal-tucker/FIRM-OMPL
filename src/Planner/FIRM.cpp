@@ -166,6 +166,7 @@ void FIRM::setMaxNearestNeighbors(unsigned int k)
         connectionStrategy_.clear();
     if (isSetup())
         setup();
+    //connectionStrategy_ = ompl::geometric::KStrategy<Vertex>(k, nn_);
 }
 
 void FIRM::setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef)

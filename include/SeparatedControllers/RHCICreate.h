@@ -71,14 +71,14 @@ class RHCICreate : public SeparatedControllerMethod
       controlQueueSize_ = queueSize;
     }
 
-    /*static void setTurnOnlyDistance(const double turnDist)
+    static void setTurnOnlyDistance(const double turnDist)
     {
       turnOnlyDistance_ = turnDist;
-    }*/
+    }
 
    private:
     static int controlQueueSize_;
-    //static double turnOnlyDistance_;
+    static double turnOnlyDistance_;
     std::deque<ompl::control::Control*> openLoopControls_;
 };
 #endif

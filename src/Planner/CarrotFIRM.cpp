@@ -250,7 +250,7 @@ void CarrotFIRM::growRoadmap(const ompl::base::PlannerTerminationCondition &ptc,
                         stateStable = dare (trans(ls.getA()),trans(ls.getH()),ls.getG() * ls.getQ() * trans(ls.getG()),
                                 ls.getM() * ls.getR() * trans(ls.getM()), S );
 
-                        workState->as<SE2BeliefSpace::StateType>()->setCovariance(S);
+                        workState->as<CarrotBeliefSpace::StateType>()->setCovariance(S);
                     }
                     catch(int e)
                     {
@@ -264,6 +264,7 @@ void CarrotFIRM::growRoadmap(const ompl::base::PlannerTerminationCondition &ptc,
         // add it as a milestone
         if (found && stateStable)
             addStateToGraph(si_->cloneState(workState));
+	    //std::cout << "state added: " << workState->as<ompl::base::RealVectorStateSpace::StateType>()->values << std::endl;
     }
 }
 
@@ -342,6 +343,7 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
 
     // Add the valid start states as milestones
     while (const ompl::base::State *st = pis_.nextStart())
+           // std::cout << st->as<ompl::base::RealVectorStateSpace::StateType>()->values << std::endl;
         startM_.push_back(addStateToGraph(si_->cloneState(st)));
 
     if (startM_.size() == 0)
@@ -431,11 +433,11 @@ void CarrotFIRM::constructRoadmap(const ompl::base::PlannerTerminationCondition 
 }
 
 CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool addReverseEdge, bool shouldCreateNodeController)
-{/*
+{
 
     boost::mutex::scoped_lock _(graphMutex_);
 
-    Vertex m;*/
+    Vertex m;
 
     //if state already exists in the graph, just return corresponding vertex
     /*
@@ -445,7 +447,7 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
     }
     */
 
-  /*  m = boost::add_vertex(g_);
+    m = boost::add_vertex(g_);
 
     addStateToVisualization(state);
 
@@ -471,7 +473,23 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
         {
             totalConnectionAttemptsProperty_[m]++;
             totalConnectionAttemptsProperty_[n]++;
-            if (si_->checkMotion(stateProperty_[m], stateProperty_[n]))
+	    // convert x,y,z to SE3 (assume no angular displacements)
+    	   // ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
+	    /*ompl::base::State* startV = si->allocState();
+	    ompl::base::State* endV = si->allocState();
+            startV->setXYZ(stateProperty_[m]->as<CarrotBeliefSpace::StateType>()->getX(),
+		stateProperty_[m]->as<CarrotBeliefSpace::StateType>()->getY(),
+		stateProperty_[m]->as<CarrotBeliefSpace::SpaceType>()->getZ() );
+            endV->setXYZ(stateProperty_[n]->as<CarrotBeliefSpace::StateType>()->getX(),
+		stateProperty_[n]->as<CarrotBeliefSpace::StateType>()->getY(),
+		stateProperty_[n]->as<CarrotBeliefSpace::StateType>()->getZ() );
+	    ompl::base::SO3StateSpace::StateType &rot_start = startV->rotation();
+	    ompl::base::SO3StateSpace::StateType &rot_end = endV->rotation();
+	    rot_start.x = 1; rot_start.y = 0; rot_start.z = 0; rot_start.w = 0;
+	    rot_end.x = 1; rot_end.y = 0; rot_end.z = 0; rot_end.w = 0;
+	    si->printState(startV);
+	    si->printState(endV);*/
+            if (si_->checkMotion(stateProperty_[m],stateProperty_[n]))
             {
                 successfulConnectionAttemptsProperty_[m]++;
                 successfulConnectionAttemptsProperty_[n]++;
@@ -485,13 +503,15 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
 
                 uniteComponents(m, n);
             }
+	    //si->freeState(start);
+	    //si->freeState(end);
         }
     }
 
-    policyGenerator_->addFIRMNodeToObservationGraph(state);
+//    policyGenerator_->addFIRMNodeToObservationGraph(state);
 
     return m;
-    */
+
 }
 
 void CarrotFIRM::uniteComponents(Vertex m1, Vertex m2)
@@ -582,7 +602,7 @@ FIRMWeight CarrotFIRM::generateEdgeControllerWithCost(const CarrotFIRM::Vertex a
 
     for(unsigned int i=0; i< numParticles_;i++)
     {
-        //cout << "MonteCarlo Simulation particle number "<< i<<endl;
+        //std::cout << "MonteCarlo Simulation particle number "<< i<<std::endl;
         siF_->setTrueState(startNodeState);
         siF_->setBelief(startNodeState);
 
@@ -594,6 +614,7 @@ FIRMWeight CarrotFIRM::generateEdgeControllerWithCost(const CarrotFIRM::Vertex a
            successCount++;
 
            edgeCost = ompl::base::Cost(edgeCost.value() + pcost.value() );
+	//std::cout << "edge cost: " << edgeCost.value() << std::endl;
 
         }
 
@@ -664,6 +685,10 @@ void CarrotFIRM::generateNodeController(const ompl::base::State *state, CarrotFI
         std::vector<ompl::control::Control*> dummyControl;
         std::vector<ompl::base::State*> dummyStates;
         NodeControllerType ctrlr(node, dummyStates, dummyControl, siF_);
+
+	/*std::cout << "generating node controller at: " <<
+	node->as<CarrotBeliefSpace::StateType>()->getArmaData() <<
+	" with covariance: " << stationaryCovariance << std::endl;*/
 
         // assign the node controller
         nodeController = ctrlr;
@@ -909,7 +934,7 @@ void CarrotFIRM::executeFeedbackWithRollout(void)
     si_->printState(goalState);
 
     // While the robot state hasn't reached the goal state, keep running
-    while(!goalState->as<SE2BeliefSpace::StateType>()->isReached(cstartState) /*si_->distance(stateProperty_[currentVertex], stateProperty_[goal]) > 0.5*/)
+    while(!goalState->as<CarrotBeliefSpace::StateType>()->isReached(cstartState) /*si_->distance(stateProperty_[currentVertex], stateProperty_[goal]) > 0.5*/)
     {
         //Edge e = feedback_[currentVertex];
         //Vertex targetNode = boost::target(e, g_);
@@ -1024,9 +1049,9 @@ bool CarrotFIRM::detectKidnapping(ompl::base::State *previousState, ompl::base::
 
     using namespace arma;
 
-    mat previousCov = previousState->as<SE2BeliefSpace::StateType>()->getCovariance();
+    mat previousCov = previousState->as<CarrotBeliefSpace::StateType>()->getCovariance();
 
-    mat newCov = newState->as<SE2BeliefSpace::StateType>()->getCovariance();
+    mat newCov = newState->as<CarrotBeliefSpace::StateType>()->getCovariance();
 
     double innovSignal = (trace(newCov) - trace(previousCov)) / trace(previousCov);
 
@@ -1047,9 +1072,9 @@ void CarrotFIRM::savePlannerData()
     foreach(Vertex v, boost::vertices(g_))
     {
 
-        arma::colvec xVec = stateProperty_[v]->as<SE2BeliefSpace::StateType>()->getArmaData();
+        arma::colvec xVec = stateProperty_[v]->as<CarrotBeliefSpace::StateType>()->getArmaData();
 
-        arma::mat cov = stateProperty_[v]->as<SE2BeliefSpace::StateType>()->getCovariance();
+        arma::mat cov = stateProperty_[v]->as<CarrotBeliefSpace::StateType>()->getCovariance();
 
         std::pair<int,std::pair<arma::colvec,arma::mat> > nodeToWrite = std::make_pair(v, std::make_pair(xVec, cov)) ;
 
@@ -1086,15 +1111,18 @@ void CarrotFIRM::loadRoadMapFromFile(const std::string pathToFile)
 
         this->setup();
 
+        std::cout << "[CarrotFIRM] Total number of FIRM Nodes: " << FIRMNodeList.size() << std::endl;
+
         for(int i = 0; i < FIRMNodeList.size() ; i++)
         {
             ompl::base::State *newState = siF_->allocState();
 
             arma::colvec xVec = FIRMNodeList[i].second.first;
             arma::mat     cov = FIRMNodeList[i].second.second;
+            std::cout << "[CarrotFIRM] node state: " << xVec << std::endl;
 
-            newState->as<SE2BeliefSpace::StateType>()->setXYYaw(xVec(0),xVec(1),xVec(2));
-            newState->as<SE2BeliefSpace::StateType>()->setCovariance(cov);
+            newState->as<CarrotBeliefSpace::StateType>()->setXYZ(xVec(0),xVec(1),xVec(2));
+            newState->as<CarrotBeliefSpace::StateType>()->setCovariance(cov);
 
             //std::cout<<"Adding state from XML --> \n";
             //siF_->printState(newState);
@@ -1104,6 +1132,7 @@ void CarrotFIRM::loadRoadMapFromFile(const std::string pathToFile)
             siF_->freeState(newState);
 
             assert(v==FIRMNodeList[i].first && "IDS DONT MATCH !!");
+            std::cout << "[CarrotFIRM] Nodes added: " << i << std::endl;
         }
     }
 }

@@ -35,7 +35,7 @@
 /* Author: Saurav Agarwal */
 
 #include "FIRMCarrotSetup.h"
-//#include "MultiModalSetup.h"
+#include "MultiModalSetup.h"
 #include "Tests.h"
 #include <QApplication>
 #include <QtGui/QDesktopWidget>
@@ -50,9 +50,15 @@ using namespace std;
 
 void plan()
 {
+
+            OMPL_INFORM("Creating New Carrot");
+
     FIRMCarrotSetup *mySetup(new FIRMCarrotSetup);
 
+
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
+
+                //OMPL_INFORM("Loaded Setup File");
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
 

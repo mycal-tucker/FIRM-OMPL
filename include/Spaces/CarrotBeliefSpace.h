@@ -55,8 +55,9 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         public:
             StateType(void) : RealVectorStateSpace::StateType()
             {
-              covariance_ = arma::zeros<arma::mat>(3,3);
-              controllerID_ = -1;
+              //values = double[_dimension];
+              //covariance_ = arma::zeros<arma::mat>(3,3);
+              //controllerID_ = -1;
 
             }
 
@@ -87,6 +88,8 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             void setX(double x)
             {
                 this->values[0] = x;
+                                //std::cout << "value of x is: " << x << std::endl;
+
             }
 
             /** \brief Set the Y component of the state */
@@ -114,6 +117,10 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
                 covariance_ = cov;
             }
 
+            void setID(size_t t) {
+                controllerID_ = t;
+            }
+
             arma::colvec getArmaData(void) const
             {
                 arma::colvec stateVec(3);
@@ -138,12 +145,15 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         };
 
 
-        /*CarrotBeliefSpace(void) : RealVectorStateSpace()
+        CarrotBeliefSpace() : RealVectorStateSpace(3)
         {
-            dimension_ = 3;
             setName("CARROT_BELIEF" + getName());
+            type_ = STATE_SPACE_REAL_VECTOR;
+            //bounds_ = 3;
+            //dimension_ = 3;
+            //stateBytes_ = 12*sizeof(double); //state(3)+cov(9)
 //            type_ = STATE_SPACE_CARROT;
-        }*/
+        }
 
         virtual ~CarrotBeliefSpace(void)
         {
@@ -152,13 +162,21 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         /** \copydoc RealVectorStateSpace::setBounds() */
         void setBounds(const RealVectorBounds &bounds)
         {
-            this->setBounds(bounds);
+            //std::cout << "setting bounds in space" << std::endl;
+            //this->setBounds(bounds);
+            as<RealVectorStateSpace>()->setBounds(bounds);
+
         }
+
+	/*bool satisfiesBounds(const State *state) const
+	{
+	    RealVectorStateSpace::satisfiesBounds(state->as<RealVectorStateSpace::StateType>());
+	}*/
 
         /** \copydoc RealVectorStateSpace::getBounds() */
         const RealVectorBounds& getBounds(void) const
         {
-            return this->getBounds();
+            return as<RealVectorStateSpace>()->getBounds();
         }
 
         virtual State* allocState(void) const;

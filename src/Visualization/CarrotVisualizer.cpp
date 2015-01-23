@@ -249,7 +249,7 @@ void CarrotVisualizer::drawEdge(const ompl::base::State* source, const ompl::bas
 
     glBegin(GL_LINES);
         glVertex3d(sourceData[0],sourceData[1],sourceData[2]);
-        glVertex3d(targetData[0],targetData[1],sourceData[2]);
+        glVertex3d(targetData[0],targetData[1],targetData[2]);
     glEnd();
 }
 

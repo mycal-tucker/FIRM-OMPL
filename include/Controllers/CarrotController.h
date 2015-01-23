@@ -272,9 +272,10 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
     arma::colvec nomXVec = nominalX_K->as<StateType>()->getArmaData();
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
-    arma::colvec deviation = nomXVec.subvec(0,2) - endStateVec.subvec(0,2);
+    arma::colvec deviation = nomXVec - endStateVec;
+    //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
 
-    if(abs(norm(deviation,2)) > nominalTrajDeviationThreshold_)
+    if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
         si_->copyState(endState, internalState);
@@ -441,6 +442,8 @@ void CarrotController<SeparatedControllerType, FilterType>::Evolve(const ompl::b
 
   filter_.Evolve(state, control, zCorrected, current, next, nextBelief);
 
+  //std::cout << "next state: " << state->as<CarrotBeliefSpace::StateType>()->getArmaData() <<std::endl;
+
   si_->copyState(nextState, nextBelief);
 
   si_->setBelief(nextBelief);
@@ -500,7 +503,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::isTerminated(const o
 
     colvec diff = state->as<StateType>()->getArmaData() - goal_->as<StateType>()->getArmaData();
 
-    double distance_to_goal = norm(diff.subvec(0,2),2);
+    double distance_to_goal = norm(diff,2);
 
     if( distance_to_goal > nodeReachedDistance_)
     {

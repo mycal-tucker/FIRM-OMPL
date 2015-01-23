@@ -37,7 +37,6 @@
 /* Authors: Saurav Agarwal, Ali-akbar Agha-mohammadi */
 
 #include "../MotionModels/MotionModelMethod.h"
-#include "../MotionModels/MotionModelMethod.h"
 #include "../ObservationModels/ObservationModelMethod.h"
 #include <ompl/base/SpaceInformation.h>
 #include "armadillo"
@@ -54,13 +53,11 @@ class LinearSystem
 {
 
   public:
-    //typedef MotionModelMethod::SpaceType SpaceType;
     typedef MotionModelMethod::SpaceType SpaceType;
-    //typedef MotionModelMethod::StateType StateType;
     typedef MotionModelMethod::StateType StateType;
-    typedef MotionModelMethod::MotionModelPointer MotionModelPointer;
-    typedef ObservationModelMethod::ObservationModelPointer ObservationModelPointer;
-    typedef arma::mat ControlType;
+  	typedef MotionModelMethod::MotionModelPointer MotionModelPointer;
+  	typedef ObservationModelMethod::ObservationModelPointer ObservationModelPointer;
+  	typedef arma::mat ControlType;
     typedef arma::mat MotionNoiseType;
     typedef arma::mat ObservationType;
     typedef arma::mat ObsNoiseType;

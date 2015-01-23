@@ -54,13 +54,13 @@ class CarrotObservationModel : public ObservationModelMethod
 
   static const int stateDim = 3;
   //static const int singleObservationDim = 3;
-  static const int landmarkInfoDim = 2; /*range and bearing*/
+  static const int landmarkInfoDim = 3; /*x,y,z(=0)*/
   static const int numLandmarksForObservability = 2;
   //static const int obsNoiseDim = 3;
 
   public:
 
-    static const int singleObservationDim = 3; /*[ID, Range, Bearing]*/
+    static const int singleObservationDim = 4; /*[ID, Range, Bearing, Pitch]*/
 
     typedef ObservationModelMethod::ObservationType ObservationType;
     typedef ObservationModelMethod::NoiseType ObsNoiseType;
@@ -119,9 +119,9 @@ class CarrotObservationModel : public ObservationModelMethod
     ObservationType removeSpuriousObservations(const ObservationType& Zg);
 
     /** \brief Estimates the range and bearing from given state to landmark */
-    void calculateRangeBearingToLandmark(const ompl::base::State
+    void calculateRangeBearingPitchToLandmark(const ompl::base::State
     *state, const arma::colvec& landmark, double& range, double&
-    bearing);
+    bearing, double& pitch);
 
     /** \brief Calculates the likelihood of an observation prediction */
     double getDataAssociationLikelihood(const arma::colvec trueObs, const arma::colvec predictedObs);

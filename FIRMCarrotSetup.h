@@ -39,6 +39,7 @@
 
 #include <omplapp/geometry/RigidBodyGeometry.h>
 #include "include/Planner/CarrotFIRM.h"
+//#include "include/ValidityCheckers/CarrotFIRMValidityChecker.h"
 #include "FIRMOMPLCarrot.h"
 #include <tinyxml.h>
 
@@ -57,42 +58,50 @@ public:
         CarrotRHC::setControlQueueSize(10);
         //RHCICreate::setTurnOnlyDistance(0.05);
         //Controller<RHCICreate, ExtendedKF>::setNodeReachedAngle(30); // degrees
-        CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.20);// meters
+        CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.25);// meters
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTries(200);
-        CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(4.0); // meters
+        CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(6.0); // meters
 
         // setting the mean and norm weights (used in reachability check)
         StateType::covNormWeight_  =  1.0;
         StateType::meanNormWeight_ =  2.0;
-        StateType::reachDist_ =  0.1;
+        StateType::reachDist_ =  0.2;
 
         // set the state component norm weights
         arma::colvec normWeights(3);
-        normWeights(0) = 2.0/3.0;
-        normWeights(1) = 2.0/3.0;
-        normWeights(2) = 2.0/3.0;
+        normWeights(0) = 1.0/3.0;
+        normWeights(1) = 1.0/3.0;
+        normWeights(2) = 1.0/3.0;
         StateType::normWeights_ = normWeights;
 
         // The bounds should be inferred from the geometry files,
         // there is a function in Apputils to do this, so use that.
         // set the bounds for the R^3 part of SE(3)
+        //std::cout << "setting bounds..." << std::endl;
         ompl::base::RealVectorBounds bounds(3);
         // set X bound
         bounds.setLow(0,0.2);
         bounds.setHigh(0,16.8);
+        //std::cout << "set x bounds..." << std::endl;
+
         //set Y bound
         bounds.setLow(1,0.2);
         bounds.setHigh(1,6.8);
-        //set Y bound
+        //std::cout << "set y bounds..." << std::endl;
+
+        //set Z bound
         bounds.setLow(2,0.0);
         bounds.setHigh(2,2.0);
         ss_->as<CarrotBeliefSpace>()->setBounds(bounds);
+        //std::cout << "finished setting bounds.." << std::endl;
 
         //Construct the control space
-        ompl::control::ControlSpacePtr controlspace( new ompl::control::RealVectorControlSpace(ss_,2) ) ;
+        ompl::control::ControlSpacePtr controlspace( new ompl::control::RealVectorControlSpace(ss_,3) ) ;
         cs_ = controlspace;
 
         // construct an instance of space information from this state space
+
+        //si->setup();
         firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
         siF_ = si;
 
@@ -154,6 +163,7 @@ public:
 
     void setup()
     {
+        std::cout << "Running FIRM Setup" << std::endl;
         if(!setup_)
         {
             if(pathToSetupFile_.length() == 0)
@@ -169,8 +179,11 @@ public:
             ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
 
             // Create an FCL state validity checker and assign to space information
-            const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
-            siF_->setStateValidityChecker(fclSVC);
+            //const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
+            //siF_->setStateValidityChecker(fclSVC);
+        //firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
+	    siF_->setStateValidityChecker(ompl::base::StateValidityCheckerPtr(new CarrotFIRMValidityChecker(siF_)));
+        siF_->setStateValidityCheckingResolution(0.05);
 
             // provide the observation model to the space
             ObservationModelMethod::ObservationModelPointer om(new CarrotObservationModel(siF_, pathToSetupFile_.c_str()));
@@ -307,13 +320,13 @@ protected:
         itemElement = child->ToElement();
         assert( itemElement );
 
-        double startX = 0,startY = 0, startTheta = 0;
+        double startX = 0,startY = 0, startZ = 0;
 
         itemElement->QueryDoubleAttribute("x", &startX);
         itemElement->QueryDoubleAttribute("y", &startY);
-        itemElement->QueryDoubleAttribute("theta", &startTheta);
+        itemElement->QueryDoubleAttribute("z", &startZ);
 
-        setStartState(startX, startY, startTheta);
+        setStartState(startX, startY, startZ);
 
         // Read the Goal Pose
         child  = node->FirstChild("GoalPose");
@@ -322,13 +335,13 @@ protected:
         itemElement = child->ToElement();
         assert( itemElement );
 
-        double goalX = 0 , goalY = 0, goalTheta = 0;
+        double goalX = 0 , goalY = 0, goalZ = 0;
 
         itemElement->QueryDoubleAttribute("x", &goalX);
         itemElement->QueryDoubleAttribute("y", &goalY);
-        itemElement->QueryDoubleAttribute("theta", &goalTheta);
+        itemElement->QueryDoubleAttribute("z", &goalZ);
 
-        setGoalState(goalX, goalY, goalTheta);
+        setGoalState(goalX, goalY, goalZ);
 
         // read planning time
         child  = node->FirstChild("PlanningTime");
@@ -382,9 +395,9 @@ protected:
 
         //std::cout<<"Path to roadmap file: "<<pathToRoadMapFile_<<std::endl;
 
-        std::cout<<"Start Pose X: "<<startX<<" Y: "<<startY<<" Theta: "<<startTheta<<std::endl;
+        std::cout<<"Start Pose X: "<<startX<<" Y: "<<startY<<" Z: "<<startZ<<std::endl;
 
-        std::cout<<"Goal Pose X: "<<goalX<<" Y: "<<goalY<<" Theta: "<<goalTheta<<std::endl;
+        std::cout<<"Goal Pose X: "<<goalX<<" Y: "<<goalY<<" Z: "<<goalZ<<std::endl;
 
         std::cout<<"Planning Time: "<<planningTime_<<" seconds"<<std::endl;
 
