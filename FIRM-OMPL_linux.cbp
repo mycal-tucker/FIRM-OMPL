@@ -20,6 +20,7 @@
 					<Add directory="/usr/include/qt4/Qt" />
 					<Add directory="/usr/include" />
 					<Add directory="/home/maynorc/Documents/omplapp-1.0.0-Source/ompl/src" />
+					<Add directory="/home/mycal/ompl-1.0.0-Source" />
 				</Compiler>
 				<Linker>
 					<Add library="/usr/lib/x86_64-linux-gnu/libboost_system.so" />
