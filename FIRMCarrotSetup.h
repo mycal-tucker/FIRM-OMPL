@@ -176,7 +176,22 @@ public:
                 throw ompl::Exception("Robot/Environment mesh files not setup!");
             }
 
-            ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
+		ompl::base::RealVectorBounds bounds(3);
+		// set X bound
+		bounds.setLow(0,0.25);
+		bounds.setHigh(0,7.75);
+		//std::cout << "set x bounds..." << std::endl;
+
+		//set Y bound
+		bounds.setLow(1,0.25);
+		bounds.setHigh(1,11.75);
+		//std::cout << "set y bounds..." << std::endl;
+
+		//set Z bound
+		bounds.setLow(2,0.0);
+		bounds.setHigh(2,3.0);
+		ss_->as<CarrotBeliefSpace>()->setBounds(bounds);
+            //ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
 
             // Create an FCL state validity checker and assign to space information
             //const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
@@ -197,7 +212,7 @@ public:
             statePropagator_ = prop;
             siF_->setStatePropagator(statePropagator_);
             siF_->setPropagationStepSize(0.01); // this is the duration that a control is applied
-            siF_->setStateValidityCheckingResolution(0.005);
+            siF_->setStateValidityCheckingResolution(0.05);
             siF_->setMinMaxControlDuration(1,100);
 
             if(!start_ || !goal_)

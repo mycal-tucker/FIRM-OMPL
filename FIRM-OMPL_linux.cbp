@@ -132,9 +132,9 @@
 		<Unit filename="src/SpaceInformation/CarrotSpaceInformation.cpp" />
 		<Unit filename="src/SpaceInformation/SpaceInformation.cpp" />
 		<Unit filename="src/Spaces/CarrotBeliefSpace.cpp" />
-		<Unit filename="src/Spaces/CarrotVisualizer.cpp" />
 		<Unit filename="src/Spaces/SE2BeliefSpace.cpp" />
 		<Unit filename="src/Utils/FIRMUtils.cpp" />
+		<Unit filename="src/Visualization/CarrotVisualizer.cpp" />
 		<Unit filename="src/Visualization/GLWidget.cpp" />
 		<Unit filename="src/Visualization/Visualizer.cpp" />
 		<Unit filename="src/Visualization/Window.cpp" />

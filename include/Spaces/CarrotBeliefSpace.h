@@ -64,7 +64,7 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             /** \brief Get the X component of the state */
             double getX(void) const
             {
-                return this->values[0];
+                return as<RealVectorStateSpace::StateType>()->values[0];
             }
 
             /** \brief Get the Y component of the state */
@@ -124,6 +124,8 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             arma::colvec getArmaData(void) const
             {
                 arma::colvec stateVec(3);
+
+                std::cout << "X: " << getX() << std::endl;
 
                 stateVec[0] = getX();
                 stateVec[1] = getY();

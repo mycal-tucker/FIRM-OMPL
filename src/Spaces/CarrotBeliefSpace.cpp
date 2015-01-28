@@ -74,7 +74,7 @@ ompl::base::State* CarrotBeliefSpace::allocState(void) const
     StateType *state = new StateType();
     state->values = new double[dimension_];
     state->setCovariance(arma::zeros<arma::mat>(3,3) );
-    state->setID(-1);
+    //state->setID(-1);
 
    // ompl::base::CompoundStateSpace::allocStateComponents(state);
     return state;

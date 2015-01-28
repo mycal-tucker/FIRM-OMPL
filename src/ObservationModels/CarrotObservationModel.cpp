@@ -159,11 +159,12 @@ double& bearing, double& pitch)
 
     colvec xVec =  state->as<CarrotBeliefSpace::StateType>()->getArmaData();
     colvec diff =  landmark.subvec(1,3) - xVec.subvec(0,2);
+    //std::cout << "landmark: " << landmark.subvec(1,3) << std::endl;
 
     //norm is the 2nd Holder norm, i.e. the Euclidean norm
     range = norm(diff,2);
     bearing = atan2(diff[1],diff[0]);
-    pitch = -atan2(diff[3],norm(diff.subvec(0,1),2));
+    pitch = -atan2(diff[2],norm(diff.subvec(0,1),2));
 
     FIRMUtils::normalizeAngleToPiRange(bearing);
     FIRMUtils::normalizeAngleToPiRange(pitch);

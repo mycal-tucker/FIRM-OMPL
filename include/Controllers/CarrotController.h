@@ -271,6 +271,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     else nominalX_K = lss_[lss_.size()-1].getX();
 
     arma::colvec nomXVec = nominalX_K->as<StateType>()->getArmaData();
+    //std::cout << "Nominal X: " << nomXVec << std::endl;
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
     //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;

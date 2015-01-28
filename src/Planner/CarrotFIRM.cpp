@@ -102,7 +102,7 @@ namespace ompl
 }
 
 CarrotFIRM::CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si, bool debugMode) :
-    ompl::base::Planner(si, "FIRM"),
+    ompl::base::Planner(si, "CarrotFIRM"),
     siF_(si),
     stateProperty_(boost::get(vertex_state_t(), g_)),
     totalConnectionAttemptsProperty_(boost::get(vertex_total_connection_attempts_t(), g_)),
@@ -121,7 +121,7 @@ CarrotFIRM::CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &
 
     Planner::declareParam<unsigned int>("max_nearest_neighbors", this, &CarrotFIRM::setMaxNearestNeighbors, std::string("8:1000"));
 
-    minFIRMNodes_ = 25;
+    minFIRMNodes_ = 15;
 
     //policyGenerator_ = new MMPolicyGenerator(si);
 
@@ -489,8 +489,8 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
 	    rot_end.x = 1; rot_end.y = 0; rot_end.z = 0; rot_end.w = 0;
 	    si->printState(startV);
 	    si->printState(endV);*/
-            if (si_->checkMotion(stateProperty_[m],stateProperty_[n]))
-            {
+            //if (si_->checkMotion(stateProperty_[m],stateProperty_[n]))
+            //{
                 successfulConnectionAttemptsProperty_[m]++;
                 successfulConnectionAttemptsProperty_[n]++;
 
@@ -502,7 +502,7 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
                 }
 
                 uniteComponents(m, n);
-            }
+            //}
 	    //si->freeState(start);
 	    //si->freeState(end);
         }

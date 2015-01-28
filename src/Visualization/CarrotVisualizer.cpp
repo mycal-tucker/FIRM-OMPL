@@ -129,15 +129,15 @@ void CarrotVisualizer::drawState(const ompl::base::State *state, VZRStateType st
         glTranslated(x[0], x[1], x[2]);
 
         //draw a black disk
-        //GLUquadric *disk = gluNewQuadric();
-        //gluDisk(disk, 0, 0.15, 15, 1);
-        //gluDeleteQuadric(disk);
-        //glBegin(GL_LINES);
-        //glVertex3f(0, 0, 0);
-        //glVertex3f(1.0*cos(x[2]), 1.0*sin(x[2]), 0);
-        //glEnd();
+        GLUquadric *disk = gluNewQuadric();
+        gluDisk(disk, 0, 0.15, 15, 1);
+        gluDeleteQuadric(disk);
+        glBegin(GL_LINES);
+        glVertex3f(0, 0, 0);
+        glVertex3f(1.0*cos(x[2]), 1.0*sin(x[2]), 0);
+        glEnd();
 
-        //glColor3d(0.5,0.5,0.5);
+        glColor3d(0.5,0.5,0.5);
 
         //Remove comment to show field of view of robot
         /*
