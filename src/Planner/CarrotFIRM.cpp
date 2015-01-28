@@ -528,8 +528,8 @@ ompl::base::PathPtr CarrotFIRM::constructFeedbackPath(const Vertex &start, const
 {
     CarrotFeedbackPath *p = new CarrotFeedbackPath(siF_);
 
-    std::cout<<"The start vertex is: "<<start<<std::endl;
-    std::cout<<"The goal vertex is: "<<goal<<std::endl;
+    //std::cout<<"The start vertex is: "<<start<<std::endl;
+    //std::cout<<"The goal vertex is: "<<goal<<std::endl;
 
     Vertex currentVertex = start;
 
@@ -1111,7 +1111,7 @@ void CarrotFIRM::loadRoadMapFromFile(const std::string pathToFile)
 
         this->setup();
 
-        std::cout << "[CarrotFIRM] Total number of FIRM Nodes: " << FIRMNodeList.size() << std::endl;
+        //std::cout << "[CarrotFIRM] Total number of FIRM Nodes: " << FIRMNodeList.size() << std::endl;
 
         for(int i = 0; i < FIRMNodeList.size() ; i++)
         {
@@ -1119,7 +1119,7 @@ void CarrotFIRM::loadRoadMapFromFile(const std::string pathToFile)
 
             arma::colvec xVec = FIRMNodeList[i].second.first;
             arma::mat     cov = FIRMNodeList[i].second.second;
-            std::cout << "[CarrotFIRM] node state: " << xVec << std::endl;
+            //std::cout << "[CarrotFIRM] node state: " << xVec << std::endl;
 
             newState->as<CarrotBeliefSpace::StateType>()->setXYZ(xVec(0),xVec(1),xVec(2));
             newState->as<CarrotBeliefSpace::StateType>()->setCovariance(cov);
@@ -1132,7 +1132,7 @@ void CarrotFIRM::loadRoadMapFromFile(const std::string pathToFile)
             siF_->freeState(newState);
 
             assert(v==FIRMNodeList[i].first && "IDS DONT MATCH !!");
-            std::cout << "[CarrotFIRM] Nodes added: " << i << std::endl;
+            //std::cout << "[CarrotFIRM] Nodes added: " << i << std::endl;
         }
     }
 }

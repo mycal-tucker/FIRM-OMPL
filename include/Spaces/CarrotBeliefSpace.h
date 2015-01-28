@@ -125,7 +125,7 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             {
                 arma::colvec stateVec(3);
 
-                std::cout << "X: " << getX() << std::endl;
+                //std::cout << "X: " << getX() << std::endl;
 
                 stateVec[0] = getX();
                 stateVec[1] = getY();

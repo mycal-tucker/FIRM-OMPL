@@ -35,12 +35,14 @@
 /* Author: Saurav Agarwal */
 
 #include "FIRMCarrotSetup.h"
+//#include "FIRM2DSetup.h"
 #include "MultiModalSetup.h"
 #include "Tests.h"
 #include <QApplication>
 #include <QtGui/QDesktopWidget>
-#include "include/Visualization/Window.h"
+#include "include/Visualization/CarrotWindow.h"
 #include "include/Visualization/CarrotVisualizer.h"
+//#include "include/Visualization/Visualizer.h"
 #include <boost/thread.hpp>
 #include <iostream>
 #include <istream>
@@ -51,11 +53,13 @@ using namespace std;
 void plan()
 {
 
-            OMPL_INFORM("Creating New Carrot");
+           // OMPL_INFORM("Creating New Carrot");
 
     FIRMCarrotSetup *mySetup(new FIRMCarrotSetup);
+    //FIRM2DSetup *mySetup(new FIRM2DSetup);
 
 
+    //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
                 //OMPL_INFORM("Loaded Setup File");
@@ -65,10 +69,16 @@ void plan()
     mySetup->setup();
 
     CarrotVisualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
+    //Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
+
 
     CarrotVisualizer::updateSpaceInformation(mySetup->getSpaceInformation());
+    //Visualizer::updateSpaceInformation(mySetup->getSpaceInformation());
+
 
     CarrotVisualizer::setMode(CarrotVisualizer::VZRDrawingMode::PRMViewMode);
+    //Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
+
 
     if(mySetup->solve())
     {
@@ -96,7 +106,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    MyWindow window;
+    MyCarrotWindow window;
 
     window.resize(window.sizeHint());
 

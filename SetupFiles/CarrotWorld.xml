@@ -1,8 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LandmarkList>
 <landmark id = 1 x = 1.0  y = 2.0 />
-<landmark id = 2 x = 1.0  y = 4.0 />
-<landmark id = 3 x = 1.0  y = 6.0 />
+<landmark id = 2 x = 1.0 y = 2.5 />
+<landmark id = 3 x = 1.0 y = 3.0 />
+<landmark id = 4 x = 1.0 y = 3.5 />
+<landmark id = 5 x = 1.0  y = 4.0 />
+<landmark id = 6 x = 1.0  y = 4.5 />
+<landmark id = 7 x = 1.0  y = 5.0 />
+<landmark id = 8 x = 1.0  y = 5.5 />
+<landmark id = 9 x = 1.0  y = 6.0 />
+
 </LandmarkList>
 <ObservationModels>
   <CarrotObservationModel
@@ -61,26 +68,26 @@
 </MotionModels>
 <PlanningProblem>
     <Environment
-        environmentFile = "./Models/CarrotWorld1.obj"
+        environmentFile = "./Models/CarrotWorld2.obj"
     />
     <Robot
         robotFile = "./Models/iRobot.obj"
     />
      <StartPose
-        x = "4.0"
-        y = "1.0"
+        x = "2.0"
+        y = "1.5"
         z = "1.0"
     />
     <GoalPose
-        x = "4.0"
-        y = "11.0"
+        x = "2.0"
+        y = "10.5"
         z = "1.5"
     />
     <PlanningTime
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "80"
+        minNodes = "20"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 
