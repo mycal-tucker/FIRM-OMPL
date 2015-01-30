@@ -262,9 +262,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if(!si_->checkTrueStateValidity())
     {
         si_->copyState(endState, internalState);
+        //std::cout << "State " << endState->as<StateType>()->getArmaData() <<		" not valid" << std::endl;
         return false;
-	std::cout << "State " << endState->as<StateType>()->getArmaData() <<
-		" not valid" << std:endl;
     }
 
     if(k<lss_.size())
@@ -282,9 +281,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     {
 
         si_->copyState(endState, internalState);
+        //std::cout << "Deviation of " << deviation <<" exceeds threshold" << std::endl;
         return false;
-	std::cout << "Deviation of " << deviation <<
-		" exceeds threshold" << std:endl;
 
     }
 
