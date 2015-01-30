@@ -6,3 +6,5 @@
 *.html
 *.png
 *.map
+FIRM-OMPL_linux.cbp
+FIRM-OMPL_linux.depend
