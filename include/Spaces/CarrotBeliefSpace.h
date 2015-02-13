@@ -38,45 +38,46 @@
 #define CARROT_BELIEF_SPACE_H_
 
 // OMPL includes
-#include "ompl/base/spaces/RealVectorStateSpace.h"
+#include "ompl/base/spaces/SE2StateSpace.h"
+#include "ompl/base/spaces/SE3StateSpace.h"
 //other includes
 #include <boost/math/constants/constants.hpp>
 #include <armadillo>
 
 using namespace ompl::base;
-class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
+class CarrotBeliefSpace : public CompoundStateSpace
 {
 
     public:
 
         /** \brief A belief in R3: (x, y, z, covariance) */
-        class StateType : public RealVectorStateSpace::StateType
+        class StateType : public CompoundStateSpace::StateType
         {
         public:
-            StateType(void) : RealVectorStateSpace::StateType()
+            StateType(void) : CompoundStateSpace::StateType()
             {
               //values = double[_dimension];
-              //covariance_ = arma::zeros<arma::mat>(3,3);
-              //controllerID_ = -1;
+              covariance_ = arma::zeros<arma::mat>(3,3);
+              controllerID_ = -1;
 
             }
 
             /** \brief Get the X component of the state */
             double getX(void) const
             {
-                return as<RealVectorStateSpace::StateType>()->values[0];
+                return as<RealVectorStateSpace::StateType>(0)->values[0];
             }
 
             /** \brief Get the Y component of the state */
             double getY(void) const
             {
-                return this->values[1];
+                return as<RealVectorStateSpace::StateType>(0)->values[1];
             }
 
             /** \brief Get the Z component of the state */
             double getZ(void) const
             {
-                return this->values[2];
+                return as<RealVectorStateSpace::StateType>(0)->values[2];
             }
 
             arma::mat getCovariance(void) const
@@ -87,7 +88,7 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             /** \brief Set the X component of the state */
             void setX(double x)
             {
-                this->values[0] = x;
+                as<RealVectorStateSpace::StateType>(0)->values[0] = x;
                                 //std::cout << "value of x is: " << x << std::endl;
 
             }
@@ -95,13 +96,15 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
             /** \brief Set the Y component of the state */
             void setY(double y)
             {
-                this->values[1] = y;
+                as<RealVectorStateSpace::StateType>(0)->values[1] = y;
+
             }
 
             /** \brief Set the Y component of the state */
             void setZ(double z)
             {
-                this->values[2] = z;
+                as<RealVectorStateSpace::StateType>(0)->values[2] = z;
+
             }
 
             /** \brief Set the X,Y,Z components of the state */
@@ -147,10 +150,12 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         };
 
 
-        CarrotBeliefSpace() : RealVectorStateSpace(3)
+        CarrotBeliefSpace() : CompoundStateSpace()
         {
             setName("CARROT_BELIEF" + getName());
             type_ = STATE_SPACE_REAL_VECTOR;
+            addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
+            lock();
             //bounds_ = 3;
             //dimension_ = 3;
             //stateBytes_ = 12*sizeof(double); //state(3)+cov(9)
@@ -166,7 +171,7 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         {
             //std::cout << "setting bounds in space" << std::endl;
             //this->setBounds(bounds);
-            as<RealVectorStateSpace>()->setBounds(bounds);
+            as<RealVectorStateSpace>(0)->setBounds(bounds);
 
         }
 
@@ -178,7 +183,7 @@ class CarrotBeliefSpace : public ompl::base::RealVectorStateSpace
         /** \copydoc RealVectorStateSpace::getBounds() */
         const RealVectorBounds& getBounds(void) const
         {
-            return as<RealVectorStateSpace>()->getBounds();
+            return as<RealVectorStateSpace>(0)->getBounds();
         }
 
         virtual State* allocState(void) const;

@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
     window.resize(window.sizeHint());
 
-    window.showMaximized();
+    //window.showMaximized();
 
     window.resetCamera();
 

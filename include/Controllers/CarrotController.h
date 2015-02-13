@@ -238,6 +238,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   //cost = 0.01 , for covariance based
   double cost = 0.01;
 
+  //ompl::base::State *testState; si_->getTrueState(testState);
+  //std::cout << testState->as<StateType>()->getArmaData() << std::endl;
   ompl::base::State *internalState = si_->allocState();
 
   si_->copyState(internalState, startState);
@@ -262,9 +264,10 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if(!si_->checkTrueStateValidity())
     {
         si_->copyState(endState, internalState);
+  /*      std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
+		" not valid" << std::endl; */
         return false;
-	std::cout << "State " << endState->as<StateType>()->getArmaData() <<
-		" not valid" << std:endl;
+
     }
 
     if(k<lss_.size())
@@ -282,9 +285,9 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     {
 
         si_->copyState(endState, internalState);
+        std::cout << "[CarrotController.h] Deviation of " << deviation <<
+		" exceeds threshold" << std::endl;
         return false;
-	std::cout << "Deviation of " << deviation <<
-		" exceeds threshold" << std:endl;
 
     }
 

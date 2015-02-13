@@ -55,7 +55,16 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
 
     virtual bool isValid(const ompl::base::State *state) const
     {
-	return si_->satisfiesBounds(state);
+        //return si_->satisfiesBounds(state);
+        double x = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[0];
+        double y = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[1];
+        double z = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[2];
+
+        if (x <= 0 || x >= 8) return false;
+        if (y <=0 || y >= 12) return false;
+        if (z <= 0 || z >= 3) return false;
+        return true;
+
       //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
 /*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
       ompl::base::State* se3_state = si->allocState();

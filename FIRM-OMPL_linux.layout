@@ -1,44 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="include/SpaceInformation/SpaceInformation.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/MotionModels/CarrotMotionModel.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="48" />
+			<Cursor1 position="3707" topLine="69" />
 		</Cursor>
 	</File>
-	<File name="FIRMCarrotSetup.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/ObservationModels/CarrotObservationModel.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8824" topLine="226" />
-		</Cursor>
-	</File>
-	<File name="src/Planner/FIRM.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="19498" topLine="15" />
-		</Cursor>
-	</File>
-	<File name="src/Planner/MMPolicyGenerator.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1861" topLine="33" />
-		</Cursor>
-	</File>
-	<File name="src/ObservationModels/CarrotObservationModel.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="6080" topLine="139" />
-		</Cursor>
-	</File>
-	<File name="FIRMOMPL.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="57" />
-		</Cursor>
-	</File>
-	<File name="src/Utils/FIRMUtils.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2342" topLine="48" />
-		</Cursor>
-	</File>
-	<File name="include/LinearSystem/CarrotLinearSystem.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5912" topLine="118" />
+			<Cursor1 position="0" topLine="109" />
 		</Cursor>
 	</File>
 	<File name="include/Planner/FIRM.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -46,94 +16,34 @@
 			<Cursor1 position="15192" topLine="334" />
 		</Cursor>
 	</File>
-	<File name="FIRM2DSetup.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2230" topLine="39" />
-		</Cursor>
-	</File>
-	<File name="src/MotionModels/UnicycleMotionModel.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="386" />
-		</Cursor>
-	</File>
-	<File name="src/SpaceInformation/CarrotSpaceInformation.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="44" />
-		</Cursor>
-	</File>
-	<File name="src/Planner/CarrotFIRM.cpp" open="1" top="1" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1931" topLine="8" />
-		</Cursor>
-	</File>
-	<File name="src/ObservationModels/CamAruco2DObservationModel.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="141" />
-		</Cursor>
-	</File>
-	<File name="include/SpaceInformation/CarrotSpaceInformation.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3330" topLine="40" />
-		</Cursor>
-	</File>
-	<File name="include/Planner/CarrotFIRM.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="17521" topLine="362" />
-		</Cursor>
-	</File>
-	<File name="include/Controllers/Controller.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="14280" topLine="282" />
-		</Cursor>
-	</File>
-	<File name="src/SeparatedControllers/RHCICreate.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3258" topLine="46" />
-		</Cursor>
-	</File>
-	<File name="include/Controllers/CarrotController.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="11460" topLine="44" />
-		</Cursor>
-	</File>
-	<File name="include/Spaces/SE2BeliefSpace.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5767" topLine="103" />
-		</Cursor>
-	</File>
-	<File name="Tests.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1903" topLine="36" />
-		</Cursor>
-	</File>
-	<File name="include/Spaces/CarrotBeliefSpace.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4078" topLine="96" />
-		</Cursor>
-	</File>
-	<File name="src/Spaces/CarrotBeliefSpace.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3374" topLine="63" />
-		</Cursor>
-	</File>
-	<File name="include/Planner/MMPolicyGenerator.h" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="11907" topLine="258" />
-		</Cursor>
-	</File>
 	<File name="include/LinearSystem/LinearSystem.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="0" topLine="133" />
 		</Cursor>
 	</File>
-	<File name="src/SpaceInformation/SpaceInformation.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/Spaces/SE2BeliefSpace.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="21" />
+			<Cursor1 position="1876" topLine="144" />
 		</Cursor>
 	</File>
-	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="FIRM2DSetup.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2770" topLine="43" />
+			<Cursor1 position="2230" topLine="39" />
+		</Cursor>
+	</File>
+	<File name="include/SpaceInformation/SpaceInformation.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="48" />
+		</Cursor>
+	</File>
+	<File name="include/SpaceInformation/CarrotSpaceInformation.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3126" topLine="78" />
+		</Cursor>
+	</File>
+	<File name="src/Planner/MMPolicyGenerator.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1861" topLine="33" />
 		</Cursor>
 	</File>
 	<File name="include/ValidityCheckers/CarrotFIRMValidityChecker.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -141,14 +51,154 @@
 			<Cursor1 position="2529" topLine="44" />
 		</Cursor>
 	</File>
-	<File name="src/MotionModels/CarrotMotionModel.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/Visualization/CarrotWindow.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3707" topLine="69" />
+			<Cursor1 position="0" topLine="98" />
+		</Cursor>
+	</File>
+	<File name="include/Controllers/Controller.h" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="14280" topLine="282" />
+		</Cursor>
+	</File>
+	<File name="src/SpaceInformation/CarrotSpaceInformation.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="43" />
+		</Cursor>
+	</File>
+	<File name="FIRMCarrotSetup.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8824" topLine="232" />
 		</Cursor>
 	</File>
 	<File name="MultiModalSetup.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="9192" topLine="264" />
+		</Cursor>
+	</File>
+	<File name="src/Utils/FIRMUtils.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2342" topLine="48" />
+		</Cursor>
+	</File>
+	<File name="src/SpaceInformation/SpaceInformation.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="21" />
+		</Cursor>
+	</File>
+	<File name="src/Planner/CarrotFIRM.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="28732" topLine="807" />
+		</Cursor>
+	</File>
+	<File name="src/Visualization/CarrotVisualizer.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2746" topLine="45" />
+		</Cursor>
+	</File>
+	<File name="src/Visualization/moc_CarrotGLWidget.cpp" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="886" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="src/SeparatedControllers/RHCICreate.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3258" topLine="46" />
+		</Cursor>
+	</File>
+	<File name="src/Visualization/CarrotGLWidget.cpp" open="1" top="1" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7843" topLine="316" />
+		</Cursor>
+	</File>
+	<File name="src/Spaces/CarrotBeliefSpace.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3694" topLine="72" />
+		</Cursor>
+	</File>
+	<File name="src/Planner/FIRM.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="19498" topLine="15" />
+		</Cursor>
+	</File>
+	<File name="Tests.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1903" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="src/Spaces/SE2BeliefSpace.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3787" topLine="78" />
+		</Cursor>
+	</File>
+	<File name="src/Visualization/moc_CarrotWindow.cpp" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="836" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="include/Visualization/CarrotWindow.h" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="45" />
+		</Cursor>
+	</File>
+	<File name="src/ObservationModels/CamAruco2DObservationModel.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6841" topLine="210" />
+		</Cursor>
+	</File>
+	<File name="include/LinearSystem/CarrotLinearSystem.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5912" topLine="118" />
+		</Cursor>
+	</File>
+	<File name="include/Spaces/CarrotBeliefSpace.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6133" topLine="186" />
+		</Cursor>
+	</File>
+	<File name="include/Visualization/CarrotVisualizer.h" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="87" />
+		</Cursor>
+	</File>
+	<File name="include/Controllers/CarrotController.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10771" topLine="216" />
+		</Cursor>
+	</File>
+	<File name="include/Visualization/CarrotGLWidget.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="97" />
+		</Cursor>
+	</File>
+	<File name="FIRMOMPL.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="57" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3243" topLine="59" />
+		</Cursor>
+	</File>
+	<File name="src/ObservationModels/CarrotObservationModel.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6592" topLine="169" />
+		</Cursor>
+	</File>
+	<File name="include/Planner/MMPolicyGenerator.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11907" topLine="258" />
+		</Cursor>
+	</File>
+	<File name="src/MotionModels/UnicycleMotionModel.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="386" />
+		</Cursor>
+	</File>
+	<File name="include/Planner/CarrotFIRM.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="17521" topLine="159" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

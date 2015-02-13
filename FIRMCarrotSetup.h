@@ -194,11 +194,11 @@ public:
             //ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
 
             // Create an FCL state validity checker and assign to space information
-            //const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
-            //siF_->setStateValidityChecker(fclSVC);
+            const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
+            siF_->setStateValidityChecker(fclSVC);
         //firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
-	    siF_->setStateValidityChecker(ompl::base::StateValidityCheckerPtr(new CarrotFIRMValidityChecker(siF_)));
-        siF_->setStateValidityCheckingResolution(0.05);
+	    //siF_->setStateValidityChecker(ompl::base::StateValidityCheckerPtr(new CarrotFIRMValidityChecker(siF_)));
+        //siF_->setStateValidityCheckingResolution(0.05);
 
             // provide the observation model to the space
             ObservationModelMethod::ObservationModelPointer om(new CarrotObservationModel(siF_, pathToSetupFile_.c_str()));
@@ -416,7 +416,7 @@ protected:
 
         std::cout<<"Planning Time: "<<planningTime_<<" seconds"<<std::endl;
 
-        std::cout<<"Min Nodes: "<<minNodes_<<" seconds"<<std::endl;
+        std::cout<<"Min Nodes: "<<minNodes_<<" nodes"<<std::endl;
 
         std::cout<<"Kidnapped Pose x:"<<kX<<" y:"<<kY<<" z:"<<kZ<<std::endl;
 

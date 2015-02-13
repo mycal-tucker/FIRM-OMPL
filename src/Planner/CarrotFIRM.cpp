@@ -871,6 +871,7 @@ void CarrotFIRM::executeFeedback(void)
         }
         else
         {
+            std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
             // get a copy of the true state
             ompl::base::State *tempTrueStateCopy = si_->allocState();
 
@@ -938,6 +939,9 @@ void CarrotFIRM::executeFeedbackWithRollout(void)
     {
         //Edge e = feedback_[currentVertex];
         //Vertex targetNode = boost::target(e, g_);
+
+        double dist = si_->distance(stateProperty_[currentVertex], stateProperty_[goal]);
+        std::cout << "[CarrotFIRM.cpp] Distance to goal: " << dist << std::endl;
 
         controller = edgeControllers_[e];
 

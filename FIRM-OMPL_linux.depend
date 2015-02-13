@@ -14074,7 +14074,7 @@
 	"../../include/Visualization/GLWidget.h"
 	"../../include/Visualization/Window.h"
 
-1421969137 source:/home/maynorc/FIRM-OMPL/src/Filters/CarrotExtendedKF.cpp
+1422894047 source:/home/maynorc/FIRM-OMPL/src/Filters/CarrotExtendedKF.cpp
 	"../../include/Filters/CarrotExtendedKF.h"
 	"boost/date_time/local_time/local_time.hpp"
 
@@ -14096,8 +14096,9 @@
 	<ompl/control/SpaceInformation.h>
 	<ompl/geometric/PathGeometric.h>
 
-1422470901 /home/maynorc/FIRM-OMPL/include/Spaces/CarrotBeliefSpace.h
-	"ompl/base/spaces/RealVectorStateSpace.h"
+1422993985 /home/maynorc/FIRM-OMPL/include/Spaces/CarrotBeliefSpace.h
+	"ompl/base/spaces/SE2StateSpace.h"
+	"ompl/base/spaces/SE3StateSpace.h"
 	<boost/math/constants/constants.hpp>
 	<armadillo>
 
@@ -14112,7 +14113,7 @@
 	"armadillo"
 	"../SpaceInformation/CarrotSpaceInformation.h"
 
-1421712263 /home/maynorc/FIRM-OMPL/include/SpaceInformation/CarrotSpaceInformation.h
+1423242338 /home/maynorc/FIRM-OMPL/include/SpaceInformation/CarrotSpaceInformation.h
 	"ompl/control/SpaceInformation.h"
 	"../MotionModels/CarrotMotionModelMethod.h"
 	"../ObservationModels/ObservationModelMethod.h"
@@ -14173,7 +14174,7 @@
 1420998646 /home/maynorc/FIRM-OMPL/include/Filters/LinearizedKF.h
 	"KalmanFilterMethod.h"
 
-1421969875 source:/home/maynorc/FIRM-OMPL/src/MotionModels/CarrotMotionModel.cpp
+1423244020 source:/home/maynorc/FIRM-OMPL/src/MotionModels/CarrotMotionModel.cpp
 	<tinyxml.h>
 	"../../include/Spaces/CarrotBeliefSpace.h"
 	"../../include/MotionModels/CarrotMotionModel.h"
@@ -14246,7 +14247,7 @@
 	"../SpaceInformation/SpaceInformation.h"
 	<omplapp/graphics/RenderGeometry.h>
 
-1422469309 source:/home/maynorc/FIRM-OMPL/src/ObservationModels/CarrotObservationModel.cpp
+1423245044 source:/home/maynorc/FIRM-OMPL/src/ObservationModels/CarrotObservationModel.cpp
 	"../../include/Spaces/CarrotBeliefSpace.h"
 	"../../include/ObservationModels/CarrotObservationModel.h"
 	<tinyxml.h>
@@ -14272,7 +14273,7 @@
 	"../SpaceInformation/CarrotSpaceInformation.h"
 	<omplapp/graphics/RenderGeometry.h>
 
-1422470791 source:/home/maynorc/FIRM-OMPL/src/Planner/CarrotFIRM.cpp
+1423237190 source:/home/maynorc/FIRM-OMPL/src/Planner/CarrotFIRM.cpp
 	"../../include/Planner/CarrotFIRM.h"
 	"ompl/geometric/planners/prm/PRM.h"
 	"ompl/geometric/planners/prm/ConnectionStrategy.h"
@@ -14290,7 +14291,7 @@
 	"../../include/Visualization/CarrotVisualizer.h"
 	"../../include/Utils/FIRMUtils.h"
 
-1422469297 /home/maynorc/FIRM-OMPL/include/Planner/CarrotFIRM.h
+1422480877 /home/maynorc/FIRM-OMPL/include/Planner/CarrotFIRM.h
 	"ompl/geometric/planners/PlannerIncludes.h"
 	"ompl/datastructures/NearestNeighbors.h"
 	<boost/graph/graph_traits.hpp>
@@ -14312,7 +14313,7 @@
 	"../ConnectionStrategy/FStrategy.h"
 	"MMPolicyGenerator.h"
 
-1422473947 /home/maynorc/FIRM-OMPL/include/Controllers/CarrotController.h
+1423242013 /home/maynorc/FIRM-OMPL/include/Controllers/CarrotController.h
 	"../SeparatedControllers/CarrotControllerMethod.h"
 	"../Filters/CarrotKalmanMethod.h"
 	"../MotionModels/CarrotMotionModelMethod.h"
@@ -14392,7 +14393,7 @@
 	"../ConnectionStrategy/FStrategy.h"
 	"MMPolicyGenerator.h"
 
-1420998646 /home/maynorc/FIRM-OMPL/include/Controllers/Controller.h
+1423244906 /home/maynorc/FIRM-OMPL/include/Controllers/Controller.h
 	"../SeparatedControllers/SeparatedControllerMethod.h"
 	"../Filters/KalmanFilterMethod.h"
 	"../MotionModels/MotionModelMethod.h"
@@ -14464,7 +14465,7 @@
 	"../../include/SpaceInformation/SpaceInformation.h"
 	"../../include/Visualization/Visualizer.h"
 
-1422307100 source:/home/maynorc/FIRM-OMPL/src/Spaces/CarrotBeliefSpace.cpp
+1422994183 source:/home/maynorc/FIRM-OMPL/src/Spaces/CarrotBeliefSpace.cpp
 	"../../include/Spaces/CarrotBeliefSpace.h"
 
 1421719925 source:/home/maynorc/FIRM-OMPL/src/Spaces/CarrotVisualizer.cpp
@@ -14517,7 +14518,7 @@
 	"../../include/Visualization/GLWidget.h"
 	"../../include/Visualization/Window.h"
 
-1422476566 source:/home/maynorc/FIRM-OMPL/main.cpp
+1422989311 source:/home/maynorc/FIRM-OMPL/main.cpp
 	"FIRMCarrotSetup.h"
 	"MultiModalSetup.h"
 	"Tests.h"
@@ -14529,7 +14530,7 @@
 	<iostream>
 	<istream>
 
-1422480460 /home/maynorc/FIRM-OMPL/FIRMCarrotSetup.h
+1423848020 /home/maynorc/FIRM-OMPL/FIRMCarrotSetup.h
 	<omplapp/geometry/RigidBodyGeometry.h>
 	"include/Planner/CarrotFIRM.h"
 	"FIRMOMPLCarrot.h"
@@ -14562,7 +14563,7 @@
 	"include/Planner/MMPolicyGenerator.h"
 	"include/Utils/FIRMUtils.h"
 
-1421891943 /home/maynorc/FIRM-OMPL/include/ValidityCheckers/CarrotFIRMValidityChecker.h
+1423240940 /home/maynorc/FIRM-OMPL/include/ValidityCheckers/CarrotFIRMValidityChecker.h
 	"../ObservationModels/ObservationModelMethod.h"
 
 1420998646 /home/maynorc/FIRM-OMPL/MultiModalSetup.h
@@ -14637,9 +14638,9 @@
 	<QtGui/QPushButton>
 	<QtGui/QComboBox>
 
-1422477607 source:/home/maynorc/FIRM-OMPL/src/Visualization/moc_CarrotGLWidget.cpp
+1422994740 source:/home/maynorc/FIRM-OMPL/src/Visualization/moc_CarrotGLWidget.cpp
 	"../../include/Visualization/CarrotGLWidget.h"
 
-1422477622 source:/home/maynorc/FIRM-OMPL/src/Visualization/moc_CarrotWindow.cpp
+1422994757 source:/home/maynorc/FIRM-OMPL/src/Visualization/moc_CarrotWindow.cpp
 	"../../include/Visualization/CarrotWindow.h"
 

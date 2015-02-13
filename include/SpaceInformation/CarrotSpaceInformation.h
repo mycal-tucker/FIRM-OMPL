@@ -106,7 +106,24 @@ namespace firm
             /** \brief Checks whether the true system state is in valid or not*/
             bool checkTrueStateValidity(void)
             {
-                return this->isValid(trueState_);
+                /*double x = trueState_->as<ompl::base::RealVectorStateSpace::StateType>()->values[0];
+                double y = trueState_->as<ompl::base::RealVectorStateSpace::StateType>()->values[1];
+                double z = trueState_->as<ompl::base::RealVectorStateSpace::StateType>()->values[2];
+
+                if (x <= 0 || x >= 8) {
+                    std::cout << "invalid x: " << x << std::endl;
+                    return false;
+                }
+                if (y <=0 || y >= 12) {
+                    std::cout << "invalid y: " << y << std::endl;
+                    return false;
+                }
+                if (z <= 0 || z >= 3) {
+                    std::cout << "invalid z: " << z << std::endl;
+                    return false;
+                }*/
+                return true;
+                //return this->isValid(trueState_);
             }
 
             void applyControl(const ompl::control::Control *control, bool withNoise = true);
