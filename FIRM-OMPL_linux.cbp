@@ -31,7 +31,7 @@
 					<Add library="/usr/lib/x86_64-linux-gnu/libglut.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libX11.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libQtOpenGL.so" />
-					<Add library="/usr/local/lib/libarmadillo.so" />
+					<Add library="/usr/lib/libarmadillo.so" />
 					<Add library="/usr/local/lib/x86_64-linux-gnu/libompl.so" />
 					<Add library="/usr/local/lib/x86_64-linux-gnu/libompl_app.so" />
 					<Add library="/usr/lib/x86_64-linux-gnu/libtinyxml.so" />
@@ -106,7 +106,9 @@
 		<Unit filename="include/Utils/FIRMUtils.h" />
 		<Unit filename="include/ValidityCheckers/CarrotFIRMValidityChecker.h" />
 		<Unit filename="include/ValidityCheckers/FIRMValidityChecker.h" />
+		<Unit filename="include/Visualization/CarrotGLWidget.h" />
 		<Unit filename="include/Visualization/CarrotVisualizer.h" />
+		<Unit filename="include/Visualization/CarrotWindow.h" />
 		<Unit filename="include/Visualization/GLWidget.h" />
 		<Unit filename="include/Visualization/Visualizer.h" />
 		<Unit filename="include/Visualization/Window.h" />
@@ -134,10 +136,14 @@
 		<Unit filename="src/Spaces/CarrotBeliefSpace.cpp" />
 		<Unit filename="src/Spaces/SE2BeliefSpace.cpp" />
 		<Unit filename="src/Utils/FIRMUtils.cpp" />
+		<Unit filename="src/Visualization/CarrotGLWidget.cpp" />
 		<Unit filename="src/Visualization/CarrotVisualizer.cpp" />
+		<Unit filename="src/Visualization/CarrotWindow.cpp" />
 		<Unit filename="src/Visualization/GLWidget.cpp" />
 		<Unit filename="src/Visualization/Visualizer.cpp" />
 		<Unit filename="src/Visualization/Window.cpp" />
+		<Unit filename="src/Visualization/moc_CarrotGLWidget.cpp" />
+		<Unit filename="src/Visualization/moc_CarrotWindow.cpp" />
 		<Unit filename="src/Visualization/moc_GLWidget.cpp" />
 		<Unit filename="src/Visualization/moc_Window.cpp" />
 		<Extensions>
