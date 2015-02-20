@@ -231,6 +231,14 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 {
   using namespace std;
 
+  //Debugging:
+  if (!constructionMode){
+    arma::colvec start =  startState->as<StateType>()->getArmaData();
+    std::cout << "start: " << start<< std::endl;
+    arma::colvec endy =  endState->as<StateType>()->getArmaData();
+    //std::cout << "end: " << endy << std::endl;
+  }
+
   unsigned int k = 0;
 
   //HOW TO SET INITAL VALUE OF COST
@@ -280,9 +288,9 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     arma::colvec deviation = nomXVec - endStateVec;
 
     if (!constructionMode){
-        std::cout << "Nominal X: " << nomXVec << std::endl;
+        //std::cout << "Nominal X: " << nomXVec << std::endl;
 
-        std::cout << "Actual X: " << endStateVec << std::endl;
+        //std::cout << "Actual X: " << endStateVec << std::endl;
         //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
     }
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
@@ -300,7 +308,15 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     //Increment cost by:
     //-> 0.01 for time based
     //-> trace(Covariance) for FIRM
-    cost += arma::trace(tempEndState->as<StateType>()->getCovariance());
+
+    //added by Mycal
+    //I want to be able to penalize for uncertainty more or less, so I will increase cost by some value proportional to trace of covariance
+    double uncertaintyFactor = 100;
+    double uncertaintyCost = uncertaintyFactor*arma::trace(tempEndState->as<StateType>()->getCovariance());
+    cost += uncertaintyCost;
+    //end of Mycal's section
+    //the original line is commented out below
+    //cost += arma::trace(tempEndState->as<StateType>()->getCovariance());
 
     if(!constructionMode)
     {

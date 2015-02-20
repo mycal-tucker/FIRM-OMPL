@@ -49,6 +49,7 @@
 #include <boost/thread.hpp>
 #include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
+#include "../../include/MotionModels/CarrotMotionModel.h" //TODO remove this when done debugging
 
 #define foreach BOOST_FOREACH
 #define foreach_reverse BOOST_REVERSE_FOREACH
@@ -861,17 +862,37 @@ void CarrotFIRM::executeFeedback(void)
 
     while(currentVertex != goal)
     {
-        std::cout << "CurrentVertex: " << currentVertex << std::endl;
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
         std::cout << "edge info: " << e << std::endl;
-        //std::cout << "Execute cstartState: " << cstartState->State() << " cendStat: " << cendState->State() << std::endl;
+        //std::cout << "Execute cstartState: " << cstartState->State() << " cendState: " << cendState->State() << std::endl;
+
+
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
             currentVertex = boost::target(e, g_);
             std::cout << "Updated currentVertex: " << currentVertex << std::endl;
+            /*
+            Added by Mycal to debug
+            */
+
+            ompl::base::State *tempTrueStateCopy = si_->allocState();
+            siF_->getTrueState(tempTrueStateCopy);
+            si_->copyState(cendState, tempTrueStateCopy); //this would be crazy
+            /*
+            This is the idea of the above code:
+            First of all, the controller just made the quadrotor move from cstartState to cendState in the if statement
+            We then update the currentVertex information and print it out.
+            Then there comes the weird part. It looks like cendState is reset to the origin somehow in controller.Execute
+            So instead we find out the true state of the quadrotor, and set cendState to match that.
+            At the end of this loop, when we make cstartState copy cendState, that means we start executing from the true location
+            of the quadrotor, which is exactly what we want.
+            */
+            /*
+            End of debugging
+            */
         }
         else
         {
@@ -890,6 +911,9 @@ void CarrotFIRM::executeFeedback(void)
             // Set true state back to its correct value after Monte Carlo (happens during adding state to Graph)
             siF_->setTrueState(tempTrueStateCopy);
 
+
+            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
+
             siF_->freeState(tempTrueStateCopy);
 
             assert(numVerticesAfter-numVerticesBefore >0);
@@ -900,7 +924,6 @@ void CarrotFIRM::executeFeedback(void)
         }
 
         si_->copyState(cstartState, cendState);
-
 
     }
 
