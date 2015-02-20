@@ -238,6 +238,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   //cost = 0.01 , for covariance based
   double cost = 0.01;
 
+  //ompl::base::State *testState; si_->getTrueState(testState);
+  //std::cout << testState->as<StateType>()->getArmaData() << std::endl;
   ompl::base::State *internalState = si_->allocState();
 
   si_->copyState(internalState, startState);
@@ -262,7 +264,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if(!si_->checkTrueStateValidity())
     {
         si_->copyState(endState, internalState);
-        //std::cout << "State " << endState->as<StateType>()->getArmaData() <<		" not valid" << std::endl;
+  /*      std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
+		" not valid" << std::endl; */
         return false;
     }
 
@@ -272,16 +275,22 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     else nominalX_K = lss_[lss_.size()-1].getX();
 
     arma::colvec nomXVec = nominalX_K->as<StateType>()->getArmaData();
-    //std::cout << "Nominal X: " << nomXVec << std::endl;
+
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
-    //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
 
+    if (!constructionMode){
+        std::cout << "Nominal X: " << nomXVec << std::endl;
+
+        std::cout << "Actual X: " << endStateVec << std::endl;
+        //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
+    }
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
         si_->copyState(endState, internalState);
-        //std::cout << "Deviation of " << deviation <<" exceeds threshold" << std::endl;
+        std::cout << "[CarrotController.h] Deviation of " << deviation <<
+		" exceeds threshold" << std::endl;
         return false;
 
     }

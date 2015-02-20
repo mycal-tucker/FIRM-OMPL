@@ -137,7 +137,13 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     const double y_carrot = delta_y/csi;
     const double z_carrot = delta_z/csi;
 
-    //std::cout << "calculated x_carrot: " << x_carrot << std::endl;
+    /*std::cout << "state diff: " << end - start << std::endl;
+    std::cout << "steps: " << csi << std::endl;
+    std::cout << "calculated x_carrot: " << x_carrot << std::endl;
+    std::cout << "calculated y_carrot: " << y_carrot << std::endl;
+    std::cout << "calculated z_carrot: " << z_carrot << "\n" << std::endl;*/
+
+
     colvec u_const_trans;
 
     if(u_const_trans.n_rows == 0) {

@@ -181,6 +181,7 @@ double CarrotObservationModel::getDataAssociationLikelihood(const arma::colvec t
     arma::mat covariance = arma::diagmat(arma::pow(noise,2));
 
     arma::colvec innov = trueObs-predictedObs;
+   // std::cout << "Innovation: " << innov << std::endl;
 
     FIRMUtils::normalizeAngleToPiRange(innov(1));
     FIRMUtils::normalizeAngleToPiRange(innov(2));

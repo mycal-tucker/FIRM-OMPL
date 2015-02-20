@@ -861,16 +861,21 @@ void CarrotFIRM::executeFeedback(void)
 
     while(currentVertex != goal)
     {
+        std::cout << "CurrentVertex: " << currentVertex << std::endl;
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
+        std::cout << "edge info: " << e << std::endl;
+        //std::cout << "Execute cstartState: " << cstartState->State() << " cendStat: " << cendState->State() << std::endl;
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
             currentVertex = boost::target(e, g_);
+            std::cout << "Updated currentVertex: " << currentVertex << std::endl;
         }
         else
         {
+            std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
             // get a copy of the true state
             ompl::base::State *tempTrueStateCopy = si_->allocState();
 
@@ -906,6 +911,7 @@ void CarrotFIRM::executeFeedback(void)
 void CarrotFIRM::executeFeedbackWithRollout(void)
 {
     sendFeedbackEdgesToViz();
+    std::cout << "In executeFeedbackWithRollout" << std::endl;
 
     const Vertex start = startM_[0];
     const Vertex goal  = goalM_[0] ;
@@ -938,6 +944,9 @@ void CarrotFIRM::executeFeedbackWithRollout(void)
     {
         //Edge e = feedback_[currentVertex];
         //Vertex targetNode = boost::target(e, g_);
+
+        double dist = si_->distance(stateProperty_[currentVertex], stateProperty_[goal]);
+        std::cout << "[CarrotFIRM.cpp] Distance to goal: " << dist << std::endl;
 
         controller = edgeControllers_[e];
 
@@ -995,7 +1004,7 @@ void CarrotFIRM::sendFeedbackEdgesToViz()
         targetVertex = boost::target(edge, g_);
         //TODO: some random target vertex which is not in graph is being assigned, why?
         CarrotVisualizer::addFeedbackEdge(stateProperty_[sourceVertex], stateProperty_[targetVertex], 0);
-  }
+    }
 }
 
 
