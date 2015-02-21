@@ -45,6 +45,8 @@
 #include "ompl/base/Cost.h"
 #include "boost/date_time/local_time/local_time.hpp"
 #include <boost/thread.hpp>
+#include <iostream>
+#include <fstream>
 
 /** \brief Base class for Controller. A controller's task is to use the filter to estimate the belief robot's state and
           generate control commands using the separated controller. For example by fusing an LQR and Kalman Filter
@@ -231,14 +233,6 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 {
   using namespace std;
 
-  //Debugging:
-  if (!constructionMode){
-    arma::colvec start =  startState->as<StateType>()->getArmaData();
-    std::cout << "start: " << start<< std::endl;
-    arma::colvec endy =  endState->as<StateType>()->getArmaData();
-    //std::cout << "end: " << endy << std::endl;
-  }
-
   unsigned int k = 0;
 
   //HOW TO SET INITAL VALUE OF COST
@@ -259,6 +253,9 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   si_->copyState(tempEndState, startState);
 
   int deviationCounter = 0;
+
+  ofstream myfile;
+  myfile.open("mycal.txt", ios::app);
 
   while(!this->isTerminated(tempEndState, k))
   {
@@ -288,10 +285,13 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     arma::colvec deviation = nomXVec - endStateVec;
 
     if (!constructionMode){
-        //std::cout << "Nominal X: " << nomXVec << std::endl;
+        std::cout << "Nominal X: " << nomXVec << std::endl;
 
-        //std::cout << "Actual X: " << endStateVec << std::endl;
+        std::cout << "Actual X: " << endStateVec << std::endl;
         //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
+        //myfile << "written\n";
+        myfile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
+
     }
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
@@ -323,7 +323,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
     }
   }
-
+  myfile.close();
   ompl::base::Cost stabilizationCost;
 
   //si_->copyState(endState, tempEndState);
@@ -516,7 +516,8 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
    stabilizationCost = ompl::base::Cost(cost);
 
-   si_->copyState(endState, tempState2);
+   si_->copyState(endState, tempState1); //Changed by Mycal
+   //si_->copyState(endState, tempState2);
    si_->freeState(tempState1);
    si_->freeState(tempState2);
    tries_ = 0;

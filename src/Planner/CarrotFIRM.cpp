@@ -878,9 +878,9 @@ void CarrotFIRM::executeFeedback(void)
             Added by Mycal to debug
             */
 
-            ompl::base::State *tempTrueStateCopy = si_->allocState();
-            siF_->getTrueState(tempTrueStateCopy);
-            si_->copyState(cendState, tempTrueStateCopy); //this would be crazy
+            //ompl::base::State *tempTrueStateCopy = si_->allocState();
+            //siF_->getTrueState(tempTrueStateCopy);
+            //si_->copyState(cendState, tempTrueStateCopy); //this would be crazy
             /*
             This is the idea of the above code:
             First of all, the controller just made the quadrotor move from cstartState to cendState in the if statement
