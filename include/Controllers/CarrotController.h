@@ -45,6 +45,8 @@
 #include "ompl/base/Cost.h"
 #include "boost/date_time/local_time/local_time.hpp"
 #include <boost/thread.hpp>
+#include <iostream>
+#include <fstream>
 
 /** \brief Base class for Controller. A controller's task is to use the filter to estimate the belief robot's state and
           generate control commands using the separated controller. For example by fusing an LQR and Kalman Filter
@@ -252,6 +254,9 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
   int deviationCounter = 0;
 
+  ofstream myfile;
+  myfile.open("mycal.txt", ios::app);
+
   while(!this->isTerminated(tempEndState, k))
   {
     //using namespace std;
@@ -267,7 +272,6 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   /*      std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
 		" not valid" << std::endl; */
         return false;
-
     }
 
     if(k<lss_.size())
@@ -276,20 +280,25 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     else nominalX_K = lss_[lss_.size()-1].getX();
 
     arma::colvec nomXVec = nominalX_K->as<StateType>()->getArmaData();
-    //std::cout << "Nominal X: " << nomXVec << std::endl;
+
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
-    //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
 
+    if (!constructionMode){
+        std::cout << "Nominal X: " << nomXVec << std::endl;
+
+        std::cout << "Actual X: " << endStateVec << std::endl;
+        //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
+        //myfile << "written\n";
+        myfile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
+
+    }
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
         si_->copyState(endState, internalState);
-        /*std::cout << "[CarrotController.h] Deviation of " << deviation <<
+        std::cout << "[CarrotController.h] Deviation of " << deviation <<
 		" exceeds threshold" << std::endl;
-		std::cout << "[CarrotController.h] Nominal X: " <<
-		nomXVec << std::endl;
-		std::cout << "[CarrotController.h] Actual X: " << endStateVec << std::endl;*/
         return false;
 
     }
@@ -299,17 +308,22 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     //Increment cost by:
     //-> 0.01 for time based
     //-> trace(Covariance) for FIRM
-    cost += arma::trace(tempEndState->as<StateType>()->getCovariance());
+
+    //added by Mycal
+    //I want to be able to penalize for uncertainty more or less, so I will increase cost by some value proportional to trace of covariance
+    double uncertaintyFactor = 100;
+    double uncertaintyCost = uncertaintyFactor*arma::trace(tempEndState->as<StateType>()->getCovariance());
+    cost += uncertaintyCost;
+    //end of Mycal's section
+    //the original line is commented out below
+    //cost += arma::trace(tempEndState->as<StateType>()->getCovariance());
 
     if(!constructionMode)
     {
-        /*std::cout << "[CarrotController.h] Nominal X: " <<
-		nomXVec << std::endl;
-		std::cout << "[CarrotController.h] Actual X: " << endStateVec << std::endl;*/
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
     }
   }
-
+  myfile.close();
   ompl::base::Cost stabilizationCost;
 
   //si_->copyState(endState, tempEndState);
@@ -479,8 +493,6 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
     ompl::base::State *tempState2 = si_->allocState();
 
     si_->copyState(tempState1, startState);
-   // if (goal_->as<StateType>()->isReached(tempState1)) return;
-
 
     while(!goal_->as<StateType>()->isReached(tempState1) && tries_ < maxTries_)
     {
@@ -497,20 +509,15 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
         if(!constructionMode)
         {
-            std::cout << "[CarrotController.h] Stabilized state: " << tempState2->as<StateType>()->getArmaData() << std::endl;
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         }
 
     }
 
-    /*if (!constructionMode) {
-        std::cout << "[CarrotController.h] tempState1" << tempState1->as<StateType>()->getArmaData() << std::endl;
-        std::cout << "[CarrotController.h] tempState2" << tempState2->as<StateType>()->getArmaData() << std::endl;
-    }*/
-
    stabilizationCost = ompl::base::Cost(cost);
 
-   si_->copyState(endState, tempState1);
+   si_->copyState(endState, tempState1); //Changed by Mycal
+   //si_->copyState(endState, tempState2);
    si_->freeState(tempState1);
    si_->freeState(tempState2);
    tries_ = 0;
@@ -523,3 +530,17 @@ bool CarrotController<SeparatedControllerType, FilterType>::isTerminated(const o
 
     using namespace arma;
 
+    colvec diff = state->as<StateType>()->getArmaData() - goal_->as<StateType>()->getArmaData();
+
+    double distance_to_goal = norm(diff,2);
+
+    if( distance_to_goal > nodeReachedDistance_)
+    {
+        return false;
+    }
+
+    return true;
+
+}
+
+#endif

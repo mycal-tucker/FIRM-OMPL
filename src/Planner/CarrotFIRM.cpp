@@ -49,6 +49,7 @@
 #include <boost/thread.hpp>
 #include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
+#include "../../include/MotionModels/CarrotMotionModel.h" //TODO remove this when done debugging
 
 #define foreach BOOST_FOREACH
 #define foreach_reverse BOOST_REVERSE_FOREACH
@@ -876,13 +877,15 @@ void CarrotFIRM::executeFeedback(void)
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
+        std::cout << "edge info: " << e << std::endl;
+        //std::cout << "Execute cstartState: " << cstartState->State() << " cendState: " << cendState->State() << std::endl;
+
+
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
-            currentVertex = boost::target(e, g_);
-            std::cout << "[CarrotFIRM.cpp] Current vertex: " <<
-            stateProperty_[currentVertex]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
-                    std::cout << "[CarrotFIRM.cpp] Ended up at state: " << cendState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+            currentVertex = boost::target(e, g_);f
+            std::cout << "Updated currentVertex: " << currentVertex << std::endl;
 
         }
 
@@ -903,6 +906,9 @@ void CarrotFIRM::executeFeedback(void)
             // Set true state back to its correct value after Monte Carlo (happens during adding state to Graph)
             siF_->setTrueState(tempTrueStateCopy);
 
+
+            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
+
             siF_->freeState(tempTrueStateCopy);
 
             assert(numVerticesAfter-numVerticesBefore >0);
@@ -915,7 +921,6 @@ void CarrotFIRM::executeFeedback(void)
 
         si_->copyState(cstartState, cendState);
 
-
     }
 
 
@@ -925,6 +930,7 @@ void CarrotFIRM::executeFeedback(void)
 void CarrotFIRM::executeFeedbackWithRollout(void)
 {
     sendFeedbackEdgesToViz();
+    std::cout << "In executeFeedbackWithRollout" << std::endl;
 
     const Vertex start = startM_[0];
     const Vertex goal  = goalM_[0] ;
@@ -1017,7 +1023,7 @@ void CarrotFIRM::sendFeedbackEdgesToViz()
         targetVertex = boost::target(edge, g_);
         //TODO: some random target vertex which is not in graph is being assigned, why?
         CarrotVisualizer::addFeedbackEdge(stateProperty_[sourceVertex], stateProperty_[targetVertex], 0);
-  }
+    }
 }
 
 

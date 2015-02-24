@@ -12,18 +12,15 @@
 <landmark id = 10 x = 1.0  y = 7.0 />
 <landmark id = 11 x = 1.0  y = 8.0 />
 <landmark id = 12 x = 1.0  y = 10.0 />
-<landmark id = 13 x = 7.0  y = 4.0 />
-<landmark id = 14 x = 7.0  y = 6.0 />
-<landmark id = 15 x = 7.0  y = 8.0 />
-<landmark id = 16 x = 7.0  y = 10.0 />
-<landmark id = 17 x = 7.0  y = 11.0 />
-<landmark id = 18 x = 7.0  y = 3.0 />
+<landmark id = 13 x = 5.0  y = 2.0 />
+<landmark id = 14 x = 5.0  y = 10.0 />
+
 
 </LandmarkList>
 <ObservationModels>
   <CarrotObservationModel
-    sigma_range="0.0175"
-    sigma_angle="1"
+    sigma_range="0.175"
+    sigma_angle="10"
     eta_rd="0.0"
     eta_rphi = "0.0"
     eta_thetad="0.0"
@@ -49,20 +46,20 @@
     /> <!--No Noise--> 
   <CarrotMotionModel
     sigmaV="0.001"
-    etaV="0.001"
+    etaV="0.0001"
     sigmaOmega="0.0001"
-    etaOmega="0.003"
+    etaOmega="0.0003"
     P_Wg_filename=""
     orbit_radius=5.0
     wind_noise_pos="0.000001"
     wind_noise_ang="0.000001" 
-    max_x_velocity= 1.0
-    max_y_velocity= 1.0
+    max_x_velocity= 0.5
+    max_y_velocity= 0.5
     max_z_velocity= 0.5
     dt= 0.1
     /> <!--omega is in radians--> 
   <OmnidirectionalMotionModel 
-    max_connect_radius="30.0"
+    max_connect_radius="5.0"
     robot_link_length="0.2"
     sigma="0.00"
     eta="0.000"
@@ -83,22 +80,23 @@
         robotFile = "./Models/quadrotor.obj"
     />
      <StartPose
-        x = "1.0"
-        y = "1.0"
+        x = "7.0"
+        y = "2.0"
         z = "1.0"
     />
     <GoalPose
         x = "7.0"
-        y = "10.5"
-        z = "1.5"
+        y = "10.0"
+        z = "1.0"
     />
     <PlanningTime
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "60"
+        minNodes = "40"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 
     />
 </PlanningProblem>
+
