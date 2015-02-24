@@ -22,7 +22,7 @@
 </LandmarkList>
 <ObservationModels>
   <CarrotObservationModel
-    sigma_range="0.00175"
+    sigma_range="0.0175"
     sigma_angle="1"
     eta_rd="0.0"
     eta_rphi = "0.0"
@@ -48,10 +48,10 @@
     dt= 0.1
     /> <!--No Noise--> 
   <CarrotMotionModel
-    sigmaV="0.0001"
-    etaV="0.0001"
-    sigmaOmega="0.00001"
-    etaOmega="0.0003"
+    sigmaV="0.001"
+    etaV="0.001"
+    sigmaOmega="0.0001"
+    etaOmega="0.003"
     P_Wg_filename=""
     orbit_radius=5.0
     wind_noise_pos="0.000001"
@@ -83,20 +83,20 @@
         robotFile = "./Models/quadrotor.obj"
     />
      <StartPose
-        x = "2.0"
-        y = "1.5"
+        x = "1.0"
+        y = "1.0"
         z = "1.0"
     />
     <GoalPose
-        x = "3.0"
-        y = "5.5"
+        x = "7.0"
+        y = "10.5"
         z = "1.5"
     />
     <PlanningTime
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "50"
+        minNodes = "60"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 

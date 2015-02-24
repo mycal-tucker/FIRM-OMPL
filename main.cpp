@@ -62,7 +62,7 @@ void plan()
     //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
-                //OMPL_INFORM("Loaded Setup File");
+    OMPL_INFORM("Loaded Setup File");
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
     window.resize(window.sizeHint());
 
-    //window.showMaximized();
+    window.showMaximized();
 
     window.resetCamera();
 

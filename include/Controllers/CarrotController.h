@@ -285,8 +285,11 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     {
 
         si_->copyState(endState, internalState);
-        std::cout << "[CarrotController.h] Deviation of " << deviation <<
+        /*std::cout << "[CarrotController.h] Deviation of " << deviation <<
 		" exceeds threshold" << std::endl;
+		std::cout << "[CarrotController.h] Nominal X: " <<
+		nomXVec << std::endl;
+		std::cout << "[CarrotController.h] Actual X: " << endStateVec << std::endl;*/
         return false;
 
     }
@@ -300,6 +303,9 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
     if(!constructionMode)
     {
+        /*std::cout << "[CarrotController.h] Nominal X: " <<
+		nomXVec << std::endl;
+		std::cout << "[CarrotController.h] Actual X: " << endStateVec << std::endl;*/
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
     }
   }
@@ -473,6 +479,8 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
     ompl::base::State *tempState2 = si_->allocState();
 
     si_->copyState(tempState1, startState);
+   // if (goal_->as<StateType>()->isReached(tempState1)) return;
+
 
     while(!goal_->as<StateType>()->isReached(tempState1) && tries_ < maxTries_)
     {
@@ -489,14 +497,20 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
         if(!constructionMode)
         {
+            std::cout << "[CarrotController.h] Stabilized state: " << tempState2->as<StateType>()->getArmaData() << std::endl;
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         }
 
     }
 
+    /*if (!constructionMode) {
+        std::cout << "[CarrotController.h] tempState1" << tempState1->as<StateType>()->getArmaData() << std::endl;
+        std::cout << "[CarrotController.h] tempState2" << tempState2->as<StateType>()->getArmaData() << std::endl;
+    }*/
+
    stabilizationCost = ompl::base::Cost(cost);
 
-   si_->copyState(endState, tempState2);
+   si_->copyState(endState, tempState1);
    si_->freeState(tempState1);
    si_->freeState(tempState2);
    tries_ = 0;
@@ -509,17 +523,3 @@ bool CarrotController<SeparatedControllerType, FilterType>::isTerminated(const o
 
     using namespace arma;
 
-    colvec diff = state->as<StateType>()->getArmaData() - goal_->as<StateType>()->getArmaData();
-
-    double distance_to_goal = norm(diff,2);
-
-    if( distance_to_goal > nodeReachedDistance_)
-    {
-        return false;
-    }
-
-    return true;
-
-}
-
-#endif

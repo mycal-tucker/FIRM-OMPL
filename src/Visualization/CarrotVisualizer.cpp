@@ -67,6 +67,7 @@ void CarrotVisualizer::drawLandmark(arma::colvec& landmark)
 
     glPushMatrix();
     glTranslated(landmark[1], landmark[2], 0.0);
+    //std::cout << "[CarrotVisualizer.cpp] Drawing landmark..." << std::endl;
     glVertex3f(0.8,0.8,0.8);
 
     glBegin(GL_TRIANGLE_FAN);
@@ -129,7 +130,7 @@ void CarrotVisualizer::drawState(const ompl::base::State *state, VZRStateType st
         glTranslated(x[0], x[1], x[2]);
 
         //draw a black disk
-        GLUquadric *disk = gluNewQuadric();
+        /*GLUquadric *disk = gluNewQuadric();
         gluDisk(disk, 0, 0.15, 15, 1);
         gluDeleteQuadric(disk);
         glBegin(GL_LINES);
@@ -137,7 +138,7 @@ void CarrotVisualizer::drawState(const ompl::base::State *state, VZRStateType st
         glVertex3f(1.0*cos(x[2]), 1.0*sin(x[2]), 0);
         glEnd();
 
-        glColor3d(0.5,0.5,0.5);
+        glColor3d(0.5,0.5,0.5);*/
 
         //Remove comment to show field of view of robot
         /*

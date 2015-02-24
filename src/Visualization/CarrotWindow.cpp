@@ -82,6 +82,7 @@ MyCarrotWindow::MyCarrotWindow()
   this->setFocus();
   timer_.start(0.033*1000);
   modeComboBox->setCurrentIndex(1);
+  //std::cout << "[CarrotWindow.cpp] CarrotWindow created!" << std::endl;
 }
 
 void MyCarrotWindow::simulate(){

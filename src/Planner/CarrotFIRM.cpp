@@ -528,15 +528,18 @@ ompl::base::PathPtr CarrotFIRM::constructFeedbackPath(const Vertex &start, const
 {
     CarrotFeedbackPath *p = new CarrotFeedbackPath(siF_);
 
-    //std::cout<<"The start vertex is: "<<start<<std::endl;
-    //std::cout<<"The goal vertex is: "<<goal<<std::endl;
+    //std::cout<<"The start vertex is: "<<start->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
+    //std::cout<<"The goal vertex is: "<<goal->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
 
     Vertex currentVertex = start;
+    std::cout << "Start state: " << stateProperty_[start]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
 
     while(currentVertex!=goal)
     {
         Edge edge = feedback_[currentVertex]; // get the edge
         Vertex target = boost::target(edge, g_); // get the target of this edge
+        std::cout << "Target state: " << stateProperty_[target]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+
         p->append(stateProperty_[currentVertex],edgeControllers_[edge]); // push the state and controller to take
         if(target == goal)
         {
@@ -851,9 +854,12 @@ void CarrotFIRM::executeFeedback(void)
     ompl::base::State *cstartState = si_->allocState();
     si_->copyState(cstartState, stateProperty_[start]);
 
+
     ompl::base::State *cendState = si_->allocState();
 
-    OMPL_INFORM("FIRM: Running policy execution");
+    std::cout << "[CarrotFIRM.cpp] Uninitialized start State" << cendState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+
+    OMPL_INFORM("CarrotFIRM: Running policy execution");
 
     bool kidnapped_flag = false;
 
@@ -861,6 +867,12 @@ void CarrotFIRM::executeFeedback(void)
 
     while(currentVertex != goal)
     {
+
+        //double dist = si_->distance(stateProperty_[currentVertex], stateProperty_[goal]);
+        //std::cout << "[CarrotFIRM.cpp] Distance to goal: " << dist << std::endl;
+        std::cout << "[CarrotFIRM.cpp] Going from state: " << cstartState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+
+
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
@@ -868,7 +880,12 @@ void CarrotFIRM::executeFeedback(void)
         if(controller.Execute(cstartState, cendState, cost, false))
         {
             currentVertex = boost::target(e, g_);
+            std::cout << "[CarrotFIRM.cpp] Current vertex: " <<
+            stateProperty_[currentVertex]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+                    std::cout << "[CarrotFIRM.cpp] Ended up at state: " << cendState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+
         }
+
         else
         {
             std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
@@ -894,6 +911,7 @@ void CarrotFIRM::executeFeedback(void)
 
 
         }
+
 
         si_->copyState(cstartState, cendState);
 

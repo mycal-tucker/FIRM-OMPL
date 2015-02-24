@@ -63,7 +63,7 @@ void CarrotMotionModel::Evolve(const ompl::base::State *state, const ompl::contr
     //colvec xPrev = x;
 
     x += u + Un + Wg;
-    //std::cout << "end state: " << x <<std::endl;
+    //std::cout << "[MotionModel] End state: " << x <<std::endl;
 
     result->as<StateType>()->setXYZ(x[0],x[1],x[2]);
     //std::cout << "difference" << result->as<StateType>()->getArmaData()-x-u << std::endl;
