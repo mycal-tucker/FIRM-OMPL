@@ -35,6 +35,7 @@
 /* Author: Saurav Agarwal */
 
 #include "FIRMCarrotSetup.h"
+//#include "ros.h"
 //#include "FIRM2DSetup.h"
 #include "MultiModalSetup.h"
 #include "Tests.h"
@@ -100,6 +101,7 @@ void plan()
 
 int main(int argc, char *argv[])
 {
+
     srand(1234567);
 
     arma_rng::set_seed(1234567);

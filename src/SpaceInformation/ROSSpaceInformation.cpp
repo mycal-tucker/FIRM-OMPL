@@ -34,22 +34,28 @@
 
 /* Authors: Saurav Agarwal */
 
-#include "../../include/SpaceInformation/CarrotSpaceInformation.h"
+#include "../../include/SpaceInformation/ROSSpaceInformation.h"
 #include "../../include/Visualization/CarrotVisualizer.h"
 
-void firm::CarrotSpaceInformation::setBelief(const ompl::base::State *state)
+
+
+void firm::ROSSpaceInformation::setBelief(const ompl::base::State *state)
 {
     this->copyState(belief_, state);
     CarrotVisualizer::updateCurrentBelief(belief_);
 }
 
-void firm::CarrotSpaceInformation::setTrueState(const ompl::base::State *state)
+void firm::ROSSpaceInformation::setTrueState(const ompl::base::State *state)
 {
+    std::cout << "preparing to spin..." << std::endl;
+
+
+    std::cout << "spinning..." << std::endl;
     this->copyState(trueState_, state);
     CarrotVisualizer::updateTrueState(trueState_);
 }
 
-void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *control, bool withNoise)
+void firm::ROSSpaceInformation::applyControl(const ompl::control::Control *control, bool withNoise)
 {
     typename CarrotMotionModelMethod::NoiseType noise;
 
@@ -67,7 +73,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
     CarrotVisualizer::updateTrueState(trueState_);
 }
 
-ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()
+ObservationModelMethod::ObservationType firm::ROSSpaceInformation::getObservation()
 {
     return observationModel_->getObservation(trueState_, true);
 }

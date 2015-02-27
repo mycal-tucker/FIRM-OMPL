@@ -37,6 +37,7 @@
 #ifndef CARROT_CONTROLLER_
 #define CARROT_CONTROLLER_
 
+#include "ros/ros.h"
 #include "../SeparatedControllers/CarrotControllerMethod.h"
 #include "../Filters/CarrotKalmanMethod.h"
 #include "../MotionModels/CarrotMotionModelMethod.h"
@@ -72,8 +73,6 @@ class CarrotController
                  const firm::CarrotSpaceInformation::SpaceInformationPtr si);
 
         /** \brief Execute the controller i.e. take the system from start to end state of edge */
-        virtual bool Execute(const ompl::base::State *startState,
-                   ompl::base::State* endState,
         virtual bool Execute(const ompl::base::State *startState,
                    ompl::base::State* endState,
                    ompl::base::Cost &executionCost,
@@ -291,6 +290,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
         //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
         //myfile << "written\n";
         myfile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
+        ros::spinOnce();
 
     }
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
@@ -523,3 +523,23 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
    tries_ = 0;
 
 }
+
+template <class SeparatedControllerType, class FilterType>
+bool CarrotController<SeparatedControllerType, FilterType>::isTerminated(const ompl::base::State *state, const size_t t )
+{
+
+    using namespace arma;
+    colvec diff = state->as<StateType>()->getArmaData() - goal_->as<StateType>()->getArmaData();
+
+    double distance_to_goal = norm(diff.subvec(0,2),2);
+
+    if( distance_to_goal > nodeReachedDistance_)
+    {
+        return false;
+    }
+
+    return true;
+
+}
+
+#endif

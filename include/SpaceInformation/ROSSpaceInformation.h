@@ -34,10 +34,11 @@
 
 /* Authors: Saurav Agarwal */
 
-#ifndef FIRM_CARROT_SPACE_INFORMATION_
-#define FIRM_CARROT_SPACE_INFORMATION_
+#ifndef FIRM_ROS_SPACE_INFORMATION_
+#define FIRM_ROS_SPACE_INFORMATION_
 
-
+#include "ros/ros.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "ompl/control/SpaceInformation.h"
 #include "../MotionModels/CarrotMotionModelMethod.h"
 #include "../ObservationModels/ObservationModelMethod.h"
@@ -52,25 +53,40 @@ them multiple times. Instead, we can make them members of this new class
 
 namespace firm
 {
-    class CarrotSpaceInformation : public ompl::control::SpaceInformation
+    class ROSSpaceInformation : public ompl::control::SpaceInformation
     {
 
         public:
             typedef typename ObservationModelMethod::ObservationType ObservationType;
             typedef CarrotMotionModelMethod::MotionModelPointer MotionModelPointer;
             typedef ObservationModelMethod::ObservationModelPointer ObservationModelPointer;
-            typedef boost::shared_ptr<CarrotSpaceInformation> SpaceInformationPtr;
+            typedef boost::shared_ptr<ROSSpaceInformation> SpaceInformationPtr;
 
-            CarrotSpaceInformation(const ompl::base::StateSpacePtr &stateSpace,
+            void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
+            {
+                ROS_INFO("I heard something");
+                //ROS_INFO("I heard: [%s]", msg->pose.c_str());
+                //std::cout << "I heard something" << std::endl;
+            }
+
+            ROSSpaceInformation(const ompl::base::StateSpacePtr &stateSpace,
                                 const ompl::control::ControlSpacePtr &controlSpace) :
             ompl::control::SpaceInformation(stateSpace, controlSpace)
             {
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
+                int argc = 0;
+                ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
+                ros::NodeHandle n;
+                ros::Subscriber state_sub = n.subscribe("/BQ00/pose",10,&ROSSpaceInformation::stateCallback,this);
+                //ros::Subscriber state_sub = n.subscribe("/BQ00/pose",10,stateCallback);
+
+                state_sub_ = state_sub;
+
             }
 
 
-            virtual ~CarrotSpaceInformation(void)
+            virtual ~ROSSpaceInformation(void)
             {
             }
 
@@ -126,6 +142,12 @@ namespace firm
                 //return this->isValid(trueState_);
             }
 
+            void spin() {
+                ros::spinOnce();
+            }
+
+
+
             void applyControl(const ompl::control::Control *control, bool withNoise = true);
 
             ObservationType getObservation() ;
@@ -137,6 +159,7 @@ namespace firm
             MotionModelPointer motionModel_; // a model of the robot's motion
             ompl::base::State *trueState_; // The real state of the robot
             ompl::base::State *belief_; // the estimated state of the robot
+            ros::Subscriber state_sub_; //subscribes to quad pose
 
 
 

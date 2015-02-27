@@ -37,6 +37,7 @@
 #ifndef CARROT_FIRM_PLANNER_
 #define CARROT_FIRM_PLANNER_
 
+#include "../SpaceInformation/ROSSpaceInformation.h"
 #include "ompl/geometric/planners/PlannerIncludes.h"
 #include "ompl/datastructures/NearestNeighbors.h"
 #include <boost/graph/graph_traits.hpp>
@@ -140,7 +141,10 @@ public:
     typedef CarrotController<CarrotRHC, CarrotLinearizedKF> NodeControllerType;
 
     /** \brief Constructor */
-    CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si, bool debugMode=false);
+    CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si,
+                const firm::ROSSpaceInformation::SpaceInformationPtr &si_ROS,
+                bool debugMode=false);
+
 
     virtual ~CarrotFIRM(void);
 
@@ -390,6 +394,7 @@ protected:
 
     /** \brief The base::SpaceInformation cast as firm::SpaceInformation, for convenience */
     const firm::CarrotSpaceInformation::SpaceInformationPtr            siF_;
+    const firm::ROSSpaceInformation::SpaceInformationPtr               si_ROS_;
 
     /** \brief A table that stores the edge controllers according to the edges */
     std::map <Edge, EdgeControllerType > edgeControllers_;

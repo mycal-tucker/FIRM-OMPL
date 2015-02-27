@@ -102,9 +102,12 @@ namespace ompl
     }
 }
 
-CarrotFIRM::CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si, bool debugMode) :
+CarrotFIRM::CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si,
+                        const firm::ROSSpaceInformation::SpaceInformationPtr &si_ROS,
+                        bool debugMode) :
     ompl::base::Planner(si, "CarrotFIRM"),
     siF_(si),
+    si_ROS_(si_ROS),
     stateProperty_(boost::get(vertex_state_t(), g_)),
     totalConnectionAttemptsProperty_(boost::get(vertex_total_connection_attempts_t(), g_)),
     successfulConnectionAttemptsProperty_(boost::get(vertex_successful_connection_attempts_t(), g_)),
@@ -848,12 +851,17 @@ void CarrotFIRM::executeFeedback(void)
     siF_->setTrueState(stateProperty_[start]);
     siF_->setBelief(stateProperty_[start]);
 
+    si_ROS_->setTrueState(stateProperty_[start]);
+    si_ROS_->setBelief(stateProperty_[start]);
+
     Vertex currentVertex =  start;
 
     EdgeControllerType controller;
 
     ompl::base::State *cstartState = si_->allocState();
     si_->copyState(cstartState, stateProperty_[start]);
+    si_ROS_->copyState(cstartState, stateProperty_[start]);
+
 
 
     ompl::base::State *cendState = si_->allocState();
@@ -884,7 +892,7 @@ void CarrotFIRM::executeFeedback(void)
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
-            currentVertex = boost::target(e, g_);f
+            currentVertex = boost::target(e, g_);
             std::cout << "Updated currentVertex: " << currentVertex << std::endl;
 
         }
@@ -894,8 +902,11 @@ void CarrotFIRM::executeFeedback(void)
             std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
             // get a copy of the true state
             ompl::base::State *tempTrueStateCopy = si_->allocState();
+            ompl::base::State *tempROSTrueStateCopy = si_ROS_->allocState();
+
 
             siF_->getTrueState(tempTrueStateCopy);
+            si_ROS_->getTrueState(tempROSTrueStateCopy);
 
             int numVerticesBefore = boost::num_vertices(g_);
 
@@ -907,9 +918,10 @@ void CarrotFIRM::executeFeedback(void)
             siF_->setTrueState(tempTrueStateCopy);
 
 
-            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
+//            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
 
             siF_->freeState(tempTrueStateCopy);
+            si_ROS_->freeState(tempROSTrueStateCopy);
 
             assert(numVerticesAfter-numVerticesBefore >0);
 

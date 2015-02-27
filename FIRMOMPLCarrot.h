@@ -40,6 +40,9 @@
 #include <iostream>
 #include <fstream>
 
+// ROS include
+#include "ros/ros.h"
+
 // OMPL includes
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/control/SpaceInformation.h>
@@ -49,6 +52,8 @@
 //Spaces
 #include "include/Spaces/CarrotBeliefSpace.h"
 #include "include/SpaceInformation/CarrotSpaceInformation.h"
+#include "include/SpaceInformation/ROSSpaceInformation.h"
+
 
 //Observation Models
 #include "include/ObservationModels/ObservationModelMethod.h"

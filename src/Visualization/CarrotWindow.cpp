@@ -63,7 +63,7 @@ MyCarrotWindow::MyCarrotWindow()
   axisButton->setShortcut(QKeySequence("x"));
 
   //connect to call backs
-  connect(&timer_, SIGNAL(timeout()), this, SLOT(Simulate()));
+  connect(&timer_, SIGNAL(timeout()), this, SLOT(simulate()));
   connect(resetCamButton, SIGNAL(clicked()), this, SLOT(ResetCamera()));
   connect(snapshotButton, SIGNAL(clicked()), glWidget_, SLOT(SaveSnapshot()));
   connect(axisButton, SIGNAL(clicked(bool)), glWidget_, SLOT(DrawAxes(bool)));
