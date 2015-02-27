@@ -45,8 +45,6 @@
 #include "ompl/base/Cost.h"
 #include "boost/date_time/local_time/local_time.hpp"
 #include <boost/thread.hpp>
-#include <iostream>
-#include <fstream>
 
 /** \brief Base class for Controller. A controller's task is to use the filter to estimate the belief robot's state and
           generate control commands using the separated controller. For example by fusing an LQR and Kalman Filter
@@ -74,6 +72,8 @@ class CarrotController
                  const firm::CarrotSpaceInformation::SpaceInformationPtr si);
 
         /** \brief Execute the controller i.e. take the system from start to end state of edge */
+        virtual bool Execute(const ompl::base::State *startState,
+                   ompl::base::State* endState,
         virtual bool Execute(const ompl::base::State *startState,
                    ompl::base::State* endState,
                    ompl::base::Cost &executionCost,
@@ -523,24 +523,3 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
    tries_ = 0;
 
 }
-
-template <class SeparatedControllerType, class FilterType>
-bool CarrotController<SeparatedControllerType, FilterType>::isTerminated(const ompl::base::State *state, const size_t t )
-{
-
-    using namespace arma;
-
-    colvec diff = state->as<StateType>()->getArmaData() - goal_->as<StateType>()->getArmaData();
-
-    double distance_to_goal = norm(diff,2);
-
-    if( distance_to_goal > nodeReachedDistance_)
-    {
-        return false;
-    }
-
-    return true;
-
-}
-
-#endif

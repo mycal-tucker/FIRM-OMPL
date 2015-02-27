@@ -49,7 +49,6 @@
 #include <boost/thread.hpp>
 #include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
-#include "../../include/MotionModels/CarrotMotionModel.h" //TODO remove this when done debugging
 
 #define foreach BOOST_FOREACH
 #define foreach_reverse BOOST_REVERSE_FOREACH
@@ -85,6 +84,7 @@ namespace ompl
         static const double INIT_COST_TO_GO = 2.0;
 
         static const double OBSTACLE_COST_TO_GO = 500;
+
 
         static const double DP_CONVERGENCE_THRESHOLD = 1e-3;
 
@@ -1225,17 +1225,6 @@ void CarrotFIRM::recoverLostRobot(ompl::base::State *recoveredState)
             // If the robot's clearance gets below the threshold, break loop & replan
             if(!policyGenerator_->areCurrentBeliefsValid() || siF_->getStateValidityChecker()->clearance(currentTrueState) < ompl::magic::MIN_ROBOT_CLEARANCE)
             {
-                if(counter == 0)
-                {
-                    counter++;
-                    break;
-                }
-
-            }
-            if(counter > ompl::magic::MIN_STEPS_AFTER_CLEARANCE_VIOLATION_REPLANNING)
-                counter = 0;
-
-            if(policyGenerator_->isConverged())
                 break;
 
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));
