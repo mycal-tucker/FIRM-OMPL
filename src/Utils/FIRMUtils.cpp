@@ -78,7 +78,7 @@ int FIRMUtils::generateRandomIntegerInRange(const int floor, const int ceiling)
     return r;
 }
 
-void FIRMUtils::writeFIRMGraphToXML(const std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > nodes, const std::vector<std::pair<std::pair<int,int>,FIRMWeight> > edgeWeights)
+void FIRMUtils::writeFIRMGraphToXML(const std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > nodes, const std::vector<std::pair<std::pair<int,int>,FIRMWeight> > edgeWeights, int mapNumber = 1)
 {
     TiXmlDocument doc;
 
@@ -136,8 +136,13 @@ void FIRMUtils::writeFIRMGraphToXML(const std::vector<std::pair<int,std::pair<ar
 
 
    }
-
-	doc.SaveFile( "FIRMRoadMap.xml" );
+    if (mapNumber == 1){ //if the default value, don't append
+        doc.SaveFile( "FIRMRoadMap.xml" );
+	} else {
+        stringstream s;
+        s << "FIRMRoadMap" << mapNumber << ".xml";
+        doc.SaveFile( s.str() );
+	}
 }
 
 bool FIRMUtils::readFIRMGraphFromXML(const std::string &pathToXML, std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > &FIRMNodeList, std::vector<std::pair<std::pair<int,int>,FIRMWeight> > &edgeWeights)

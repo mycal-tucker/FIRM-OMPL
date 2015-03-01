@@ -336,6 +336,9 @@ bool CarrotFIRM::addedNewSolution(void) const
 
 ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
+    /*int numMapsToConstruct = 1; //edit value if want more
+    int numMapsConstructed = 0;
+    while (numMapsConstructed < numMapsToConstruct){*/
     checkValidity();
     ompl::base::GoalSampleableRegion *goal = dynamic_cast<ompl::base::GoalSampleableRegion*>(pdef_->getGoal().get());
 
@@ -415,9 +418,14 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
         // If roadmap wasn't loaded from file, then save the newly constructed roadmap
         if(!loadedRoadmapFromFile_)
         {
+            //this->savePlannerData(numMapsConstructed+1);
             this->savePlannerData();
         }
     }
+    /*
+    numMapsConstructed ++;
+    }
+    */
 
     return sol ? (addedNewSolution() ? ompl::base::PlannerStatus::EXACT_SOLUTION : ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) : ompl::base::PlannerStatus::TIMEOUT;
 }
@@ -1104,7 +1112,7 @@ bool CarrotFIRM::detectKidnapping(ompl::base::State *previousState, ompl::base::
 
 }
 
-void CarrotFIRM::savePlannerData()
+void CarrotFIRM::savePlannerData(int trialNumber = 1)
 {
 
     std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > nodes;
@@ -1135,7 +1143,7 @@ void CarrotFIRM::savePlannerData()
 
     }
 
-    FIRMUtils::writeFIRMGraphToXML(nodes, edgeWeights);
+    FIRMUtils::writeFIRMGraphToXML(nodes, edgeWeights, trialNumber);
 
 }
 
