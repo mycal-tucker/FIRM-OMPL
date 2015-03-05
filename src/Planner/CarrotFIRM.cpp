@@ -336,9 +336,11 @@ bool CarrotFIRM::addedNewSolution(void) const
 
 ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
-    /*int numMapsToConstruct = 1; //edit value if want more
+    int numMapsToConstruct = 5; //edit value if want more
     int numMapsConstructed = 0;
-    while (numMapsConstructed < numMapsToConstruct){*/
+    ompl::base::PathPtr sol; //added for scope
+
+    while (numMapsConstructed < numMapsToConstruct){
     checkValidity();
     ompl::base::GoalSampleableRegion *goal = dynamic_cast<ompl::base::GoalSampleableRegion*>(pdef_->getGoal().get());
 
@@ -391,7 +393,7 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
     if (!simpleSampler_)
         simpleSampler_ = si_->allocStateSampler();
 
-    ompl::base::PathPtr sol;
+    //ompl::base::PathPtr sol; //commented out by Mycal
     boost::thread slnThread(boost::bind(&CarrotFIRM::checkForSolution, this, ptc, boost::ref(sol)));
 
     ompl::base::PlannerTerminationCondition ptcOrSolutionFound =
@@ -422,10 +424,10 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
             this->savePlannerData();
         }
     }
-    /*
+
     numMapsConstructed ++;
     }
-    */
+
 
     return sol ? (addedNewSolution() ? ompl::base::PlannerStatus::EXACT_SOLUTION : ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) : ompl::base::PlannerStatus::TIMEOUT;
 }
@@ -1112,7 +1114,7 @@ bool CarrotFIRM::detectKidnapping(ompl::base::State *previousState, ompl::base::
 
 }
 
-void CarrotFIRM::savePlannerData(int trialNumber = 1)
+void CarrotFIRM::savePlannerData(int trialNumber/* = 1*/)
 {
 
     std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > nodes;
