@@ -335,88 +335,121 @@ bool CarrotFIRM::addedNewSolution(void) const
 
 ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
-    checkValidity();
-    ompl::base::GoalSampleableRegion *goal = dynamic_cast<ompl::base::GoalSampleableRegion*>(pdef_->getGoal().get());
+    int numMapsToConstruct = 2; //edit value if want more
+    int numMapsConstructed = 0;
+    ompl::base::PathPtr sol; //added for scope
+    const ompl::base::State *startState = si_->cloneState(pis_.nextStart());
+    const ompl::base::State *goalState = goalM_.empty() ? pis_.nextGoal(ptc) : pis_.nextGoal();
 
-    if (!goal)
-    {
-        OMPL_ERROR("%s: Unknown type of goal", getName().c_str());
-        return ompl::base::PlannerStatus::UNRECOGNIZED_GOAL_TYPE;
-    }
+    while (numMapsConstructed < numMapsToConstruct){
+        ompl::base::PathPtr tempSol; //reset each time in loop
+        //wipe the graph clear
+        g_.clear();
 
-    // Add the valid start states as milestones
-    while (const ompl::base::State *st = pis_.nextStart())
-           // std::cout << st->as<ompl::base::RealVectorStateSpace::StateType>()->values << std::endl;
-        startM_.push_back(addStateToGraph(si_->cloneState(st)));
+        checkValidity();
+        ompl::base::GoalSampleableRegion *goal = dynamic_cast<ompl::base::GoalSampleableRegion*>(pdef_->getGoal().get());
 
-    if (startM_.size() == 0)
-    {
-        OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
-        return ompl::base::PlannerStatus::INVALID_START;
-    }
-
-    if (!goal->couldSample())
-    {
-        OMPL_ERROR("%s: Insufficient states in sampleable goal region", getName().c_str());
-        return ompl::base::PlannerStatus::INVALID_GOAL;
-    }
-
-    // Ensure there is at least one valid goal state
-    if (goal->maxSampleCount() > goalM_.size() || goalM_.empty())
-    {
-        const ompl::base::State *st = goalM_.empty() ? pis_.nextGoal(ptc) : pis_.nextGoal();
-        if (st)
-            goalM_.push_back(addStateToGraph(si_->cloneState(st)));
-
-        if (goalM_.empty())
+        if (!goal)
         {
-            OMPL_ERROR("%s: Unable to find any valid goal states", getName().c_str());
+            OMPL_ERROR("%s: Unknown type of goal", getName().c_str());
+            return ompl::base::PlannerStatus::UNRECOGNIZED_GOAL_TYPE;
+        }
+
+        // Add the valid start states as milestones
+        /*while (const ompl::base::State *st = pis_.nextStart())
+               // std::cout << st->as<ompl::base::RealVectorStateSpace::StateType>()->values << std::endl;
+            startM_.push_back(addStateToGraph(si_->cloneState(st)));*/
+            startM_.clear();
+            addStateToGraph(si_->cloneState(startState));
+            startM_.push_back(addStateToGraph(si_->cloneState(startState)));
+
+        if (startM_.size() == 0)
+        {
+            OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
+            return ompl::base::PlannerStatus::INVALID_START;
+        }
+
+        if (!goal->couldSample())
+        {
+            OMPL_ERROR("%s: Insufficient states in sampleable goal region", getName().c_str());
             return ompl::base::PlannerStatus::INVALID_GOAL;
         }
-    }
 
-    unsigned int nrStartStates = boost::num_vertices(g_);
-    OMPL_INFORM("%s: Starting with %u states", getName().c_str(), nrStartStates);
+        // Ensure there is at least one valid goal state
+        //if (goal->maxSampleCount() > goalM_.size() || goalM_.empty())
+        //{
+            /*const ompl::base::State *st = goalM_.empty() ? pis_.nextGoal(ptc) : pis_.nextGoal();
+            if (st)
+                goalM_.push_back(addStateToGraph(si_->cloneState(st)));
 
-    addedSolution_ = false;
+            if (goalM_.empty())
+            {
+                OMPL_ERROR("%s: Unable to find any valid goal states", getName().c_str());
+                return ompl::base::PlannerStatus::INVALID_GOAL;
+            }*/
+            //if (goalState){
+                goalM_.push_back(addStateToGraph(si_->cloneState(goalState)));
 
-    if (!isSetup())
-        setup();
-    if (!sampler_)
-        sampler_ = si_->allocValidStateSampler();
-    if (!simpleSampler_)
-        simpleSampler_ = si_->allocStateSampler();
+            //}
+        //}
 
-    ompl::base::PathPtr sol;
-    boost::thread slnThread(boost::bind(&CarrotFIRM::checkForSolution, this, ptc, boost::ref(sol)));
 
-    ompl::base::PlannerTerminationCondition ptcOrSolutionFound =
-        ompl::base::plannerOrTerminationCondition(ptc, ompl::base::PlannerTerminationCondition(boost::bind(&CarrotFIRM::addedNewSolution, this)));
+        unsigned int nrStartStates = boost::num_vertices(g_);
+        OMPL_INFORM("%s: Starting with %u states", getName().c_str(), nrStartStates);
 
-    // If no roadmap was loaded, then construct one
-    if(!loadedRoadmapFromFile_)
-    {
-        constructRoadmap(ptcOrSolutionFound);
-    }
+        addedSolution_ = false;
 
-    slnThread.join();
+        //if (!isSetup())
+            setup();
+        //if (!sampler_)
+            sampler_ = si_->allocValidStateSampler();
+        //if (!simpleSampler_)
+            simpleSampler_ = si_->allocStateSampler();
 
-    OMPL_INFORM("%s: Created %u states", getName().c_str(), boost::num_vertices(g_) - nrStartStates);
+        //ompl::base::PathPtr sol; //commented out by Mycal
+        boost::thread slnThread(boost::bind(&CarrotFIRM::checkForSolution, this, ptc, boost::ref(tempSol)));
 
-    if (sol)
-    {
-        ompl::base::PlannerSolution psol(sol);
-        // if the solution was optimized, we mark it as such
-        if (addedNewSolution())
-            psol.optimized_ = true;
-        pdef_->addSolutionPath(psol);
+        ompl::base::PlannerTerminationCondition ptcOrSolutionFound =
+            ompl::base::plannerOrTerminationCondition(ptc, ompl::base::PlannerTerminationCondition(boost::bind(&CarrotFIRM::addedNewSolution, this)));
 
-        // If roadmap wasn't loaded from file, then save the newly constructed roadmap
-        if(!loadedRoadmapFromFile_)
+        // If no roadmap was loaded, then construct one
+        if(!loadedRoadmapFromFile_ || numMapsConstructed < numMapsToConstruct) //mycal added the or
         {
-            this->savePlannerData();
+            constructRoadmap(ptcOrSolutionFound);
         }
+
+        slnThread.join();
+
+        OMPL_INFORM("%s: Created %u states", getName().c_str(), boost::num_vertices(g_) - nrStartStates);
+
+        if (tempSol)
+        {
+            ompl::base::PlannerSolution psol(tempSol);
+            // if the solution was optimized, we mark it as such
+            if (addedNewSolution())
+                psol.optimized_ = true;
+            pdef_->addSolutionPath(psol);
+
+            // If roadmap wasn't loaded from file, then save the newly constructed roadmap
+            if(!loadedRoadmapFromFile_)
+            {
+                if (numMapsToConstruct != 1){
+                    this->savePlannerData(numMapsConstructed+2); //this will always number the maps starting at 2. That way it won't reload from FIRMRoadMap in later loops
+                } else{
+                    this->savePlannerData(); //saves to FIRMRoadMap.xml
+                }
+            }
+        }
+        if (numMapsConstructed == numMapsToConstruct - 1){
+            sol = tempSol;
+        }
+
+        numMapsConstructed ++;
+
+        //wipe nn_ clear
+        nn_->clear();
     }
+
 
     return sol ? (addedNewSolution() ? ompl::base::PlannerStatus::EXACT_SOLUTION : ompl::base::PlannerStatus::APPROXIMATE_SOLUTION) : ompl::base::PlannerStatus::TIMEOUT;
 }
@@ -451,9 +484,7 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
     */
 
     m = boost::add_vertex(g_);
-
     addStateToVisualization(state);
-
     stateProperty_[m] = state;
     NodeControllerType nodeController;
     generateNodeController(state, nodeController); // Generate the node controller
@@ -464,12 +495,10 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
 
     // Initialize to its own (dis)connected component.
     disjointSets_.make_set(m);
-
     nn_->add(m);
 
     // Which milestones will we attempt to connect to?
     const std::vector<Vertex>& neighbors = connectionStrategy_(m);
-
     foreach (Vertex n, neighbors)
     {
         if ( m!=n )
@@ -509,8 +538,8 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
 	    //si->freeState(start);
 	    //si->freeState(end);
         }
-    }
 
+    }
 //    policyGenerator_->addFIRMNodeToObservationGraph(state);
 
     return m;
@@ -1095,7 +1124,7 @@ bool CarrotFIRM::detectKidnapping(ompl::base::State *previousState, ompl::base::
 
 }
 
-void CarrotFIRM::savePlannerData()
+void CarrotFIRM::savePlannerData(int trialNumber/* = 1*/)
 {
 
     std::vector<std::pair<int,std::pair<arma::colvec,arma::mat> > > nodes;
@@ -1126,7 +1155,7 @@ void CarrotFIRM::savePlannerData()
 
     }
 
-    FIRMUtils::writeFIRMGraphToXML(nodes, edgeWeights);
+    FIRMUtils::writeFIRMGraphToXML(nodes, edgeWeights, trialNumber);
 
 }
 
