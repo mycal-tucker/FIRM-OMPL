@@ -38,9 +38,13 @@
 #define FIRM_CARROT_SPACE_INFORMATION_
 
 
+#include "ros/ros.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "ompl/control/SpaceInformation.h"
 #include "../MotionModels/CarrotMotionModelMethod.h"
 #include "../ObservationModels/ObservationModelMethod.h"
+#include "../../include/Spaces/CarrotBeliefSpace.h"
+
 
 
 /**
@@ -67,6 +71,46 @@ namespace firm
             {
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
+                isSimulation_ = true; // set to false when executing feedback path
+                quadName_ = "/BQ00/";
+                // set up ROS subscriber (state) and publisher (control)
+
+            }
+
+            void initializeSubscriber(void)
+            {
+                int argc = 0;
+                ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
+                ros::NodeHandle n;
+                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1000,&CarrotSpaceInformation::stateCallback,this);
+                state_sub_ = state_sub;
+            }
+
+            void initializePublisher(void)
+            {
+                int argc = 0;
+                ros::init(argc,NULL,"control_publisher");
+                ros::NodeHandle n;
+                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
+                control_pub_ = control_pub;
+            }
+
+            // state callback for subscriber
+            void stateCallback(const geometry_msgs::PoseStamped& msg)
+            {
+                std::cout << "[CSpaceInfo] Received state from ROS node" << std::endl;
+                ompl::base::State* trueState = this->allocState();
+                double x = msg.pose.position.x;
+                double y = msg.pose.position.y;
+                double z = msg.pose.position.z;
+                trueState->as<CarrotBeliefSpace::StateType>()->setXYZ(x,y,z);
+                this->copyState(trueState_,trueState);
+                this->freeState(trueState);
+                std::cout << "State set to: " << trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+                //ROS_INFO("State set to [%s]", msg.pose.c_str());
+                //ROS_INFO("I heard something");
+                //ROS_INFO("I heard: [%s]", msg->pose.c_str());
+                //std::cout << "I heard something" << std::endl;
             }
 
 
@@ -130,6 +174,16 @@ namespace firm
 
             ObservationType getObservation() ;
 
+            void setSimulation(bool isSimulation)
+            {
+                isSimulation_ = isSimulation;
+            }
+
+            bool isSimulation( void )
+            {
+                return isSimulation_;
+            }
+
 
         protected:
 
@@ -137,6 +191,11 @@ namespace firm
             MotionModelPointer motionModel_; // a model of the robot's motion
             ompl::base::State *trueState_; // The real state of the robot
             ompl::base::State *belief_; // the estimated state of the robot
+            bool isSimulation_; // to switch between sim and ROS hardware
+            ros::Subscriber state_sub_; // subscriber for quad pose
+            ros::Publisher control_pub_; // publisher for quad control
+            std::string quadName_; // name of quad we're pubbing topics to e.g. 'BQ04'
+
 
 
 

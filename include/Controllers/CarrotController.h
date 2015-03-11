@@ -239,8 +239,6 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   //cost = 0.01 , for covariance based
   double cost = 0.01;
 
-  //ompl::base::State *testState; si_->getTrueState(testState);
-  //std::cout << testState->as<StateType>()->getArmaData() << std::endl;
   ompl::base::State *internalState = si_->allocState();
 
   si_->copyState(internalState, startState);
@@ -260,6 +258,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   while(!this->isTerminated(tempEndState, k))
   {
     //using namespace std;
+
+
 
     this->Evolve(internalState, k, tempEndState) ;
 
@@ -283,17 +283,26 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
+    ompl::base::State* endTrueState = si_->allocState();
+    si_->getTrueState(endTrueState);
+    arma::colvec endTrueStateVec = endTrueState->as<StateType>()->getArmaData();
 
     if (!constructionMode){
-        std::cout << "Nominal X: " << nomXVec << std::endl;
+        //std::cout << "Nominal X: " << nomXVec << std::endl;
 
-        std::cout << "Actual X: " << endStateVec << std::endl;
+        std::cout << "Belief mean: " << endStateVec << std::endl;
+        std::cout << "True state: " << endTrueStateVec << std::endl;
         //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
         //myfile << "written\n";
         myfile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
         ros::spinOnce();
+        //boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+
 
     }
+
+    si_->freeState(endTrueState);
+
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
@@ -442,6 +451,9 @@ void CarrotController<SeparatedControllerType, FilterType>::Evolve(const ompl::b
 
   si_->applyControl(control);
 
+  if (!si_->isSimulation()) boost::this_thread::sleep(boost::posix_time::milliseconds(20));
+
+
   ObservationType zCorrected = si_->getObservation();
 
   CarrotLinearSystem current;
@@ -497,7 +509,7 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
     while(!goal_->as<StateType>()->isReached(tempState1) && tries_ < maxTries_)
     {
-        //OMPL_INFORM("stabilizing");
+        OMPL_INFORM("stabilizing");
         this->Evolve(tempState1, k, tempState2);
 
         k++;

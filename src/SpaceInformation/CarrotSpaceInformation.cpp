@@ -36,6 +36,8 @@
 
 #include "../../include/SpaceInformation/CarrotSpaceInformation.h"
 #include "../../include/Visualization/CarrotVisualizer.h"
+#include "../../include/MotionModels/CarrotMotionModelMethod.h"
+
 
 void firm::CarrotSpaceInformation::setBelief(const ompl::base::State *state)
 {
@@ -51,20 +53,48 @@ void firm::CarrotSpaceInformation::setTrueState(const ompl::base::State *state)
 
 void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *control, bool withNoise)
 {
-    typename CarrotMotionModelMethod::NoiseType noise;
+    if (isSimulation_) {
 
-    if(withNoise)
-    {
-        noise = motionModel_->generateNoise(trueState_, control);
+        typename CarrotMotionModelMethod::NoiseType noise;
+
+        if(withNoise)
+        {
+            noise = motionModel_->generateNoise(trueState_, control);
+        }
+        else
+        {
+            noise = motionModel_->getZeroNoise();
+        }
+
+        motionModel_->Evolve(trueState_, control, noise, trueState_);
+
     }
     else
     {
-        noise = motionModel_->getZeroNoise();
+        arma::colvec u = motionModel_->OMPL2ARMA(control);
+        arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+        geometry_msgs::PoseStamped msg;
+        double carrot_x = u[0];
+        double carrot_y = u[1];
+        double carrot_z = u[2];
+        msg.pose.position.x = carrot_x;
+        msg.pose.position.y = carrot_y;
+        msg.pose.position.z = carrot_z;
+        // no rotation
+        msg.pose.orientation.w = 1;
+        msg.pose.orientation.x = 0;
+        msg.pose.orientation.y = 0;
+        msg.pose.orientation.z = 0;
+        /*msg.takeoff =false;
+        msg.land = false;
+        msg.velocity = 1;*/
+        control_pub_.publish(msg);
+        std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
+        //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
     }
-
-    motionModel_->Evolve(trueState_, control, noise, trueState_);
-
     CarrotVisualizer::updateTrueState(trueState_);
+
 }
 
 ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()

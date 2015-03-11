@@ -47,10 +47,10 @@ void firm::ROSSpaceInformation::setBelief(const ompl::base::State *state)
 
 void firm::ROSSpaceInformation::setTrueState(const ompl::base::State *state)
 {
-    std::cout << "preparing to spin..." << std::endl;
+    //std::cout << "preparing to spin..." << std::endl;
 
 
-    std::cout << "spinning..." << std::endl;
+    //std::cout << "spinning..." << std::endl;
     this->copyState(trueState_, state);
     CarrotVisualizer::updateTrueState(trueState_);
 }

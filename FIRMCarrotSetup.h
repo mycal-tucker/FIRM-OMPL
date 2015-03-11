@@ -103,10 +103,10 @@ public:
 
         //si->setup();
         firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
-        firm::ROSSpaceInformation::SpaceInformationPtr si_ROS(new firm::ROSSpaceInformation(ss_,cs_));
+        //firm::ROSSpaceInformation::SpaceInformationPtr si_ROS(new firm::ROSSpaceInformation(ss_,cs_));
 
         siF_ = si;
-        si_ROS_ = si_ROS;
+        //si_ROS_ = si_ROS;
 
         ompl::base::ProblemDefinitionPtr prblm(new ompl::base::ProblemDefinition(siF_));
 
@@ -225,7 +225,7 @@ public:
 
             this->setStartAndGoalStates();
 
-            ompl::base::PlannerPtr plnr(new CarrotFIRM(siF_, si_ROS_,false));
+            ompl::base::PlannerPtr plnr(new CarrotFIRM(siF_, false));
 
             planner_ = plnr;
 
@@ -434,7 +434,7 @@ private:
     ompl::base::State *kidnappedState_;
 
     firm::CarrotSpaceInformation::SpaceInformationPtr siF_;
-    firm::ROSSpaceInformation::SpaceInformationPtr si_ROS_;
+    //firm::ROSSpaceInformation::SpaceInformationPtr si_ROS_;
 
     ompl::control::StatePropagatorPtr statePropagator_;
 

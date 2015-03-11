@@ -103,11 +103,10 @@ namespace ompl
 }
 
 CarrotFIRM::CarrotFIRM(const firm::CarrotSpaceInformation::SpaceInformationPtr &si,
-                        const firm::ROSSpaceInformation::SpaceInformationPtr &si_ROS,
                         bool debugMode) :
     ompl::base::Planner(si, "CarrotFIRM"),
     siF_(si),
-    si_ROS_(si_ROS),
+    //si_ROS_(si_ROS),
     stateProperty_(boost::get(vertex_state_t(), g_)),
     totalConnectionAttemptsProperty_(boost::get(vertex_total_connection_attempts_t(), g_)),
     successfulConnectionAttemptsProperty_(boost::get(vertex_successful_connection_attempts_t(), g_)),
@@ -845,14 +844,16 @@ std::pair<typename CarrotFIRM::Edge,double> CarrotFIRM::getUpdatedNodeCostToGo(c
 void CarrotFIRM::executeFeedback(void)
 {
 
+    siF_->setSimulation(false); // running in hardware now
+    siF_->initializeSubscriber();
+    siF_->initializePublisher();
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
     Vertex start = startM_[0];
     Vertex goal  = goalM_[0] ;
 
     siF_->setTrueState(stateProperty_[start]);
     siF_->setBelief(stateProperty_[start]);
-
-    si_ROS_->setTrueState(stateProperty_[start]);
-    si_ROS_->setBelief(stateProperty_[start]);
 
     Vertex currentVertex =  start;
 
@@ -860,9 +861,6 @@ void CarrotFIRM::executeFeedback(void)
 
     ompl::base::State *cstartState = si_->allocState();
     si_->copyState(cstartState, stateProperty_[start]);
-    si_ROS_->copyState(cstartState, stateProperty_[start]);
-
-
 
     ompl::base::State *cendState = si_->allocState();
 
@@ -877,18 +875,11 @@ void CarrotFIRM::executeFeedback(void)
     while(currentVertex != goal)
     {
 
-        //double dist = si_->distance(stateProperty_[currentVertex], stateProperty_[goal]);
-        //std::cout << "[CarrotFIRM.cpp] Distance to goal: " << dist << std::endl;
-        std::cout << "[CarrotFIRM.cpp] Going from state: " << cstartState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
-
-
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
-        std::cout << "edge info: " << e << std::endl;
+        //std::cout << "edge info: " << e << std::endl;
         //std::cout << "Execute cstartState: " << cstartState->State() << " cendState: " << cendState->State() << std::endl;
-
-
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
@@ -902,11 +893,11 @@ void CarrotFIRM::executeFeedback(void)
             std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
             // get a copy of the true state
             ompl::base::State *tempTrueStateCopy = si_->allocState();
-            ompl::base::State *tempROSTrueStateCopy = si_ROS_->allocState();
+            //ompl::base::State *tempROSTrueStateCopy = si_ROS_->allocState();
 
 
             siF_->getTrueState(tempTrueStateCopy);
-            si_ROS_->getTrueState(tempROSTrueStateCopy);
+            //si_ROS_->getTrueState(tempROSTrueStateCopy);
 
             int numVerticesBefore = boost::num_vertices(g_);
 
@@ -921,7 +912,7 @@ void CarrotFIRM::executeFeedback(void)
 //            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
 
             siF_->freeState(tempTrueStateCopy);
-            si_ROS_->freeState(tempROSTrueStateCopy);
+            //si_ROS_->freeState(tempROSTrueStateCopy);
 
             assert(numVerticesAfter-numVerticesBefore >0);
 
