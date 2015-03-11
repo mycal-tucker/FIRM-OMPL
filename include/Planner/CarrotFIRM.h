@@ -246,7 +246,7 @@ public:
     }
 
     /** \brief Saves the roadmap to an XML */
-    virtual void savePlannerData();
+    virtual void savePlannerData(int trialNumber = 1);
 
     /** \brief Load the roadmap info from a file */
     virtual void loadRoadMapFromFile(const std::string pathToFile);
