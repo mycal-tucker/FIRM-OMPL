@@ -335,26 +335,22 @@ bool CarrotFIRM::addedNewSolution(void) const
 
 ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
-    int numMapsToConstruct = 2; //edit value if want more
+    int numMapsToConstruct = 1; //edit value if want more
     int numMapsConstructed = 0;
     ompl::base::PathPtr sol; //added for scope
     const ompl::base::State *startState = si_->cloneState(pis_.nextStart());
     const ompl::base::State *goalState = goalM_.empty() ? pis_.nextGoal(ptc) : pis_.nextGoal();
-
     while (numMapsConstructed < numMapsToConstruct){
         ompl::base::PathPtr tempSol; //reset each time in loop
-        //wipe the graph clear
-        g_.clear();
+
 
         checkValidity();
         ompl::base::GoalSampleableRegion *goal = dynamic_cast<ompl::base::GoalSampleableRegion*>(pdef_->getGoal().get());
-
         if (!goal)
         {
             OMPL_ERROR("%s: Unknown type of goal", getName().c_str());
             return ompl::base::PlannerStatus::UNRECOGNIZED_GOAL_TYPE;
         }
-
         // Add the valid start states as milestones
         /*while (const ompl::base::State *st = pis_.nextStart())
                // std::cout << st->as<ompl::base::RealVectorStateSpace::StateType>()->values << std::endl;
@@ -362,7 +358,6 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
             startM_.clear();
             addStateToGraph(si_->cloneState(startState));
             startM_.push_back(addStateToGraph(si_->cloneState(startState)));
-
         if (startM_.size() == 0)
         {
             OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
@@ -399,11 +394,11 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
 
         addedSolution_ = false;
 
-        //if (!isSetup())
+        if (!isSetup())
             setup();
-        //if (!sampler_)
+        if (!sampler_)
             sampler_ = si_->allocValidStateSampler();
-        //if (!simpleSampler_)
+        if (!simpleSampler_)
             simpleSampler_ = si_->allocStateSampler();
 
         //ompl::base::PathPtr sol; //commented out by Mycal
@@ -413,7 +408,7 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
             ompl::base::plannerOrTerminationCondition(ptc, ompl::base::PlannerTerminationCondition(boost::bind(&CarrotFIRM::addedNewSolution, this)));
 
         // If no roadmap was loaded, then construct one
-        if(!loadedRoadmapFromFile_ || numMapsConstructed < numMapsToConstruct) //mycal added the or
+        if(!loadedRoadmapFromFile_ && numMapsConstructed < numMapsToConstruct) //mycal added the and
         {
             constructRoadmap(ptcOrSolutionFound);
         }
@@ -438,6 +433,8 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
                 } else{
                     this->savePlannerData(); //saves to FIRMRoadMap.xml
                 }
+            } else {
+                sol = tempSol;
             }
         }
         if (numMapsConstructed == numMapsToConstruct - 1){
@@ -448,6 +445,8 @@ ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTermination
 
         //wipe nn_ clear
         nn_->clear();
+        //wipe the graph clear
+        g_.clear();
     }
 
 
