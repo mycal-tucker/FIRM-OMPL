@@ -49,6 +49,8 @@
 #include <boost/thread.hpp>
 #include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
+#include <iostream>
+#include <fstream>
 
 #define foreach BOOST_FOREACH
 #define foreach_reverse BOOST_REVERSE_FOREACH
@@ -869,6 +871,166 @@ std::pair<typename CarrotFIRM::Edge,double> CarrotFIRM::getUpdatedNodeCostToGo(c
 
 }
 
+void CarrotFIRM::execute(bool prm)
+{
+    if (prm) {
+        this->executePRMPath();
+    } else {
+        this->executeFeedback();
+    }
+}
+
+void CarrotFIRM::executePRMPath(void)
+{
+    /*
+    1) Solve PRM waypoints
+    2) execute path along waypoints
+    */
+    struct PRMNode{int id; float x; float y; float z;};
+    struct PRMEdge{int id1; int id2;};
+
+    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, PRMNode, PRMEdge> PRMGraph;
+    typedef boost::graph_traits<PRMGraph>::vertex_descriptor vertex_t;
+    typedef boost::graph_traits<PRMGraph>::edge_descriptor edge_t;
+    typedef boost::adjacency_list<>::vertex_iterator vertex_iter;
+    typedef boost::property_map<PRMGraph, boost::vertex_index_t>::type IndexMap;
+    typedef boost::graph_traits<PRMGraph> Traits;
+
+    PRMGraph prmG;
+    std::pair<vertex_iter, vertex_iter> vs;// = boost::vertices(prmG);
+    IndexMap index; //=boost::get(vertex_index, prmG);
+
+
+    //Only from FIRMRoadMap.xml
+    std::string line;
+    std::ifstream firmMap("FIRMRoadMap.xml");
+    bool inNodes = true; //whether or not we are parsing nodes (instead of edges)
+    if (firmMap.is_open())
+    {
+        while (std::getline(firmMap, line))
+        {
+            if (inNodes)
+            {
+                if (line.compare("<?xml version=\"1.0\" ?>") == 0)
+                {
+                    //ignore the first line
+                }
+                else if (line.compare("<Nodes>") == 0)
+                {
+                    //start parsign nodes; ignore this one line
+                }
+                else if (line.compare("</Nodes>") == 0)
+                {
+                    //done parsing nodes
+                    inNodes = false;
+                    vs = boost::vertices(prmG); //TODO probably not needed
+                    index = boost::get(boost::vertex_index, prmG);
+                }
+                else
+                {
+                    //extract id, x, y, z
+                    int startOfId = line.find("id") + 4;
+                    int endOfId = line.find("\"", startOfId);
+                    std::string idString = line.substr(startOfId, endOfId-startOfId);
+                    int id;
+                    std::stringstream convert(idString);
+                    if (!(convert >> id)){ id = -1;}
+                    //std::cout<<"got id: "<<id<<std::endl;
+                    int startOfX = line.find("x") + 3;
+                    int endOfX = line.find("\"", startOfX);
+                    std::string xString = line.substr(startOfX, endOfX-startOfX);
+                    float x = std::stof(xString, nullptr);
+                    //std::cout<<"got x: "<<x<<std::endl;
+                    int startOfY = line.find("y") + 3;
+                    int endOfY = line.find("\"", startOfY);
+                    std::string yString = line.substr(startOfY, endOfY-startOfY);
+                    float y = std::stof(yString, nullptr);
+                    //std::cout<<"got y: "<<y<<std::endl;
+                    int startOfZ = line.find("theta") + 7;
+                    int endOfZ = line.find("\"", startOfZ);
+                    std::string zString = line.substr(startOfZ, endOfZ-startOfZ);
+                    float z = std::stof(zString, nullptr);
+                    //std::cout<<"got z: "<<z<<std::endl;
+
+                    vertex_t temp = boost::add_vertex(prmG);
+
+                    prmG[temp].id = id;
+                    prmG[temp].x = x;
+                    prmG[temp].y = y;
+                    prmG[temp].z = z;
+                }
+            }
+            else //if not inNodes, must be parsing edges instead
+            {
+                if (line.compare("<Edges>") == 0 || line.compare("</Edges>") == 0)
+                {
+                    //ignore start and end marker
+                }
+                else
+                {
+                    int startOfStartVertex = line.find("startVertexID") + 15;
+                    int endOfStartVertex = line.find("\"", startOfStartVertex);
+                    std::string startVertexIdString = line.substr(startOfStartVertex, endOfStartVertex-startOfStartVertex);
+                    int startId;
+                    std::stringstream convert(startVertexIdString);
+                    if (!(convert >> startId)){ startId = -1;}
+                    //std::cout<<"start edgeId: "<<startId<<std::endl;
+                    int startOfEndVertex = line.find("endVertexID") + 13;
+                    int endOfEndVertex = line.find("\"", startOfEndVertex);
+                    std::string endVertexIdString = line.substr(startOfEndVertex, endOfEndVertex-startOfEndVertex);
+                    int endId;
+                    std::stringstream convert2(endVertexIdString);
+                    if (!(convert2 >> endId)){ endId = -1;}
+                    //std::cout<<"end edgeId: "<<endId<<std::endl;
+
+
+                    vertex_t u;//the vertex corresponding to start of edge
+                    vertex_t v;//the vertex corresponding to end of edge
+                    for (vs = boost::vertices(prmG); vs.first != vs.second; ++vs.first)
+                    {
+                        vertex_t tempV = boost::vertex(index[*vs.first], prmG);
+                        int tempId = prmG[tempV].id;
+                        if (tempId == startId) {u = tempV;}
+                        else if (tempId == endId) {v = tempV;}
+                    }
+                    edge_t e; bool b;
+                    boost::tie(e, b) = boost::add_edge(u, v, prmG);
+                    prmG[e].id1 = startId;
+                    prmG[e].id2 = endId;
+                }
+            }
+            std::cout<<line<<std::endl;
+            std::cout<<"vertices in graph: "<<boost::num_vertices(prmG)<<std::endl;
+            std::cout<<"edges in graph: "<<boost::num_edges(prmG)<<std::endl;
+        }
+        firmMap.close();
+    }
+    else
+    {
+        std::cout<<"unable to open FIRMRoadMap.xml"<<std::endl;
+    }
+
+    Vertex start = startM_[0];
+    Vertex goal  = goalM_[0] ;
+
+    Vertex currentVertex = start;
+
+    //set some variable to store shortest path
+    //http://stackoverflow.com/questions/11726857/boosts-dijkstras-algorithm-tutorial
+    const int numNodes = boost::num_vertices(g_);
+    //Edge edge_array = boost::edges(g_);
+    //boost::astar_search(g_, start, boost::astar_heuristic)
+    //TODO
+    while (currentVertex != goal){
+        //TODO
+        currentVertex = goal;
+    }
+
+    //execute the shortest path
+
+
+}
+
 void CarrotFIRM::executeFeedback(void)
 {
 
@@ -948,13 +1110,8 @@ void CarrotFIRM::executeFeedback(void)
 
 
         }
-
-
         si_->copyState(cstartState, cendState);
-
     }
-
-
 }
 
 // Experimental
