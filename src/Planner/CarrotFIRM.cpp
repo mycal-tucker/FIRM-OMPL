@@ -970,7 +970,7 @@ void CarrotFIRM::executePRMPath(void)
                     {
                         start = temp;
                     }
-                    else if (id == 1)
+                    else if (id == 2)//TODO this is just because roadmap gets built weirdly
                     {
                         goal = temp;
                     }
@@ -1022,7 +1022,7 @@ void CarrotFIRM::executePRMPath(void)
             }
             std::cout<<line<<std::endl;
             std::cout<<"vertices in graph: "<<boost::num_vertices(prmG)<<std::endl;
-            std::cout<<"edges in graph: "<<boost::num_edges(prmG)<<std::endl;
+            //std::cout<<"edges in graph: "<<boost::num_edges(prmG)<<std::endl;
         }
         firmMap.close();
     }
@@ -1050,15 +1050,49 @@ void CarrotFIRM::executePRMPath(void)
     PRMGraph prmG2(num_nodes);
     //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(edge_weight, prmG2);
 
+    std::vector<vertex_t> parents(boost::num_vertices(prmG));
     std::vector<double> distances(boost::num_vertices(prmG));
+
+    auto p_map = boost::make_iterator_property_map(&parents[0], boost::get(boost::vertex_index, prmG));
+
     boost::dijkstra_shortest_paths(prmG, start,
-                                    weight_map(boost::get(&PRMEdge::cost, prmG))
+                                    boost::weight_map(boost::get(&PRMEdge::cost, prmG))
+                                    .predecessor_map(p_map)
                                     .distance_map(boost::make_iterator_property_map(distances.begin(),
                                             boost::get(boost::vertex_index, prmG))));
 
+    std::cout<<"printing distances"<<std::endl;
+    for (int i = 0; i < distances.size(); ++i)
+    {
+        std::cout<<distances[i]<<std::endl;
+    }
+
+    std::cout<<"printing predecessors"<<std::endl;
+    for (int i = 0; i < distances.size(); ++i)
+    {
+        std::cout<<p_map[i]<<std::endl;
+    }
+
+    //Now let's find the shortest path from start to goal
+    std::vector<vertex_t> path;
+
+    vertex_t v = goal;
+    /*while (tempVertex != start)
+    {
+        path.push_back(tempVertex);
+        std::cout<<"pushed back: "<<tempVertex<<std::endl;
+        tempVertex = p_map[tempVertex+1]; //tricky off by one error
+    }*/
+    for (vertex_t u = p_map[v];
+        u != v;
+        v = u, u = p_map[v])
+    {
+        std::cout<<"u: "<<u<<", v: "<<v<<std::endl;
+    }
+
+
     //std::vector<vertex_t> p(boost::num_vertices(prmG2));
     //std::vector<int> d(boost::num_vertices(prmG2));
-
 
 
     //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(boost:edge_weight, prmG);

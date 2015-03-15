@@ -93,7 +93,7 @@
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "40"
+        minNodes = "20"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 
