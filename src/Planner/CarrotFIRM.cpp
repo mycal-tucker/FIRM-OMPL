@@ -43,6 +43,7 @@
 #include "ompl/tools/config/MagicConstants.h"
 #include <boost/lambda/bind.hpp>
 #include <boost/graph/astar_search.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/incremental_components.hpp>
 #include <boost/property_map/vector_property_map.hpp>
 #include <boost/foreach.hpp>
@@ -883,11 +884,12 @@ void CarrotFIRM::execute(bool prm)
 void CarrotFIRM::executePRMPath(void)
 {
     /*
+    0) Build graph prmG with all nodes and edges we want
     1) Solve PRM waypoints
     2) execute path along waypoints
     */
     struct PRMNode{int id; float x; float y; float z;};
-    struct PRMEdge{int id1; int id2;};
+    struct PRMEdge{int id1; int id2; float cost;};
 
     typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, PRMNode, PRMEdge> PRMGraph;
     typedef boost::graph_traits<PRMGraph>::vertex_descriptor vertex_t;
@@ -895,11 +897,16 @@ void CarrotFIRM::executePRMPath(void)
     typedef boost::adjacency_list<>::vertex_iterator vertex_iter;
     typedef boost::property_map<PRMGraph, boost::vertex_index_t>::type IndexMap;
     typedef boost::graph_traits<PRMGraph> Traits;
+    typedef std::pair<int, int> Edge;
+
 
     PRMGraph prmG;
     std::pair<vertex_iter, vertex_iter> vs;// = boost::vertices(prmG);
     IndexMap index; //=boost::get(vertex_index, prmG);
-
+    vertex_t start; //where to start from
+    vertex_t goal; //where to end
+    std::vector<float> weightsVec;
+    std::vector<Edge> edgesVec;
 
     //Only from FIRMRoadMap.xml
     std::string line;
@@ -958,6 +965,15 @@ void CarrotFIRM::executePRMPath(void)
                     prmG[temp].x = x;
                     prmG[temp].y = y;
                     prmG[temp].z = z;
+
+                    if (id == 0) //start node
+                    {
+                        start = temp;
+                    }
+                    else if (id == 1)
+                    {
+                        goal = temp;
+                    }
                 }
             }
             else //if not inNodes, must be parsing edges instead
@@ -995,8 +1011,13 @@ void CarrotFIRM::executePRMPath(void)
                     }
                     edge_t e; bool b;
                     boost::tie(e, b) = boost::add_edge(u, v, prmG);
+                    float weight = sqrt((prmG[u].x - prmG[v].x)*(prmG[u].x - prmG[v].x) + (prmG[u].y - prmG[v].y)*(prmG[u].y - prmG[v].y) + (prmG[u].z - prmG[v].z)*(prmG[u].z - prmG[v].z));
+                    weightsVec.push_back(weight);
+                    edgesVec.push_back(Edge(prmG[u].id, prmG[v].id));
                     prmG[e].id1 = startId;
                     prmG[e].id2 = endId;
+                    //cost is euclidean distance between endpoints
+                    prmG[e].cost = weight;
                 }
             }
             std::cout<<line<<std::endl;
@@ -1010,21 +1031,40 @@ void CarrotFIRM::executePRMPath(void)
         std::cout<<"unable to open FIRMRoadMap.xml"<<std::endl;
     }
 
-    Vertex start = startM_[0];
-    Vertex goal  = goalM_[0] ;
+    //following structure in cs.brown.edu/~jwicks/boost/libs/graph/example/dijkstra-example.cpp
 
-    Vertex currentVertex = start;
 
-    //set some variable to store shortest path
-    //http://stackoverflow.com/questions/11726857/boosts-dijkstras-algorithm-tutorial
-    const int numNodes = boost::num_vertices(g_);
-    //Edge edge_array = boost::edges(g_);
-    //boost::astar_search(g_, start, boost::astar_heuristic)
-    //TODO
-    while (currentVertex != goal){
-        //TODO
-        currentVertex = goal;
+    const int num_nodes = boost::num_vertices(prmG);
+    //float* weights = &weightsVec[0];
+    //TODO uncomment above (casting as int but shouldn't be
+    int weights[weightsVec.size()];
+    for (int i = 0; i < weightsVec.size(); ++i)
+    {
+        weights[i] = std::floor(weightsVec[i]);
     }
+
+    Edge* edge_array = &edgesVec[0];
+    int num_arcs = sizeof(edge_array)/sizeof(Edge);
+
+
+    PRMGraph prmG2(num_nodes);
+    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(edge_weight, prmG2);
+
+    std::vector<double> distances(boost::num_vertices(prmG));
+    boost::dijkstra_shortest_paths(prmG, start,
+                                    weight_map(boost::get(&PRMEdge::cost, prmG))
+                                    .distance_map(boost::make_iterator_property_map(distances.begin(),
+                                            boost::get(boost::vertex_index, prmG))));
+
+    //std::vector<vertex_t> p(boost::num_vertices(prmG2));
+    //std::vector<int> d(boost::num_vertices(prmG2));
+
+
+
+    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(boost:edge_weight, prmG);
+    //boost::dijkstra_shortest_paths(prmG, start, &p[0], &d[0], weightmap, indexmap, std::less<float>(), boost::closed_plus<float>(), (std::numeric_limits<float>::max)(), 0, boost::default_dijkstra_visitor());
+
+    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(boost::edge_weight_t, prmG);
 
     //execute the shortest path
 
