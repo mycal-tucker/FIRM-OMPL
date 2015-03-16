@@ -175,6 +175,8 @@ namespace firm
 
             std::vector<double> flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true);
 
+            std::vector<double> flyAlongVector(double vecX, double vecY, double vecZ);
+
             std::vector<double> getQuadLocation(void)
             {
                 double x = trueState_->as<CarrotBeliefSpace::StateType>()->getX();

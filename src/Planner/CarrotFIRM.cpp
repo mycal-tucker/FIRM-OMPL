@@ -1106,7 +1106,7 @@ void CarrotFIRM::executePRMPath(void)
 
     double controllerGain = 0.001;
     int pathIndex = 0;
-    siF_->flyToWaypoint(controllerGain*(wayX-currX), controllerGain*(wayY-currY), controllerGain*(wayZ-currZ)); //send first command before loop to get things started
+    siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ); //send first command
     while (distToGoal > nearThreshold) //until we are pretty close to goal
     {
         /*
@@ -1118,8 +1118,7 @@ void CarrotFIRM::executePRMPath(void)
             4.2 Get new waypoint target
         */
         ros::spinOnce();
-        std::vector<double> curr = siF_->flyToWaypoint(controllerGain*(wayX-currX), controllerGain*(wayY-currY), controllerGain*(wayZ-currZ));
-
+        std::vector<double> curr = siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ);
         currX = curr[0];
         currY = curr[1];
         currZ = curr[2];

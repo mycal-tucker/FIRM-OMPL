@@ -128,6 +128,60 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     return location;
 }
 
+std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, double vecY, double vecZ)
+{
+    double maxSpeed = 0.5; //just guessing for now
+    double controllerGain = 0.0005;
+
+    double vecMagnitude = controllerGain*sqrt(vecX*vecX + vecY*vecY + vecZ*vecZ);
+
+    //will be normalized if needed (just used for scope here)
+    double wayX = controllerGain*vecX;
+    double wayY = controllerGain*vecY;
+    double wayZ = controllerGain*vecZ;
+
+    if (vecMagnitude > maxSpeed)
+    {
+        //must normalize to go at maxSpeed in right direction
+        double normalizationFactor = maxSpeed/vecMagnitude;
+        wayX = normalizationFactor*vecX;
+        wayY = normalizationFactor*vecY;
+        wayZ = normalizationFactor*vecZ;
+        std::cout<<"speed capped"<<std::endl;
+    }
+
+    //for debugging, print speed
+    std::cout<<"command speed: "<<sqrt(wayX*wayX + wayY*wayY + wayZ*wayZ)<<std::endl;
+
+    arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+
+    geometry_msgs::PoseStamped msg;
+
+    msg.pose.position.x = wayX;
+    msg.pose.position.y = wayY;
+    msg.pose.position.z = wayZ;
+
+    // no rotation
+    msg.pose.orientation.w = 1;
+    msg.pose.orientation.x = 0;
+    msg.pose.orientation.y = 0;
+    msg.pose.orientation.z = 0;
+    /*msg.takeoff =false;
+    msg.land = false;
+    msg.velocity = 1;*/
+    control_pub_.publish(msg);
+    std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
+    CarrotVisualizer::updateTrueState(trueState_);
+    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    double xTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
+    double yTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getY();
+    double zTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getZ();
+    //std::cout<<"true state: x: "<<xTrue<<", y: "<<yTrue<<", z: "<<zTrue<<std::endl;
+    std::vector<double> location = {xTrue, yTrue, zTrue};
+    return location;
+}
+
 ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()
 {
     return observationModel_->getObservation(trueState_, true);
