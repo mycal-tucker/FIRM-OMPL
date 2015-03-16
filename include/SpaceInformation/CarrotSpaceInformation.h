@@ -79,6 +79,7 @@ namespace firm
 
             void initializeSubscriber(void)
             {
+                std::cout<<"Initialized subscriber"<<std::endl;
                 int argc = 0;
                 ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
                 ros::NodeHandle n;
@@ -172,7 +173,7 @@ namespace firm
 
             void applyControl(const ompl::control::Control *control, bool withNoise = true);
 
-            void flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true);
+            std::vector<double> flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true);
 
             std::vector<double> getQuadLocation(void)
             {

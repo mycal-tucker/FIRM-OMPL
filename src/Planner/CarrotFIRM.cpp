@@ -1034,11 +1034,13 @@ void CarrotFIRM::executePRMPath(void)
 
     const int num_nodes = boost::num_vertices(prmG);
     //float* weights = &weightsVec[0];
-    //TODO uncomment above (casting as int but shouldn't be
+    //TODO review with Chris that this makes sense.
+    //I need weights to be an array of ints, not floats, so I multiply by 1000 and then round.
+    //Multiplying by a bigger number would reduce error risk
     int weights[weightsVec.size()];
     for (int i = 0; i < weightsVec.size(); ++i)
     {
-        weights[i] = std::floor(weightsVec[i]);
+        weights[i] = std::floor(weightsVec[i]*1000);
     }
 
     std::vector<vertex_t> parents(boost::num_vertices(prmG)); //will be used to store predecessor map
@@ -1052,18 +1054,6 @@ void CarrotFIRM::executePRMPath(void)
                                     .distance_map(boost::make_iterator_property_map(distances.begin(),
                                             boost::get(boost::vertex_index, prmG))));
 
-    //std::cout<<"printing distances"<<std::endl;
-    for (int i = 0; i < distances.size(); ++i)
-    {
-        std::cout<<distances[i]<<std::endl;
-    }
-
-    //std::cout<<"printing predecessors"<<std::endl;
-    for (int i = 0; i < distances.size(); ++i)
-    {
-        //std::cout<<p_map[i]<<std::endl;
-    }
-
     //Now let's find the shortest path from start to goal
     std::vector<vertex_t> path; //note that this will be backwards (so it goes along edges backwards from goal to start)
 
@@ -1072,24 +1062,16 @@ void CarrotFIRM::executePRMPath(void)
         u != v;
         v = u, u = p_map[v])
     {
-        //std::cout<<"u: "<<u<<", v: "<<v<<std::endl;
         path.push_back(v);
     }
 
     std::reverse(path.begin(), path.end()); //now in the right order
-    //std::cout<<"printing shortest path"<<std::endl;
-    for (int i = 0; i < path.size(); ++i)
-    {
-        //std::cout<<path[i]<<std::endl;
-    }
-    //std::cout<<"end of shortest path"<<std::endl;
 
     //execute the shortest path
     bool simulation = false;
     siF_->setSimulation(simulation);
     siF_->initializeSubscriber();
     siF_->initializePublisher();
-
     boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
     //already have vertex_t start declared and set way before
@@ -1100,6 +1082,7 @@ void CarrotFIRM::executePRMPath(void)
     double goalY = prmG[goal].y;
     double goalZ = prmG[goal].z;
     float distToGoal = sqrt((prmG[start].x - goalX)*(prmG[start].x - goalX) + (prmG[start].y - goalY)*(prmG[start].y - goalY) + (prmG[start].z - goalZ)*(prmG[start].z - goalZ));
+    //How close to goal is close enough
     float nearThreshold = 0.1;
 
     //where to fly next
@@ -1117,10 +1100,13 @@ void CarrotFIRM::executePRMPath(void)
     double startZ = startingPose[2];
     std::cout<<"Starting position: x: "<<startX<<", y: "<<startY<<", z: "<<startZ<<std::endl;
 
+    double currX = startX;
+    double currY = startY;
+    double currZ = startZ;
 
+    double controllerGain = 0.001;
     int pathIndex = 0;
-    std::cout<<"about to enter loop"<<std::endl;
-    siF_->flyToWaypoint(wayX, wayY, wayZ); //send first command before loop to get things started
+    siF_->flyToWaypoint(controllerGain*(wayX-currX), controllerGain*(wayY-currY), controllerGain*(wayZ-currZ)); //send first command before loop to get things started
     while (distToGoal > nearThreshold) //until we are pretty close to goal
     {
         /*
@@ -1129,17 +1115,16 @@ void CarrotFIRM::executePRMPath(void)
         3. Update distToGoal
         4. If close to waypoint:
             4.1 Increment pathIndex up by 1
+            4.2 Get new waypoint target
         */
-        siF_->flyToWaypoint(wayX, wayY, wayZ);
+        ros::spinOnce();
+        std::vector<double> curr = siF_->flyToWaypoint(controllerGain*(wayX-currX), controllerGain*(wayY-currY), controllerGain*(wayZ-currZ));
 
-        //get current x, y, z
-        std::vector<double> curr = siF_->getQuadLocation();
-        double currX = curr[0];
-        double currY = curr[1];
-        double currZ = curr[2];
+        currX = curr[0];
+        currY = curr[1];
+        currZ = curr[2];
 
-        std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
-        std::cout<<"Waypoint position: x: "<<wayX<<", y: "<<wayY<<", z: "<<wayZ<<std::endl;
+        //std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
 
         //update distance to goal for big while-loop
         distToGoal = sqrt((goalX-currX)*(goalX-currX) + (goalY-currY)*(goalY-currY) + (goalZ-currZ)*(goalZ-currZ));
@@ -1159,7 +1144,6 @@ void CarrotFIRM::executePRMPath(void)
                 wayX = prmG[nextWaypoint].x;
                 wayY = prmG[nextWaypoint].y;
                 wayZ = prmG[nextWaypoint].z;
-                siF_->flyToWaypoint(wayX, wayY, wayZ);
             }
         }
     }

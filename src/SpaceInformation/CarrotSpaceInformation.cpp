@@ -97,7 +97,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
 
 }
 
-void firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise)
+std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise)
 {
     //arma::colvec u = motionModel_->OMPL2ARMA(control);
     arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
@@ -117,8 +117,15 @@ void firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, doubl
     msg.velocity = 1;*/
     control_pub_.publish(msg);
     std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
-    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
     CarrotVisualizer::updateTrueState(trueState_);
+    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    double xTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
+    double yTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getY();
+    double zTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getZ();
+    //std::cout<<"true state: x: "<<xTrue<<", y: "<<yTrue<<", z: "<<zTrue<<std::endl;
+    std::vector<double> location = {xTrue, yTrue, zTrue};
+    return location;
 }
 
 ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()
