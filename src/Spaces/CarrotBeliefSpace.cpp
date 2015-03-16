@@ -104,8 +104,8 @@ double CarrotBeliefSpace::distance(const State* state1, const State *state2)
     double dy = state1->as<StateType>()->getY() - state2->as<StateType>()->getY();
     double dz = state1->as<StateType>()->getZ() - state2->as<StateType>()->getZ();
 
-    std::cout<<"Getting distance :"<<std::endl;
-    std::cin.get();
+    //std::cout<<"Getting distance :"<<std::endl;
+    //std::cin.get();
 
     return pow(dx*dx+dy*dy+dz*dz, 0.5);
 }

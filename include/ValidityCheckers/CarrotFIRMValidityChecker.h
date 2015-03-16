@@ -43,6 +43,9 @@ in FIRM we need to know if a state is observable or not
 before adding it to the graph.
 */
 
+#ifndef CARROT_FIRM_VALIDITY
+#define CARROT_FIRM_VALIDITY
+
 class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
 {
   public:
@@ -56,14 +59,29 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
     virtual bool isValid(const ompl::base::State *state) const
     {
         //return si_->satisfiesBounds(state);
-        double x = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[0];
-        double y = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[1];
-        double z = state->as<ompl::base::RealVectorStateSpace::StateType>()->values[2];
+        double x = state->as<StateType>()->getX();
+        double y = state->as<StateType>()->getY();
+        double z = state->as<StateType>()->getZ();
 
-        if (x <= 0 || x >= 8) return false;
-        if (y <=0 || y >= 12) return false;
-        if (z <= 0 || z >= 3) return false;
-        return true;
+          if (x <= -1.9 || x >= 1.0) {
+              //std::cout << "invalid x: " << x << std::endl;
+              return false;
+          }
+          if (y <= -6.8 || y >= 0.9) {
+              //std::cout << "invalid y: " << y << std::endl;
+              return false;
+          }
+          if (z <= 1 || z >= 2) {
+              //std::cout << "invalid z: " << z << std::endl;
+              return false;
+          }
+
+          // check if in or near obstacle (maynorc)
+          if (x <= 0.15 && x >= -1.05 && y >= -3.55 && y <= -2.35) {
+              return false;
+          }
+
+          return true;
 
       //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
 /*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
@@ -82,3 +100,5 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
   protected:
         firm::CarrotSpaceInformation::SpaceInformationPtr siF_;
 };
+
+#endif

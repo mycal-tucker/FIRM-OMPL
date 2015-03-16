@@ -39,7 +39,7 @@
 
 #include <omplapp/geometry/RigidBodyGeometry.h>
 #include "include/Planner/CarrotFIRM.h"
-//#include "include/ValidityCheckers/CarrotFIRMValidityChecker.h"
+#include "include/ValidityCheckers/CarrotFIRMValidityChecker.h"
 #include "FIRMOMPLCarrot.h"
 #include <tinyxml.h>
 
@@ -55,10 +55,8 @@ public:
     ss_(ompl::base::StateSpacePtr(new CarrotBeliefSpace()))
     {
         // set static variables
-        CarrotRHC::setControlQueueSize(10);
-        //RHCICreate::setTurnOnlyDistance(0.05);
-        //Controller<RHCICreate, ExtendedKF>::setNodeReachedAngle(30); // degrees
-        CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.25);// meters
+        CarrotRHC::setControlQueueSize(5);
+        CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.05);// meters
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTries(200);
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(6.0); // meters
 
@@ -80,17 +78,17 @@ public:
         //std::cout << "setting bounds..." << std::endl;
         ompl::base::RealVectorBounds bounds(3);
         // set X bound
-        bounds.setLow(0,0.2);
-        bounds.setHigh(0,16.8);
+        bounds.setLow(0,-2.0);
+        bounds.setHigh(0,1.1);
         //std::cout << "set x bounds..." << std::endl;
 
         //set Y bound
-        bounds.setLow(1,0.2);
-        bounds.setHigh(1,6.8);
+        bounds.setLow(1,-6.9);
+        bounds.setHigh(1,1.0);
         //std::cout << "set y bounds..." << std::endl;
 
         //set Z bound
-        bounds.setLow(2,0.0);
+        bounds.setLow(2,1.0);
         bounds.setHigh(2,2.0);
         ss_->as<CarrotBeliefSpace>()->setBounds(bounds);
         //std::cout << "finished setting bounds.." << std::endl;
@@ -103,7 +101,6 @@ public:
 
         //si->setup();
         firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
-        //firm::ROSSpaceInformation::SpaceInformationPtr si_ROS(new firm::ROSSpaceInformation(ss_,cs_));
 
         siF_ = si;
         //si_ROS_ = si_ROS;
@@ -181,24 +178,26 @@ public:
 
 		ompl::base::RealVectorBounds bounds(3);
 		// set X bound
-		bounds.setLow(0,0.25);
-		bounds.setHigh(0,7.75);
-		//std::cout << "set x bounds..." << std::endl;
+        bounds.setLow(0,-2.0);
+        bounds.setHigh(0,1.1);
+        //std::cout << "set x bounds..." << std::endl;
 
-		//set Y bound
-		bounds.setLow(1,0.25);
-		bounds.setHigh(1,11.75);
-		//std::cout << "set y bounds..." << std::endl;
+        //set Y bound
+        bounds.setLow(1,-6.9);
+        bounds.setHigh(1,1.0);
+        //std::cout << "set y bounds..." << std::endl;
 
-		//set Z bound
-		bounds.setLow(2,0.0);
-		bounds.setHigh(2,3.0);
-		ss_->as<CarrotBeliefSpace>()->setBounds(bounds);
-            //ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
+        //set Z bound
+        bounds.setLow(2,1.0);
+        bounds.setHigh(2,2.0);
+		//ss_->as<CarrotBeliefSpace>()->setBounds(bounds);
+        ss_->as<CarrotBeliefSpace>()->setBounds(inferEnvironmentBounds());
 
             // Create an FCL state validity checker and assign to space information
-            const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
-            siF_->setStateValidityChecker(fclSVC);
+            //const ompl::base::StateValidityCheckerPtr &fclSVC = this->allocStateValidityChecker(siF_, getGeometricStateExtractor(), false);
+            siF_->setStateValidityChecker(ompl::base::StateValidityCheckerPtr(new
+              CarrotFIRMValidityChecker(siF_)));
+            siF_->setStateValidityCheckingResolution(0.03);
         //firm::CarrotSpaceInformation::SpaceInformationPtr si(new firm::CarrotSpaceInformation(ss_, cs_));
 	    //siF_->setStateValidityChecker(ompl::base::StateValidityCheckerPtr(new CarrotFIRMValidityChecker(siF_)));
         //siF_->setStateValidityCheckingResolution(0.05);
@@ -215,8 +214,9 @@ public:
             statePropagator_ = prop;
             siF_->setStatePropagator(statePropagator_);
             siF_->setPropagationStepSize(0.01); // this is the duration that a control is applied
-            siF_->setStateValidityCheckingResolution(0.05);
+            //siF_->setStateValidityCheckingResolution(0.05);
             siF_->setMinMaxControlDuration(1,100);
+            siF_->setup();
 
             if(!start_ || !goal_)
             {

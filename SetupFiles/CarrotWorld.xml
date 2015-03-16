@@ -1,25 +1,27 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LandmarkList>
-<landmark id = 1 x = 1.0  y = 2.0 />
-<landmark id = 2 x = 1.0 y = 2.5 />
-<landmark id = 3 x = 1.0 y = 3.0 />
-<landmark id = 4 x = 1.0 y = 3.5 />
-<landmark id = 5 x = 1.0  y = 4.0 />
-<landmark id = 6 x = 1.0  y = 4.5 />
-<landmark id = 7 x = 1.0  y = 5.0 />
-<landmark id = 8 x = 1.0  y = 5.5 />
-<landmark id = 9 x = 1.0  y = 6.0 />
-<landmark id = 10 x = 1.0  y = 7.0 />
-<landmark id = 11 x = 1.0  y = 8.0 />
-<landmark id = 12 x = 1.0  y = 10.0 />
-<landmark id = 13 x = 5.0  y = 2.0 />
-<landmark id = 14 x = 5.0  y = 10.0 />
-
-
+<landmark id = 1 x = -1.2  y = -1.0 />
+<landmark id = 2 x = -1.2  y = -1.5 />
+<landmark id = 3 x = -1.2  y = -2.0 />
+<landmark id = 4 x = -1.2  y = -2.5 />
+<landmark id = 5 x = -1.2  y = -3.0 />
+<landmark id = 6 x = -1.2  y = -3.5 />
+<landmark id = 7 x = -1.2  y = -4.0 />
+<landmark id = 8 x = -1.2  y = -4.5 />
+<landmark id = 9 x = -1.2  y = -5.0 />
+<landmark id = 10 x = -1.2  y = -1.25 />
+<landmark id = 11 x = -1.2  y = -1.75 />
+<landmark id = 12 x = -1.2  y = -2.25 />
+<landmark id = 13 x = -1.2  y = -2.75 />
+<landmark id = 14 x = -1.2  y = -3.25 />
+<landmark id = 15 x = -1.2  y = -3.75 />
+<landmark id = 16 x = -1.2  y = -4.25 />
+<landmark id = 17 x = -1.2  y = -4.75 />
+<landmark id = 18 x = -1.2  y = -5.25 />
 </LandmarkList>
 <ObservationModels>
   <CarrotObservationModel
-    sigma_range="0.175"
+    sigma_range="0.10"
     sigma_angle="10"
     eta_rd="0.0"
     eta_rphi = "0.0"
@@ -46,13 +48,13 @@
     /> <!--No Noise--> 
   <CarrotMotionModel
     sigmaV="0.001"
-    etaV="0.0001"
+    etaV="0.001"
     sigmaOmega="0.0001"
     etaOmega="0.0003"
     P_Wg_filename=""
     orbit_radius=5.0
-    wind_noise_pos="0.000001"
-    wind_noise_ang="0.000001" 
+    wind_noise_pos="0.0001"
+    wind_noise_ang="0.0001" 
     max_x_velocity= 0.5
     max_y_velocity= 0.5
     max_z_velocity= 0.5
@@ -74,26 +76,26 @@
 </MotionModels>
 <PlanningProblem>
     <Environment
-        environmentFile = "./Models/CarrotWorld2.obj"
+        environmentFile = "./Models/obstacle_1.obj"
     />
     <Robot
         robotFile = "./Models/quadrotor.obj"
     />
      <StartPose
-        x = "7.0"
-        y = "2.0"
-        z = "1.0"
+        x = "0.0"
+        y = "-1.0"
+        z = "1.2"
     />
     <GoalPose
-        x = "7.0"
-        y = "10.0"
-        z = "1.0"
+        x = "-1.0"
+        y = "-6.0"
+        z = "1.6"
     />
     <PlanningTime
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "40"
+        minNodes = "50"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 

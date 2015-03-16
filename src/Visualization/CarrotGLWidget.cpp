@@ -61,9 +61,9 @@ CarrotGLWidget::CarrotGLWidget(QWidget *parent)
 {
     using namespace arma;
     arma::colvec campos(3);
-    campos<<13.5<<endr
-         <<3.5<<endr
-         <<32.0<<endr;
+    campos<<0.0<<endr
+         <<0.0<<endr
+         <<20.0<<endr;
     m_camPos =campos;
 
     arma::colvec camat(3);

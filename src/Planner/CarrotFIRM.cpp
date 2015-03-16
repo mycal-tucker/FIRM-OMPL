@@ -88,13 +88,13 @@ namespace ompl
 
         static const double DP_CONVERGENCE_THRESHOLD = 1e-3;
 
-        static const double DEFAULT_NEAREST_NEIGHBOUR_RADIUS = 5.0;
+        static const double DEFAULT_NEAREST_NEIGHBOUR_RADIUS = 2.5;
 
         static const double KIDNAPPING_INNOVATION_CHANGE_THRESHOLD = 5.0; // 50%
 
         static const unsigned int MAX_MM_POLICY_LENGTH   = 1000;
 
-        static const float MIN_ROBOT_CLEARANCE = 0.10;
+        static const float MIN_ROBOT_CLEARANCE = 0.25;
 
         static const unsigned int MIN_STEPS_AFTER_CLEARANCE_VIOLATION_REPLANNING = 100;
 
@@ -292,7 +292,7 @@ void CarrotFIRM::checkForSolution(const ompl::base::PlannerTerminationCondition 
         if (!addedSolution_)
         {
             OMPL_INFORM("FIRM: Checking for Solution.");
-            boost::this_thread::sleep(boost::posix_time::seconds(30));
+            boost::this_thread::sleep(boost::posix_time::seconds(10));
         }
     }
 }
@@ -520,8 +520,8 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
 	    rot_end.x = 1; rot_end.y = 0; rot_end.z = 0; rot_end.w = 0;
 	    si->printState(startV);
 	    si->printState(endV);*/
-            //if (si_->checkMotion(stateProperty_[m],stateProperty_[n]))
-            //{
+        if (si_->checkMotion(stateProperty_[m],stateProperty_[n]))
+            {
                 successfulConnectionAttemptsProperty_[m]++;
                 successfulConnectionAttemptsProperty_[n]++;
 
@@ -533,7 +533,7 @@ CarrotFIRM::Vertex CarrotFIRM::addStateToGraph(ompl::base::State *state, bool ad
                 }
 
                 uniteComponents(m, n);
-            //}
+            }
 	    //si->freeState(start);
 	    //si->freeState(end);
         }
@@ -569,7 +569,7 @@ ompl::base::PathPtr CarrotFIRM::constructFeedbackPath(const Vertex &start, const
     {
         Edge edge = feedback_[currentVertex]; // get the edge
         Vertex target = boost::target(edge, g_); // get the target of this edge
-        std::cout << "Target state: " << stateProperty_[target]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+        //std::cout << "Target state: " << stateProperty_[target]->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
 
         p->append(stateProperty_[currentVertex],edgeControllers_[edge]); // push the state and controller to take
         if(target == goal)
