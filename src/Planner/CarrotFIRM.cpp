@@ -885,8 +885,9 @@ void CarrotFIRM::executePRMPath(void)
 {
     /*
     0) Build graph prmG with all nodes and edges we want
-    1) Solve PRM waypoints
-    2) execute path along waypoints
+    1) Solve all shortest paths from start
+    2) Find shortest path from start to goal
+    3) Execute path along waypoints from start to goal (TODO)
     */
     struct PRMNode{int id; float x; float y; float z;};
     struct PRMEdge{int id1; int id2; float cost;};
@@ -930,7 +931,7 @@ void CarrotFIRM::executePRMPath(void)
                 {
                     //done parsing nodes
                     inNodes = false;
-                    vs = boost::vertices(prmG); //TODO probably not needed
+                    vs = boost::vertices(prmG);
                     index = boost::get(boost::vertex_index, prmG);
                 }
                 else
@@ -1020,8 +1021,8 @@ void CarrotFIRM::executePRMPath(void)
                     prmG[e].cost = weight;
                 }
             }
-            std::cout<<line<<std::endl;
-            std::cout<<"vertices in graph: "<<boost::num_vertices(prmG)<<std::endl;
+            //std::cout<<line<<std::endl;
+            //std::cout<<"vertices in graph: "<<boost::num_vertices(prmG)<<std::endl;
             //std::cout<<"edges in graph: "<<boost::num_edges(prmG)<<std::endl;
         }
         firmMap.close();
@@ -1030,9 +1031,6 @@ void CarrotFIRM::executePRMPath(void)
     {
         std::cout<<"unable to open FIRMRoadMap.xml"<<std::endl;
     }
-
-    //following structure in cs.brown.edu/~jwicks/boost/libs/graph/example/dijkstra-example.cpp
-
 
     const int num_nodes = boost::num_vertices(prmG);
     //float* weights = &weightsVec[0];
@@ -1043,15 +1041,8 @@ void CarrotFIRM::executePRMPath(void)
         weights[i] = std::floor(weightsVec[i]);
     }
 
-    Edge* edge_array = &edgesVec[0];
-    int num_arcs = sizeof(edge_array)/sizeof(Edge);
-
-
-    PRMGraph prmG2(num_nodes);
-    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(edge_weight, prmG2);
-
-    std::vector<vertex_t> parents(boost::num_vertices(prmG));
-    std::vector<double> distances(boost::num_vertices(prmG));
+    std::vector<vertex_t> parents(boost::num_vertices(prmG)); //will be used to store predecessor map
+    std::vector<double> distances(boost::num_vertices(prmG)); //will be used to store distances map
 
     auto p_map = boost::make_iterator_property_map(&parents[0], boost::get(boost::vertex_index, prmG));
 
@@ -1061,48 +1052,119 @@ void CarrotFIRM::executePRMPath(void)
                                     .distance_map(boost::make_iterator_property_map(distances.begin(),
                                             boost::get(boost::vertex_index, prmG))));
 
-    std::cout<<"printing distances"<<std::endl;
+    //std::cout<<"printing distances"<<std::endl;
     for (int i = 0; i < distances.size(); ++i)
     {
         std::cout<<distances[i]<<std::endl;
     }
 
-    std::cout<<"printing predecessors"<<std::endl;
+    //std::cout<<"printing predecessors"<<std::endl;
     for (int i = 0; i < distances.size(); ++i)
     {
-        std::cout<<p_map[i]<<std::endl;
+        //std::cout<<p_map[i]<<std::endl;
     }
 
     //Now let's find the shortest path from start to goal
-    std::vector<vertex_t> path;
+    std::vector<vertex_t> path; //note that this will be backwards (so it goes along edges backwards from goal to start)
 
     vertex_t v = goal;
-    /*while (tempVertex != start)
-    {
-        path.push_back(tempVertex);
-        std::cout<<"pushed back: "<<tempVertex<<std::endl;
-        tempVertex = p_map[tempVertex+1]; //tricky off by one error
-    }*/
     for (vertex_t u = p_map[v];
         u != v;
         v = u, u = p_map[v])
     {
-        std::cout<<"u: "<<u<<", v: "<<v<<std::endl;
+        //std::cout<<"u: "<<u<<", v: "<<v<<std::endl;
+        path.push_back(v);
     }
 
-
-    //std::vector<vertex_t> p(boost::num_vertices(prmG2));
-    //std::vector<int> d(boost::num_vertices(prmG2));
-
-
-    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(boost:edge_weight, prmG);
-    //boost::dijkstra_shortest_paths(prmG, start, &p[0], &d[0], weightmap, indexmap, std::less<float>(), boost::closed_plus<float>(), (std::numeric_limits<float>::max)(), 0, boost::default_dijkstra_visitor());
-
-    //boost::property_map<PRMGraph, boost::edge_weight_t>::type weightmap = boost::get(boost::edge_weight_t, prmG);
+    std::reverse(path.begin(), path.end()); //now in the right order
+    //std::cout<<"printing shortest path"<<std::endl;
+    for (int i = 0; i < path.size(); ++i)
+    {
+        //std::cout<<path[i]<<std::endl;
+    }
+    //std::cout<<"end of shortest path"<<std::endl;
 
     //execute the shortest path
+    bool simulation = false;
+    siF_->setSimulation(simulation);
+    siF_->initializeSubscriber();
+    siF_->initializePublisher();
+
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    //already have vertex_t start declared and set way before
+    vertex_t currentLocation = start;
+    vertex_t nextWaypoint = path[0];
+
+    double goalX = prmG[goal].x;
+    double goalY = prmG[goal].y;
+    double goalZ = prmG[goal].z;
+    float distToGoal = sqrt((prmG[start].x - goalX)*(prmG[start].x - goalX) + (prmG[start].y - goalY)*(prmG[start].y - goalY) + (prmG[start].z - goalZ)*(prmG[start].z - goalZ));
+    float nearThreshold = 0.1;
+
+    //where to fly next
+    double wayX = prmG[nextWaypoint].x;
+    double wayY = prmG[nextWaypoint].y;
+    double wayZ = prmG[nextWaypoint].z;
 
 
+    siF_->setTrueState(stateProperty_[startM_[0]]);
+
+    //say where we are starting
+    std::vector<double> startingPose = siF_->getQuadLocation();
+    double startX = startingPose[0];
+    double startY = startingPose[1];
+    double startZ = startingPose[2];
+    std::cout<<"Starting position: x: "<<startX<<", y: "<<startY<<", z: "<<startZ<<std::endl;
+
+
+    int pathIndex = 0;
+    std::cout<<"about to enter loop"<<std::endl;
+    siF_->flyToWaypoint(wayX, wayY, wayZ); //send first command before loop to get things started
+    while (distToGoal > nearThreshold) //until we are pretty close to goal
+    {
+        /*
+        1. Try to go straight to next waypoint (send waypoint command via ROS)
+        2. Update currentLocation (from ROS)
+        3. Update distToGoal
+        4. If close to waypoint:
+            4.1 Increment pathIndex up by 1
+        */
+        siF_->flyToWaypoint(wayX, wayY, wayZ);
+
+        //get current x, y, z
+        std::vector<double> curr = siF_->getQuadLocation();
+        double currX = curr[0];
+        double currY = curr[1];
+        double currZ = curr[2];
+
+        std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
+        std::cout<<"Waypoint position: x: "<<wayX<<", y: "<<wayY<<", z: "<<wayZ<<std::endl;
+
+        //update distance to goal for big while-loop
+        distToGoal = sqrt((goalX-currX)*(goalX-currX) + (goalY-currY)*(goalY-currY) + (goalZ-currZ)*(goalZ-currZ));
+
+        //see if need to update to next waypoint
+        float distToWaypoint = sqrt((wayX-currX)*(wayX-currX) + (wayY-currY)*(wayY-currY) + (wayZ-currZ)*(wayZ-currZ));
+        if (distToWaypoint < nearThreshold)
+        {
+            std::cout<<"Reached waypoint: x: "<<wayX<<", y: "<<wayY<<", z: "<<wayZ<<std::endl;
+            //close enough; aim for next waypoint (but check that won't get index out of bounds if there is no next waypoint
+            if (pathIndex == path.size()){/*close to goal, will exit while loop right away*/}
+            else
+            {
+                pathIndex = pathIndex + 1;
+                nextWaypoint = path[pathIndex];
+                //tell quad to fly to next waypoint
+                wayX = prmG[nextWaypoint].x;
+                wayY = prmG[nextWaypoint].y;
+                wayZ = prmG[nextWaypoint].z;
+                siF_->flyToWaypoint(wayX, wayY, wayZ);
+            }
+        }
+    }
+
+    std::cout<<"Reached goal"<<std::endl;
 }
 
 void CarrotFIRM::executeFeedback(void)

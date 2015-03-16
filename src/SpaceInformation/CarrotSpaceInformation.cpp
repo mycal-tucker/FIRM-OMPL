@@ -97,6 +97,30 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
 
 }
 
+void firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise)
+{
+    //arma::colvec u = motionModel_->OMPL2ARMA(control);
+    arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    geometry_msgs::PoseStamped msg;
+
+    msg.pose.position.x = wayX;
+    msg.pose.position.y = wayY;
+    msg.pose.position.z = wayZ;
+
+    // no rotation
+    msg.pose.orientation.w = 1;
+    msg.pose.orientation.x = 0;
+    msg.pose.orientation.y = 0;
+    msg.pose.orientation.z = 0;
+    /*msg.takeoff =false;
+    msg.land = false;
+    msg.velocity = 1;*/
+    control_pub_.publish(msg);
+    std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
+    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+    CarrotVisualizer::updateTrueState(trueState_);
+}
+
 ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()
 {
     return observationModel_->getObservation(trueState_, true);

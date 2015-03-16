@@ -172,6 +172,17 @@ namespace firm
 
             void applyControl(const ompl::control::Control *control, bool withNoise = true);
 
+            void flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true);
+
+            std::vector<double> getQuadLocation(void)
+            {
+                double x = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
+                double y = trueState_->as<CarrotBeliefSpace::StateType>()->getY();
+                double z = trueState_->as<CarrotBeliefSpace::StateType>()->getZ();
+                std::vector<double> location = {x, y, z};
+                return location;
+            }
+
             ObservationType getObservation() ;
 
             void setSimulation(bool isSimulation)
