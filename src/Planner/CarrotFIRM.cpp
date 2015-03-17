@@ -1067,6 +1067,11 @@ void CarrotFIRM::executePRMPath(void)
 
     std::reverse(path.begin(), path.end()); //now in the right order
 
+    std::cout<<"Printing path"<<std::endl;
+    for (int i = 0; i < path.size(); ++i){
+    std::cout<<path[i]<<std::endl;
+    }
+
     //execute the shortest path
     bool simulation = false;
     siF_->setSimulation(simulation);

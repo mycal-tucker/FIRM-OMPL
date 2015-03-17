@@ -9,13 +9,16 @@
 <landmark id = 7 x = 1.0  y = 5.0 />
 <landmark id = 8 x = 1.0  y = 5.5 />
 <landmark id = 9 x = 1.0  y = 6.0 />
-<landmark id = 10 x = 1.0  y = 7.0 />
-<landmark id = 11 x = 1.0  y = 8.0 />
-<landmark id = 12 x = 1.0  y = 10.0 />
-<landmark id = 13 x = 5.0  y = 2.0 />
-<landmark id = 14 x = 5.0  y = 10.0 />
-
-
+<landmark id = 10 x = 1.0  y = 6.5 />
+<landmark id = 11 x = 1.0  y = 7.0 />
+<landmark id = 12 x = 1.0  y = 7.5 />
+<landmark id = 13 x = 1.0  y = 8.0 />
+<landmark id = 14 x = 1.0  y = 8.5 />
+<landmark id = 15 x = 1.0  y = 9.0 />
+<landmark id = 16 x = 1.0  y = 9.5 />
+<landmark id = 17 x = 1.0  y = 10.0 />
+<landmark id = 18 x = 5.0  y = 2.0 />
+<landmark id = 19 x = 5.0  y = 10.0 />
 </LandmarkList>
 <ObservationModels>
   <CarrotObservationModel
@@ -46,7 +49,7 @@
     /> <!--No Noise--> 
   <CarrotMotionModel
     sigmaV="0.001"
-    etaV="0.0001"
+    etaV="0.001"
     sigmaOmega="0.0001"
     etaOmega="0.0003"
     P_Wg_filename=""
@@ -59,7 +62,7 @@
     dt= 0.1
     /> <!--omega is in radians--> 
   <OmnidirectionalMotionModel 
-    max_connect_radius="5.0"
+    max_connect_radius="3.0"
     robot_link_length="0.2"
     sigma="0.00"
     eta="0.000"
@@ -93,7 +96,7 @@
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "20"
+        minNodes = "30"
     />
     <KidnappedState
         x = 1.5 y = 1.5 z = 1.0 

@@ -89,7 +89,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         msg.land = false;
         msg.velocity = 1;*/
         control_pub_.publish(msg);
-        std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
+        //std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
         //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
     }
@@ -116,7 +116,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     msg.land = false;
     msg.velocity = 1;*/
     control_pub_.publish(msg);
-    std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
+    //std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
     CarrotVisualizer::updateTrueState(trueState_);
     //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
@@ -147,11 +147,11 @@ std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, do
         wayX = normalizationFactor*vecX;
         wayY = normalizationFactor*vecY;
         wayZ = normalizationFactor*vecZ;
-        std::cout<<"speed capped"<<std::endl;
+        //std::cout<<"speed capped"<<std::endl;
     }
 
     //for debugging, print speed
-    std::cout<<"command speed: "<<sqrt(wayX*wayX + wayY*wayY + wayZ*wayZ)<<std::endl;
+    //std::cout<<"command speed: "<<sqrt(wayX*wayX + wayY*wayY + wayZ*wayZ)<<std::endl;
 
     arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
 
@@ -170,7 +170,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, do
     msg.land = false;
     msg.velocity = 1;*/
     control_pub_.publish(msg);
-    std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
+    //std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
     CarrotVisualizer::updateTrueState(trueState_);
     //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 

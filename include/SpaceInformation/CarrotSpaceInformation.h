@@ -99,7 +99,7 @@ namespace firm
             // state callback for subscriber
             void stateCallback(const geometry_msgs::PoseStamped& msg)
             {
-                std::cout << "[CSpaceInfo] Received state from ROS node" << std::endl;
+                //std::cout << "[CSpaceInfo] Received state from ROS node" << std::endl;
                 ompl::base::State* trueState = this->allocState();
                 double x = msg.pose.position.x;
                 double y = msg.pose.position.y;
@@ -107,7 +107,7 @@ namespace firm
                 trueState->as<CarrotBeliefSpace::StateType>()->setXYZ(x,y,z);
                 this->copyState(trueState_,trueState);
                 this->freeState(trueState);
-                std::cout << "State set to: " << trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+                //std::cout << "State set to: " << trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
                 //ROS_INFO("State set to [%s]", msg.pose.c_str());
                 //ROS_INFO("I heard something");
                 //ROS_INFO("I heard: [%s]", msg->pose.c_str());

@@ -321,7 +321,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
     //added by Mycal
     //I want to be able to penalize for uncertainty more or less, so I will increase cost by some value proportional to trace of covariance
-    double uncertaintyFactor = 100;
+    double uncertaintyFactor = 1000;
     double uncertaintyCost = uncertaintyFactor*arma::trace(tempEndState->as<StateType>()->getCovariance());
     cost += uncertaintyCost;
     //end of Mycal's section
