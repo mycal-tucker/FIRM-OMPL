@@ -252,8 +252,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   int deviationCounter = 0;
 
   ofstream myfile;
-  remove("logging.txt");//remove the log from the last trial
-  myfile.open("logging.txt", ios::app);
+  remove("loggingFIRM.txt");//remove the log from the last trial
+  myfile.open("loggingFIRM.txt", ios::app);
 
   while(!this->isTerminated(tempEndState, k))
   {

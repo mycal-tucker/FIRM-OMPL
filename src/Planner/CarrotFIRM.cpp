@@ -1073,6 +1073,11 @@ void CarrotFIRM::executePRMPath(void)
     }
 
     //execute the shortest path
+
+    std::ofstream myfile;
+    remove("loggingPRM.txt");//remove the log from the last prm trial
+    myfile.open("loggingPRM.txt", std::ios::app);
+
     bool simulation = false;
     siF_->setSimulation(simulation);
     siF_->initializeSubscriber();
@@ -1094,6 +1099,11 @@ void CarrotFIRM::executePRMPath(void)
     double wayX = prmG[nextWaypoint].x;
     double wayY = prmG[nextWaypoint].y;
     double wayZ = prmG[nextWaypoint].z;
+
+    //keep track of old waypoint to compute straight line path
+    double oldWayX = wayX;
+    double oldWayY = wayY;
+    double oldWayZ = wayZ;
 
 
     siF_->setTrueState(stateProperty_[startM_[0]]);
@@ -1128,6 +1138,8 @@ void CarrotFIRM::executePRMPath(void)
         currY = curr[1];
         currZ = curr[2];
 
+        myfile<<currX<<", "<<currY<<", "<<currZ<<"\n"; //only logs current location, not desired location
+
         //std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
 
         //update distance to goal for big while-loop
@@ -1145,13 +1157,16 @@ void CarrotFIRM::executePRMPath(void)
                 pathIndex = pathIndex + 1;
                 nextWaypoint = path[pathIndex];
                 //tell quad to fly to next waypoint
+                oldWayX = wayX;
+                oldWayY = wayY;
+                oldWayZ = wayZ;
                 wayX = prmG[nextWaypoint].x;
                 wayY = prmG[nextWaypoint].y;
                 wayZ = prmG[nextWaypoint].z;
             }
         }
     }
-
+    myfile.close();
     std::cout<<"Reached goal"<<std::endl;
 }
 
