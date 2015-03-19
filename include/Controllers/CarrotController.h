@@ -252,8 +252,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
   int deviationCounter = 0;
 
   ofstream myfile;
-  remove("logging.txt");//remove the log from the last trial
-  myfile.open("logging.txt", ios::app);
+  remove("loggingFIRM.txt");//remove the log from the last trial
+  myfile.open("loggingFIRM.txt", ios::app);
 
   while(!this->isTerminated(tempEndState, k))
   {
@@ -321,7 +321,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
     //added by Mycal
     //I want to be able to penalize for uncertainty more or less, so I will increase cost by some value proportional to trace of covariance
-    double uncertaintyFactor = 100;
+    double uncertaintyFactor = 1000;
     double uncertaintyCost = uncertaintyFactor*arma::trace(tempEndState->as<StateType>()->getCovariance());
     cost += uncertaintyCost;
     //end of Mycal's section
