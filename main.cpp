@@ -63,6 +63,8 @@ void plan()
     //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
+    bool prm = true; //set to true if want to solve prm, not FIRM
+
     OMPL_INFORM("Loaded Setup File");
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
@@ -81,14 +83,19 @@ void plan()
     //Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
 
 
-    if(mySetup->solve())
+
+
+    bool solved = false;
+
+    if(mySetup->solve(prm))
     {
-        mySetup->executeSolution();
+        mySetup->executeSolution(prm);
 
         OMPL_INFORM("Plan Executed Successfully");
-
+        solved = true;
     }
-    else
+
+    if (solved == false)
     {
         OMPL_INFORM("Unable to find Solution in given time.");
 

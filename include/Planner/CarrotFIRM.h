@@ -231,6 +231,12 @@ public:
         return nn_;
     }
 
+    /** \brief Executes either prm or FIRM policy on the system */
+    void execute(bool prm);
+
+    /** \brief Executes prm path on the system */
+    void executePRMPath();
+
      /** \brief Executes the generated policy on the system */
     void executeFeedback(void);
 

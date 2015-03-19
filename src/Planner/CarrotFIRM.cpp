@@ -43,12 +43,15 @@
 #include "ompl/tools/config/MagicConstants.h"
 #include <boost/lambda/bind.hpp>
 #include <boost/graph/astar_search.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/incremental_components.hpp>
 #include <boost/property_map/vector_property_map.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 #include "../../include/Visualization/CarrotVisualizer.h"
 #include "../../include/Utils/FIRMUtils.h"
+#include <iostream>
+#include <fstream>
 
 #define foreach BOOST_FOREACH
 #define foreach_reverse BOOST_REVERSE_FOREACH
@@ -869,6 +872,304 @@ std::pair<typename CarrotFIRM::Edge,double> CarrotFIRM::getUpdatedNodeCostToGo(c
 
 }
 
+void CarrotFIRM::execute(bool prm)
+{
+    if (prm) {
+        this->executePRMPath();
+    } else {
+        this->executeFeedback();
+    }
+}
+
+void CarrotFIRM::executePRMPath(void)
+{
+    /*
+    0) Build graph prmG with all nodes and edges we want
+    1) Solve all shortest paths from start
+    2) Find shortest path from start to goal
+    3) Execute path along waypoints from start to goal (TODO)
+    */
+    struct PRMNode{int id; float x; float y; float z;};
+    struct PRMEdge{int id1; int id2; float cost;};
+
+    typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, PRMNode, PRMEdge> PRMGraph;
+    typedef boost::graph_traits<PRMGraph>::vertex_descriptor vertex_t;
+    typedef boost::graph_traits<PRMGraph>::edge_descriptor edge_t;
+    typedef boost::adjacency_list<>::vertex_iterator vertex_iter;
+    typedef boost::property_map<PRMGraph, boost::vertex_index_t>::type IndexMap;
+    typedef boost::graph_traits<PRMGraph> Traits;
+    typedef std::pair<int, int> Edge;
+
+
+    PRMGraph prmG;
+    std::pair<vertex_iter, vertex_iter> vs;// = boost::vertices(prmG);
+    IndexMap index; //=boost::get(vertex_index, prmG);
+    vertex_t start; //where to start from
+    vertex_t goal; //where to end
+    std::vector<float> weightsVec;
+    std::vector<Edge> edgesVec;
+
+    //Only from FIRMRoadMap.xml
+    std::string line;
+    std::ifstream firmMap("FIRMRoadMap.xml");
+    bool inNodes = true; //whether or not we are parsing nodes (instead of edges)
+    if (firmMap.is_open())
+    {
+        while (std::getline(firmMap, line))
+        {
+            if (inNodes)
+            {
+                if (line.compare("<?xml version=\"1.0\" ?>") == 0)
+                {
+                    //ignore the first line
+                }
+                else if (line.compare("<Nodes>") == 0)
+                {
+                    //start parsign nodes; ignore this one line
+                }
+                else if (line.compare("</Nodes>") == 0)
+                {
+                    //done parsing nodes
+                    inNodes = false;
+                    vs = boost::vertices(prmG);
+                    index = boost::get(boost::vertex_index, prmG);
+                }
+                else
+                {
+                    //extract id, x, y, z
+                    int startOfId = line.find("id") + 4;
+                    int endOfId = line.find("\"", startOfId);
+                    std::string idString = line.substr(startOfId, endOfId-startOfId);
+                    int id;
+                    std::stringstream convert(idString);
+                    if (!(convert >> id)){ id = -1;}
+                    //std::cout<<"got id: "<<id<<std::endl;
+                    int startOfX = line.find("x") + 3;
+                    int endOfX = line.find("\"", startOfX);
+                    std::string xString = line.substr(startOfX, endOfX-startOfX);
+                    float x = std::stof(xString, nullptr);
+                    //std::cout<<"got x: "<<x<<std::endl;
+                    int startOfY = line.find("y") + 3;
+                    int endOfY = line.find("\"", startOfY);
+                    std::string yString = line.substr(startOfY, endOfY-startOfY);
+                    float y = std::stof(yString, nullptr);
+                    //std::cout<<"got y: "<<y<<std::endl;
+                    int startOfZ = line.find("theta") + 7;
+                    int endOfZ = line.find("\"", startOfZ);
+                    std::string zString = line.substr(startOfZ, endOfZ-startOfZ);
+                    float z = std::stof(zString, nullptr);
+                    //std::cout<<"got z: "<<z<<std::endl;
+
+                    vertex_t temp = boost::add_vertex(prmG);
+
+                    prmG[temp].id = id;
+                    prmG[temp].x = x;
+                    prmG[temp].y = y;
+                    prmG[temp].z = z;
+
+                    if (id == 0) //start node
+                    {
+                        start = temp;
+                    }
+                    else if (id == 2)//TODO this is just because roadmap gets built weirdly
+                    {
+                        goal = temp;
+                    }
+                }
+            }
+            else //if not inNodes, must be parsing edges instead
+            {
+                if (line.compare("<Edges>") == 0 || line.compare("</Edges>") == 0)
+                {
+                    //ignore start and end marker
+                }
+                else
+                {
+                    int startOfStartVertex = line.find("startVertexID") + 15;
+                    int endOfStartVertex = line.find("\"", startOfStartVertex);
+                    std::string startVertexIdString = line.substr(startOfStartVertex, endOfStartVertex-startOfStartVertex);
+                    int startId;
+                    std::stringstream convert(startVertexIdString);
+                    if (!(convert >> startId)){ startId = -1;}
+                    //std::cout<<"start edgeId: "<<startId<<std::endl;
+                    int startOfEndVertex = line.find("endVertexID") + 13;
+                    int endOfEndVertex = line.find("\"", startOfEndVertex);
+                    std::string endVertexIdString = line.substr(startOfEndVertex, endOfEndVertex-startOfEndVertex);
+                    int endId;
+                    std::stringstream convert2(endVertexIdString);
+                    if (!(convert2 >> endId)){ endId = -1;}
+                    //std::cout<<"end edgeId: "<<endId<<std::endl;
+
+
+                    vertex_t u;//the vertex corresponding to start of edge
+                    vertex_t v;//the vertex corresponding to end of edge
+                    for (vs = boost::vertices(prmG); vs.first != vs.second; ++vs.first)
+                    {
+                        vertex_t tempV = boost::vertex(index[*vs.first], prmG);
+                        int tempId = prmG[tempV].id;
+                        if (tempId == startId) {u = tempV;}
+                        else if (tempId == endId) {v = tempV;}
+                    }
+                    edge_t e; bool b;
+                    boost::tie(e, b) = boost::add_edge(u, v, prmG);
+                    float weight = sqrt((prmG[u].x - prmG[v].x)*(prmG[u].x - prmG[v].x) + (prmG[u].y - prmG[v].y)*(prmG[u].y - prmG[v].y) + (prmG[u].z - prmG[v].z)*(prmG[u].z - prmG[v].z));
+                    weightsVec.push_back(weight);
+                    edgesVec.push_back(Edge(prmG[u].id, prmG[v].id));
+                    prmG[e].id1 = startId;
+                    prmG[e].id2 = endId;
+                    //cost is euclidean distance between endpoints
+                    prmG[e].cost = weight;
+                }
+            }
+            //std::cout<<line<<std::endl;
+            //std::cout<<"vertices in graph: "<<boost::num_vertices(prmG)<<std::endl;
+            //std::cout<<"edges in graph: "<<boost::num_edges(prmG)<<std::endl;
+        }
+        firmMap.close();
+    }
+    else
+    {
+        std::cout<<"unable to open FIRMRoadMap.xml"<<std::endl;
+    }
+
+    const int num_nodes = boost::num_vertices(prmG);
+    //float* weights = &weightsVec[0];
+    //TODO review with Chris that this makes sense.
+    //I need weights to be an array of ints, not floats, so I multiply by 1000 and then round.
+    //Multiplying by a bigger number would reduce error risk
+    int weights[weightsVec.size()];
+    for (int i = 0; i < weightsVec.size(); ++i)
+    {
+        weights[i] = std::floor(weightsVec[i]*1000);
+    }
+
+    std::vector<vertex_t> parents(boost::num_vertices(prmG)); //will be used to store predecessor map
+    std::vector<double> distances(boost::num_vertices(prmG)); //will be used to store distances map
+
+    auto p_map = boost::make_iterator_property_map(&parents[0], boost::get(boost::vertex_index, prmG));
+
+    boost::dijkstra_shortest_paths(prmG, start,
+                                    boost::weight_map(boost::get(&PRMEdge::cost, prmG))
+                                    .predecessor_map(p_map)
+                                    .distance_map(boost::make_iterator_property_map(distances.begin(),
+                                            boost::get(boost::vertex_index, prmG))));
+
+    //Now let's find the shortest path from start to goal
+    std::vector<vertex_t> path; //note that this will be backwards (so it goes along edges backwards from goal to start)
+
+    vertex_t v = goal;
+    for (vertex_t u = p_map[v];
+        u != v;
+        v = u, u = p_map[v])
+    {
+        path.push_back(v);
+    }
+
+    std::reverse(path.begin(), path.end()); //now in the right order
+
+    std::cout<<"Printing path"<<std::endl;
+    for (int i = 0; i < path.size(); ++i){
+    std::cout<<path[i]<<std::endl;
+    }
+
+    //execute the shortest path
+
+    std::ofstream myfile;
+    remove("loggingPRM.txt");//remove the log from the last prm trial
+    myfile.open("loggingPRM.txt", std::ios::app);
+
+    bool simulation = false;
+    siF_->setSimulation(simulation);
+    siF_->initializeSubscriber();
+    siF_->initializePublisher();
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    //already have vertex_t start declared and set way before
+    vertex_t currentLocation = start;
+    vertex_t nextWaypoint = path[0];
+
+    double goalX = prmG[goal].x;
+    double goalY = prmG[goal].y;
+    double goalZ = prmG[goal].z;
+    float distToGoal = sqrt((prmG[start].x - goalX)*(prmG[start].x - goalX) + (prmG[start].y - goalY)*(prmG[start].y - goalY) + (prmG[start].z - goalZ)*(prmG[start].z - goalZ));
+    //How close to goal is close enough
+    float nearThreshold = 0.1;
+
+    //where to fly next
+    double wayX = prmG[nextWaypoint].x;
+    double wayY = prmG[nextWaypoint].y;
+    double wayZ = prmG[nextWaypoint].z;
+
+    //keep track of old waypoint to compute straight line path
+    double oldWayX = wayX;
+    double oldWayY = wayY;
+    double oldWayZ = wayZ;
+
+
+    siF_->setTrueState(stateProperty_[startM_[0]]);
+
+    //say where we are starting
+    std::vector<double> startingPose = siF_->getQuadLocation();
+    double startX = startingPose[0];
+    double startY = startingPose[1];
+    double startZ = startingPose[2];
+    std::cout<<"Starting position: x: "<<startX<<", y: "<<startY<<", z: "<<startZ<<std::endl;
+
+    double currX = startX;
+    double currY = startY;
+    double currZ = startZ;
+
+    double controllerGain = 0.001;
+    int pathIndex = 0;
+    siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ); //send first command
+    while (distToGoal > nearThreshold) //until we are pretty close to goal
+    {
+        /*
+        1. Try to go straight to next waypoint (send waypoint command via ROS)
+        2. Update currentLocation (from ROS)
+        3. Update distToGoal
+        4. If close to waypoint:
+            4.1 Increment pathIndex up by 1
+            4.2 Get new waypoint target
+        */
+        ros::spinOnce();
+        std::vector<double> curr = siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ);
+        currX = curr[0];
+        currY = curr[1];
+        currZ = curr[2];
+
+        myfile<<currX<<", "<<currY<<", "<<currZ<<"\n"; //only logs current location, not desired location
+
+        //std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
+
+        //update distance to goal for big while-loop
+        distToGoal = sqrt((goalX-currX)*(goalX-currX) + (goalY-currY)*(goalY-currY) + (goalZ-currZ)*(goalZ-currZ));
+
+        //see if need to update to next waypoint
+        float distToWaypoint = sqrt((wayX-currX)*(wayX-currX) + (wayY-currY)*(wayY-currY) + (wayZ-currZ)*(wayZ-currZ));
+        if (distToWaypoint < nearThreshold)
+        {
+            std::cout<<"Reached waypoint: x: "<<wayX<<", y: "<<wayY<<", z: "<<wayZ<<std::endl;
+            //close enough; aim for next waypoint (but check that won't get index out of bounds if there is no next waypoint
+            if (pathIndex == path.size()){/*close to goal, will exit while loop right away*/}
+            else
+            {
+                pathIndex = pathIndex + 1;
+                nextWaypoint = path[pathIndex];
+                //tell quad to fly to next waypoint
+                oldWayX = wayX;
+                oldWayY = wayY;
+                oldWayZ = wayZ;
+                wayX = prmG[nextWaypoint].x;
+                wayY = prmG[nextWaypoint].y;
+                wayZ = prmG[nextWaypoint].z;
+            }
+        }
+    }
+    myfile.close();
+    std::cout<<"Reached goal"<<std::endl;
+}
+
 void CarrotFIRM::executeFeedback(void)
 {
 
@@ -948,13 +1249,8 @@ void CarrotFIRM::executeFeedback(void)
 
 
         }
-
-
         si_->copyState(cstartState, cendState);
-
     }
-
-
 }
 
 // Experimental

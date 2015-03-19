@@ -164,6 +164,12 @@ public:
     void setup()
     {
         std::cout << "Running FIRM Setup" << std::endl;
+        this->setupFIRM();
+    }
+
+    void setupFIRM()
+    {
+
         if(!setup_)
         {
             if(pathToSetupFile_.length() == 0)
@@ -224,7 +230,6 @@ public:
             }
 
             this->setStartAndGoalStates();
-
             ompl::base::PlannerPtr plnr(new CarrotFIRM(siF_, false));
 
             planner_ = plnr;
@@ -239,10 +244,9 @@ public:
 
             setup_ = true;
         }
-
     }
 
-    ompl::base::PlannerStatus solve()
+    ompl::base::PlannerStatus solve(bool prm)
     {
         if(!setup_)
         {
@@ -256,9 +260,10 @@ public:
         return planner_->solve(planningTime_);
     }
 
-    void executeSolution()
+    void executeSolution(bool prm)
     {
-        planner_->as<CarrotFIRM>()->executeFeedback();
+        //planner_->as<CarrotFIRM>()->executeFeedback();
+        planner_->as<CarrotFIRM>()->execute(prm);
     }
 
 
