@@ -72,7 +72,7 @@ namespace firm
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
                 isSimulation_ = true; // set to false when executing feedback path
-                quadName_ = "/BQ00/";
+                quadName_ = "/BQ02/";
                 // set up ROS subscriber (state) and publisher (control)
 
             }
@@ -92,7 +92,8 @@ namespace firm
                 int argc = 0;
                 ros::init(argc,NULL,"control_publisher");
                 ros::NodeHandle n;
-                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
+                //ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
+                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",10);
                 control_pub_ = control_pub;
             }
 

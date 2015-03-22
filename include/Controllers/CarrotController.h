@@ -290,15 +290,19 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if (!constructionMode){
         //std::cout << "Nominal X: " << nomXVec << std::endl;
 
-        std::cout << "Belief mean: " << endStateVec << std::endl;
-        std::cout << "True state: " << endTrueStateVec << std::endl;
+        //std::cout << "Belief mean: " << endStateVec << std::endl;
+        //std::cout << "True state: " << endTrueStateVec << std::endl;
         //std::cout << "Deviation: " << arma::norm(deviation,2) << std::endl;
         //myfile << "written\n";
         myfile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
         ros::spinOnce();
         //boost::this_thread::sleep(boost::posix_time::milliseconds(100));
 
-
+        //Print out if quad is not in a valid state. This counts as a crude collision
+        if (!(si_->checkTrueStateValidity()))
+        {
+            std::cout<<"True state deviated enough that quad is no longer in valid state"<<std::endl;
+        }
     }
 
     si_->freeState(endTrueState);

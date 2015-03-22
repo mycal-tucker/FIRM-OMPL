@@ -131,7 +131,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
 std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, double vecY, double vecZ)
 {
     double maxSpeed = 0.5; //just guessing for now
-    double controllerGain = 0.0005;
+    double controllerGain = 0.0002;
 
     double vecMagnitude = controllerGain*sqrt(vecX*vecX + vecY*vecY + vecZ*vecZ);
 
@@ -186,5 +186,3 @@ ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObserva
 {
     return observationModel_->getObservation(trueState_, true);
 }
-
-

@@ -1142,6 +1142,12 @@ void CarrotFIRM::executePRMPath(void)
 
         //std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
 
+        //check if quad true state has deviated from plan enough to no longer be in a valid state
+        if (!(siF_->checkTrueStateValidity()))
+        {
+            std::cout<<"PRM true state not valid"<<std::endl;
+        }
+
         //update distance to goal for big while-loop
         distToGoal = sqrt((goalX-currX)*(goalX-currX) + (goalY-currY)*(goalY-currY) + (goalZ-currZ)*(goalZ-currZ));
 

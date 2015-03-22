@@ -58,12 +58,18 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
 
     virtual bool isValid(const ompl::base::State *state) const
     {
-        //return si_->satisfiesBounds(state);
         double x = state->as<StateType>()->getX();
         double y = state->as<StateType>()->getY();
         double z = state->as<StateType>()->getZ();
 
-          if (x <= -1.9 || x >= 1.0) {
+        //must be within test area:
+        //x >=-1.9, x <=1.0
+        //y >=-6.8, y <=0.9
+        //z >= 0, z <=2
+
+        bool withinTestArea = isInsideBox(state, -1.9, 1.0, -6.8, 0.9) && (z >=0 && z <= 2);
+
+          /*if (x <= -1.9 || x >= 1.0) {
               //std::cout << "invalid x: " << x << std::endl;
               return false;
           }
@@ -74,14 +80,21 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
           if (z <= 1 || z >= 2) {
               //std::cout << "invalid z: " << z << std::endl;
               return false;
-          }
+          }*/
 
-          // check if in or near obstacle (maynorc)
-          if (x <= 0.15 && x >= -1.05 && y >= -3.55 && y <= -2.35) {
-              return false;
-          }
+          //obs1:
+          //x between -1.37 and -0.405
+          //y between -1.46 and -2.40
 
-          return true;
+          bool outsideObstacle1 = !isInsideBox(state, -1.13, -0.439, -1.81, -0.95);
+
+          //obs2:
+          //x between -0.095 and 0.90
+          //y between -0.85 and -2.98
+
+          bool outsideObstacle2 = !isInsideBox(state, 0.215, 0.973, -3.05, -0.85);
+
+          return withinTestArea && outsideObstacle1 && outsideObstacle2;
 
       //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
 /*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
@@ -95,6 +108,21 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
    //   }
     // si->freeState(se3_state);
      // return false;
+    }
+
+    /** \brief Checks if the state is within a bounding box */
+    bool isInsideBox(const ompl::base::State *state, double xl, double xr, double yb, double yt) const
+    {
+        arma::colvec pos = state->as<StateType>()->getArmaData();
+        double eps = 0.20;
+        if(pos[0] >= xl-eps && pos[0] <= xr+eps )
+            {
+            if(pos[1] >= yb-eps && pos[1] <= yt+eps)
+            {
+                return true; // inside box
+            }
+        }
+        return false; // outside box
     }
 
   protected:
