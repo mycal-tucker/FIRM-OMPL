@@ -63,7 +63,7 @@ void plan()
     //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
-    bool prm = true; //set to true if want to solve prm, not FIRM
+    bool prm = false; //set to true if want to solve prm, not FIRM
 
     OMPL_INFORM("Loaded Setup File");
 

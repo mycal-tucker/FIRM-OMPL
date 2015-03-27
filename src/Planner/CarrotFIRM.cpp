@@ -1121,7 +1121,8 @@ void CarrotFIRM::executePRMPath(void)
 
     double controllerGain = 0.001;
     int pathIndex = 0;
-    siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ); //send first command
+    int loopNumber = 1;
+    siF_->flyToWaypoint(wayX, wayY, wayZ, true, 1); //send first command
     while (distToGoal > nearThreshold) //until we are pretty close to goal
     {
         /*
@@ -1133,7 +1134,9 @@ void CarrotFIRM::executePRMPath(void)
             4.2 Get new waypoint target
         */
         ros::spinOnce();
-        std::vector<double> curr = siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ);
+        //std::vector<double> curr = siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ);
+        std::vector<double> curr = siF_->flyToWaypoint(wayX, wayY, wayZ, false, loopNumber);
+        loopNumber = loopNumber + 1;
         currX = curr[0];
         currY = curr[1];
         currZ = curr[2];
@@ -1213,8 +1216,8 @@ void CarrotFIRM::executeFeedback(void)
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
-        //std::cout << "edge info: " << e << std::endl;
-        //std::cout << "Execute cstartState: " << cstartState->State() << " cendState: " << cendState->State() << std::endl;
+        std::cout << "edge info: " << e << std::endl;
+        //std::cout << "Execute cstartState: " << cstartState << " cendState: " << cendState << std::endl;
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {

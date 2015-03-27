@@ -269,8 +269,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if(!si_->checkTrueStateValidity())
     {
         si_->copyState(endState, internalState);
-  /*      std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
-		" not valid" << std::endl; */
+        //std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
+		//" not valid" << std::endl;
         return false;
     }
 

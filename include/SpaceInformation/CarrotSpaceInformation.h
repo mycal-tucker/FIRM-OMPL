@@ -45,6 +45,8 @@
 #include "../ObservationModels/ObservationModelMethod.h"
 #include "../../include/Spaces/CarrotBeliefSpace.h"
 
+#include "../../include/raven_rviz/Waypoint.h"
+
 
 
 /**
@@ -72,7 +74,8 @@ namespace firm
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
                 isSimulation_ = true; // set to false when executing feedback path
-                quadName_ = "/BQ02/";
+                quadName_ = "/BQ02s/";
+                quadSpeed_ = 1;
                 // set up ROS subscriber (state) and publisher (control)
 
             }
@@ -93,8 +96,10 @@ namespace firm
                 ros::init(argc,NULL,"control_publisher");
                 ros::NodeHandle n;
                 //ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
-                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",10);
+                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypointXYZ",10);
+                ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 10);
                 control_pub_ = control_pub;
+                control_pub_waypoint_ = control_pub_waypoint;
             }
 
             // state callback for subscriber
@@ -158,7 +163,7 @@ namespace firm
 
             void applyControl(const ompl::control::Control *control, bool withNoise = true);
 
-            std::vector<double> flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true);
+            std::vector<double> flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise = true, int commandNumber = 2);
 
             std::vector<double> flyAlongVector(double vecX, double vecY, double vecZ);
 
@@ -193,7 +198,9 @@ namespace firm
             bool isSimulation_; // to switch between sim and ROS hardware
             ros::Subscriber state_sub_; // subscriber for quad pose
             ros::Publisher control_pub_; // publisher for quad control
+            ros::Publisher control_pub_waypoint_; //mycals correct publisher for quad control
             std::string quadName_; // name of quad we're pubbing topics to e.g. 'BQ04'
+            double quadSpeed_; //speed used in quad command messages
 
 
 

@@ -90,16 +90,29 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         msg.velocity = 1;*/
         control_pub_.publish(msg);
         //std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
-        //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+        raven_rviz::Waypoint wayMsg;
+        wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
+        wayMsg.goal_pose.position.x = carrot_x + trueState_->as<CarrotBeliefSpace::StateType>()->getX();;
+        wayMsg.goal_pose.position.y = carrot_y + trueState_->as<CarrotBeliefSpace::StateType>()->getY();;
+        wayMsg.goal_pose.position.z = carrot_z + trueState_->as<CarrotBeliefSpace::StateType>()->getZ();;
+        wayMsg.goal_pose.orientation.w = 1;
+        wayMsg.goal_pose.orientation.x = 0;
+        wayMsg.goal_pose.orientation.y = 0;
+        wayMsg.goal_pose.orientation.z = 0;
+        wayMsg.takeoff = true; //TODO investigate whether can leave always as true
+        wayMsg.land = false;
+        wayMsg.velocity = quadSpeed_;
+        control_pub_waypoint_.publish(wayMsg);
+
+        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
 
     }
     CarrotVisualizer::updateTrueState(trueState_);
-
 }
 
-std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise)
+std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise, int commandNumber)
 {
-    //arma::colvec u = motionModel_->OMPL2ARMA(control);
     arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
     geometry_msgs::PoseStamped msg;
 
@@ -118,18 +131,34 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     control_pub_.publish(msg);
     //std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
     CarrotVisualizer::updateTrueState(trueState_);
-    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+
+    raven_rviz::Waypoint wayMsg;
+    wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO test if properly parsed quadName_ to remove brackets
+    wayMsg.goal_pose.position.x = wayX;
+    wayMsg.goal_pose.position.y = wayY;
+    wayMsg.goal_pose.position.z = wayZ;
+    wayMsg.goal_pose.orientation.w = 1;
+    wayMsg.goal_pose.orientation.x = 0;
+    wayMsg.goal_pose.orientation.y = 0;
+    wayMsg.goal_pose.orientation.z = 0;
+    wayMsg.takeoff = true; //TODO test if can reset takeoff values
+    if (commandNumber == 1){ wayMsg.takeoff = true;}
+    wayMsg.land = false;
+    wayMsg.velocity = quadSpeed_;
+    control_pub_waypoint_.publish(wayMsg);
+
 
     double xTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
     double yTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getY();
     double zTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getZ();
-    //std::cout<<"true state: x: "<<xTrue<<", y: "<<yTrue<<", z: "<<zTrue<<std::endl;
     std::vector<double> location = {xTrue, yTrue, zTrue};
     return location;
 }
 
 std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, double vecY, double vecZ)
 {
+    std::cout<<"Do not call this. This is legacy code."<<std::endl;
     double maxSpeed = 0.5; //just guessing for now
     double controllerGain = 0.0002;
 
@@ -150,29 +179,24 @@ std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, do
         //std::cout<<"speed capped"<<std::endl;
     }
 
-    //for debugging, print speed
-    //std::cout<<"command speed: "<<sqrt(wayX*wayX + wayY*wayY + wayZ*wayZ)<<std::endl;
-
     arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
 
-    geometry_msgs::PoseStamped msg;
-
-    msg.pose.position.x = wayX;
-    msg.pose.position.y = wayY;
-    msg.pose.position.z = wayZ;
-
-    // no rotation
-    msg.pose.orientation.w = 1;
-    msg.pose.orientation.x = 0;
-    msg.pose.orientation.y = 0;
-    msg.pose.orientation.z = 0;
-    /*msg.takeoff =false;
-    msg.land = false;
-    msg.velocity = 1;*/
-    control_pub_.publish(msg);
-    //std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
     CarrotVisualizer::updateTrueState(trueState_);
-    //boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    raven_rviz::Waypoint wayMsg;
+    wayMsg.goal_pose.position.x = wayX;
+    wayMsg.goal_pose.position.y = wayY;
+    wayMsg.goal_pose.position.z = wayZ;
+    wayMsg.goal_pose.orientation.w = 1;
+    wayMsg.goal_pose.orientation.x = 0;
+    wayMsg.goal_pose.orientation.y = 0;
+    wayMsg.goal_pose.orientation.z = 0;
+    wayMsg.takeoff = false;
+    wayMsg.land = false;
+    wayMsg.velocity = 0.1; //TODO refine this.
+
+    control_pub_waypoint_.publish(wayMsg);
+
 
     double xTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
     double yTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getY();

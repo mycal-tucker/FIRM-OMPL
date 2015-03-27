@@ -67,7 +67,7 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
         //y >=-6.8, y <=0.9
         //z >= 0, z <=2
 
-        bool withinTestArea = isInsideBox(state, -1.9, 1.0, -6.8, 0.9) && (z >=0 && z <= 2);
+        bool withinTestArea = isInsideBox(state, -1.9, 1.0, -6.8, 0.9) && (z >=-0.1 && z <= 2);
 
           /*if (x <= -1.9 || x >= 1.0) {
               //std::cout << "invalid x: " << x << std::endl;
