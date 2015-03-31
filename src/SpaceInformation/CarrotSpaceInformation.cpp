@@ -106,7 +106,6 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         control_pub_waypoint_.publish(wayMsg);
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-
     }
     CarrotVisualizer::updateTrueState(trueState_);
 }
