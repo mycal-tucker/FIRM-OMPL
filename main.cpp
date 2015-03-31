@@ -34,13 +34,16 @@
 
 /* Author: Saurav Agarwal */
 
-#include "FIRM2DSetup.h"
+#include "FIRMCarrotSetup.h"
+//#include "ros.h"
+//#include "FIRM2DSetup.h"
 #include "MultiModalSetup.h"
 #include "Tests.h"
 #include <QApplication>
 #include <QtGui/QDesktopWidget>
-#include "include/Visualization/Window.h"
-#include "include/Visualization/Visualizer.h"
+#include "include/Visualization/CarrotWindow.h"
+#include "include/Visualization/CarrotVisualizer.h"
+//#include "include/Visualization/Visualizer.h"
 #include <boost/thread.hpp>
 #include <iostream>
 #include <istream>
@@ -50,28 +53,49 @@ using namespace std;
 
 void plan()
 {
-    FIRM2DSetup *mySetup(new FIRM2DSetup);
 
-    std::string setupFilePath = "./SetupFiles/Setup4CornerWorld.xml";
+           // OMPL_INFORM("Creating New Carrot");
+
+    FIRMCarrotSetup *mySetup(new FIRMCarrotSetup);
+    //FIRM2DSetup *mySetup(new FIRM2DSetup);
+
+
+    //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
+    std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
+
+    bool prm = true; //set to true if want to solve prm, not FIRM
+
+    OMPL_INFORM("Loaded Setup File");
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
 
     mySetup->setup();
 
-    Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
+    CarrotVisualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
+    //Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
 
-    Visualizer::updateSpaceInformation(mySetup->getSpaceInformation());
 
-    Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
+    CarrotVisualizer::updateSpaceInformation(mySetup->getSpaceInformation());
+    //Visualizer::updateSpaceInformation(mySetup->getSpaceInformation());
 
-    if(mySetup->solve())
+
+    CarrotVisualizer::setMode(CarrotVisualizer::VZRDrawingMode::PRMViewMode);
+    //Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
+
+
+
+
+    bool solved = false;
+
+    if(mySetup->solve(prm))
     {
-        mySetup->executeSolution();
+        mySetup->executeSolution(prm);
 
         OMPL_INFORM("Plan Executed Successfully");
-
+        solved = true;
     }
-    else
+
+    if (solved == false)
     {
         OMPL_INFORM("Unable to find Solution in given time.");
 
@@ -84,13 +108,14 @@ void plan()
 
 int main(int argc, char *argv[])
 {
+
     srand(1234567);
 
     arma_rng::set_seed(1234567);
 
     QApplication app(argc, argv);
 
-    MyWindow window;
+    MyCarrotWindow window;
 
     window.resize(window.sizeHint());
 

@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<LandmarkList>
+<landmark id = 1 x = -2  y = -1.0 />
+<landmark id = 2 x = -2  y = -1.5 />
+<landmark id = 3 x = -2  y = -2.0 />
+<landmark id = 4 x = -2  y = -2.5 />
+<landmark id = 5 x = -2  y = -3.0 />
+<landmark id = 6 x = -2  y = -3.5 />
+<landmark id = 7 x = -2  y = -4.0 />
+<landmark id = 8 x = -2  y = -4.5 />
+<landmark id = 9 x = -2  y = -5.0 />
+</LandmarkList>
+<ObservationModels>
+  <CarrotObservationModel
+    sigma_range="10.00"
+    sigma_angle="10"
+    eta_rd="0.0"
+    eta_rphi = "0.0"
+    eta_thetad="0.0"
+    eta_thetaphi = "0.0"
+    vcLabel = "cd1"
+  >
+  </CarrotObservationModel>
+</ObservationModels>
+<MotionModels>
+  <!--UnicycleMotionModel
+    sigmaV="0.001"
+    etaV="0.001"
+    sigmaOmega="0.0001"
+    etaOmega="0.001"
+    P_Wg_filename=""
+    orbit_radius=5.0
+    wind_noise_pos="0.000001"
+    wind_noise_ang="0.000001" 
+    min_linear_velocity= 0.2
+    max_linear_velocity= 0.2
+    max_angular_velocity= 0.3
+    dt= 0.1
+    /> <!--No Noise--> 
+  <CarrotMotionModel
+    sigmaV="0.001"
+    etaV="0.01"
+    sigmaOmega="0.0001"
+    etaOmega="0.003"
+    P_Wg_filename=""
+    orbit_radius=5.0
+    wind_noise_pos="0.0001"
+    wind_noise_ang="0.0001" 
+    max_x_velocity= 0.5
+    max_y_velocity= 0.5
+    max_z_velocity= 0.5
+    dt= 0.1
+    /> <!--omega is in radians--> 
+  <OmnidirectionalMotionModel 
+    max_connect_radius="3.0"
+    robot_link_length="0.2"
+    sigma="0.00"
+    eta="0.000"
+    wind_noise_pos="0.05"
+    wind_noise_ang="0.00" 
+    P_Wg_filename=""
+    dt=0.10 
+    V=5.0 
+    omega="1.5708"/> <!--omega is in radians, wind_noise_ang is in degrees -->
+    <!--wind_noise_pos="1.000"
+    wind_noise_ang="7.0"-->
+</MotionModels>
+<PlanningProblem>
+    <Environment
+        environmentFile = "./Models/2_obstacles.obj"
+    />
+    <Robot
+        robotFile = "./Models/quadrotor.obj"
+    />
+     <StartPose
+        x = "0.0"
+        y = "0.0"
+        z = "0.1"
+    />
+    <GoalPose
+        x = "0.0"
+        y = "-6.0"
+        z = "0.1"
+    />
+    <PlanningTime
+        maxTime = "2400"
+    />
+    <FIRMNodes
+        minNodes = "50"
+
+    />
+    <KidnappedState
+        x = 1.5 y = 1.5 z = 1.0 
+    />
+</PlanningProblem>
+

@@ -47,6 +47,8 @@ inline bool dare(const arma::mat& _A, const arma::mat& _B, const arma::mat& _Q, 
     using namespace arma;
 
     int n = _A.n_rows, m = _B.n_cols;
+    //_A.print("A:"); _B.print("B:"); _Q.print("Q:"); _R.print("R:");
+
     mat Z11(n,n);
     mat Z12(n,n);
     mat Z21(n,n);
@@ -105,6 +107,7 @@ inline bool dare(const arma::mat& _A, const arma::mat& _B, const arma::mat& _Q, 
 
             c1++;
         }
+        //std::cout << eigval(i).real()*eigval(i).real() + eigval(i).imag()*eigval(i).imag() << std::endl;
     }
 
     //ensure that the system is stable
