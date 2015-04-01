@@ -1064,12 +1064,41 @@ void CarrotFIRM::executePRMPath(void)
     {
         path.push_back(v);
     }
+    path.push_back(start);
 
     std::reverse(path.begin(), path.end()); //now in the right order
 
     std::cout<<"Printing path"<<std::endl;
     for (int i = 0; i < path.size(); ++i){
     std::cout<<path[i]<<std::endl;
+    }
+
+/* setting up node and edge controllers for this specific path. assuming
+that the path does not deviate and recalculation is not necessary, we need not
+generate controllers for vertices and edges not in this shortest path (Chris)*/
+
+    // construct node controllers for each node in path (Chris)
+    for (int i = 0; i < path.size(); i++)
+    {
+        NodeControllerType nodeController;
+        vertex_t state = path[i];
+        generateNodeController(stateProperty_[state], nodeController);
+        prmNodeControllers_[state] = nodeController;
+        std::cout<<"CarrotFIRM: Generated node controller for state\n"<<
+          stateProperty_[state]->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
+    }
+
+    // construct edge controllers for each edge in path (Chris)
+    for (int i = 0; i < path.size()-1; i++)
+    {
+        EdgeControllerType edgeController;
+        vertex_t start = path[i];
+        vertex_t end = path[i+1];
+        generateEdgeController(stateProperty_[start], stateProperty_[end], edgeController);
+        prmEdgeControllers_[start] = edgeController;
+        std::cout<<"CarrotFIRM: Generated edge controller between state\n"<<
+          stateProperty_[start]->as<CarrotBeliefSpace::StateType>()->getArmaData()<<
+          "and\n"<<stateProperty_[end]->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
     }
 
     //execute the shortest path
@@ -1084,96 +1113,44 @@ void CarrotFIRM::executePRMPath(void)
     siF_->initializePublisher();
     boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-    //already have vertex_t start declared and set way before
-    vertex_t currentLocation = start;
-    vertex_t nextWaypoint = path[0];
+    vertex_t currentVertex = start;
+    // goal already declared above (Chris)
+    //vertex_t goal = goalM_[0];
 
-    double goalX = prmG[goal].x;
-    double goalY = prmG[goal].y;
-    double goalZ = prmG[goal].z;
-    float distToGoal = sqrt((prmG[start].x - goalX)*(prmG[start].x - goalX) + (prmG[start].y - goalY)*(prmG[start].y - goalY) + (prmG[start].z - goalZ)*(prmG[start].z - goalZ));
-    //How close to goal is close enough
-    float nearThreshold = 0.1;
+    // initialize true state and belief state (Chris)
+    siF_->setTrueState(stateProperty_[start]);
+    siF_->setBelief(stateProperty_[start]);
 
-    //where to fly next
-    double wayX = prmG[nextWaypoint].x;
-    double wayY = prmG[nextWaypoint].y;
-    double wayZ = prmG[nextWaypoint].z;
+    EdgeControllerType controller;
 
-    //keep track of old waypoint to compute straight line path
-    double oldWayX = wayX;
-    double oldWayY = wayY;
-    double oldWayZ = wayZ;
+    ompl::base::State *cstartState = si_->allocState();
+    si_->copyState(cstartState, stateProperty_[start]);
+    ompl::base::State *cendState = si_->allocState();
 
+    OMPL_INFORM("CarrotFIRM: Running PRM policy execution");
 
-    siF_->setTrueState(stateProperty_[startM_[0]]);
-
-    //say where we are starting
-    std::vector<double> startingPose = siF_->getQuadLocation();
-    double startX = startingPose[0];
-    double startY = startingPose[1];
-    double startZ = startingPose[2];
-    std::cout<<"Starting position: x: "<<startX<<", y: "<<startY<<", z: "<<startZ<<std::endl;
-
-    double currX = startX;
-    double currY = startY;
-    double currZ = startZ;
-
-    double controllerGain = 0.001;
     int pathIndex = 0;
-    int loopNumber = 1;
-    siF_->flyToWaypoint(wayX, wayY, wayZ, true, 1); //send first command
-    while (distToGoal > nearThreshold) //until we are pretty close to goal
+
+    while (currentVertex != goal)
     {
-        /*
-        1. Try to go straight to next waypoint (send waypoint command via ROS)
-        2. Update currentLocation (from ROS)
-        3. Update distToGoal
-        4. If close to waypoint:
-            4.1 Increment pathIndex up by 1
-            4.2 Get new waypoint target
-        */
-        ros::spinOnce();
-        //std::vector<double> curr = siF_->flyAlongVector(wayX-currX, wayY-currY, wayZ-currZ);
-        std::vector<double> curr = siF_->flyToWaypoint(wayX, wayY, wayZ, false, loopNumber);
-        loopNumber = loopNumber + 1;
-        currX = curr[0];
-        currY = curr[1];
-        currZ = curr[2];
+        controller = prmEdgeControllers_[currentVertex];
 
-        myfile<<currX<<", "<<currY<<", "<<currZ<<"\n"; //only logs current location, not desired location
+        std::cout<<"CarrotFIRM: Current vertex is "<<currentVertex<<std::endl;
 
-        //std::cout<<"Current position: x: "<<currX<<", y: "<<currY<<", z: "<<currZ<<std::endl;
+        ompl::base::Cost cost;
 
-        //check if quad true state has deviated from plan enough to no longer be in a valid state
-        if (!(siF_->checkTrueStateValidity()))
+        if (controller.Execute(cstartState, cendState, cost, false))
         {
-            std::cout<<"PRM true state not valid"<<std::endl;
+            std::cout<<"CarrotFIRM: Controller executing from state "<<
+                cstartState->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
+            currentVertex = path[++pathIndex];
         }
-
-        //update distance to goal for big while-loop
-        distToGoal = sqrt((goalX-currX)*(goalX-currX) + (goalY-currY)*(goalY-currY) + (goalZ-currZ)*(goalZ-currZ));
-
-        //see if need to update to next waypoint
-        float distToWaypoint = sqrt((wayX-currX)*(wayX-currX) + (wayY-currY)*(wayY-currY) + (wayZ-currZ)*(wayZ-currZ));
-        if (distToWaypoint < nearThreshold)
+        else
         {
-            std::cout<<"Reached waypoint: x: "<<wayX<<", y: "<<wayY<<", z: "<<wayZ<<std::endl;
-            //close enough; aim for next waypoint (but check that won't get index out of bounds if there is no next waypoint
-            if (pathIndex == path.size()){/*close to goal, will exit while loop right away*/}
-            else
-            {
-                pathIndex = pathIndex + 1;
-                nextWaypoint = path[pathIndex];
-                //tell quad to fly to next waypoint
-                oldWayX = wayX;
-                oldWayY = wayY;
-                oldWayZ = wayZ;
-                wayX = prmG[nextWaypoint].x;
-                wayY = prmG[nextWaypoint].y;
-                wayZ = prmG[nextWaypoint].z;
-            }
+            std::cout << "CarrotFIRM: Could not execute PRM Edge" << std::endl;
+            break;
         }
+        si_->copyState(cstartState, cendState);
     }
     myfile.close();
     std::cout<<"Reached goal"<<std::endl;

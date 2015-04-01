@@ -110,12 +110,6 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     delta_z= z_c[1]-z_c[0];
     z_steps = fabs(delta_z/(maxZVelocity_*this->dt_));
 
-    // total number of steps
-    //kf += ceil(x_steps) + ceil(y_steps) + ceil(z_steps);
-    //std::cout << "x_steps: " << x_steps << std::endl;
-    //std::cout << "y_steps: " << y_steps << std::endl;
-    //std::cout << "z_steps: " << z_steps << std::endl;
-
     double si = 0;
     double csi = 0;
     if (x_steps > std::max(y_steps, z_steps)) {
@@ -129,20 +123,9 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
         csi = ceil(si);
     }
 
-    //std::cout << "number of steps: " << csi << std::endl;
-    //std::cout << "x_carrot: " << delta_x/csi << std::endl;
-
-
     const double x_carrot = delta_x/csi;
     const double y_carrot = delta_y/csi;
     const double z_carrot = delta_z/csi;
-
-    /*std::cout << "state diff: " << end - start << std::endl;
-    std::cout << "steps: " << csi << std::endl;
-    std::cout << "calculated x_carrot: " << x_carrot << std::endl;
-    std::cout << "calculated y_carrot: " << y_carrot << std::endl;
-    std::cout << "calculated z_carrot: " << z_carrot << "\n" << std::endl;*/
-
 
     colvec u_const_trans;
 
@@ -151,8 +134,6 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
                     << y_carrot<< endr
                     << z_carrot<< endr;
     }
-    //std::cout << "delta distance: " << x_carrot+y_carrot+z_carrot <<std::endl;
-    //std::cout << "open loop control: " << u_const_trans << std::endl;
 
     for(int j=0; j<csi; ++j)
     {

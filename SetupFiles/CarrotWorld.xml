@@ -76,7 +76,7 @@
 </MotionModels>
 <PlanningProblem>
     <Environment
-        environmentFile = "./Models/2_obstacles.obj"
+        environmentFile = "./Models/obstacle_space_2.obj"
     />
     <Robot
         robotFile = "./Models/quadrotor.obj"
