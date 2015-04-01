@@ -70,9 +70,10 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
 
     }
     else
+    // we are running on hardware now
     {
         arma::colvec u = motionModel_->OMPL2ARMA(control);
-        arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+        arma ::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
         geometry_msgs::PoseStamped msg;
         double carrot_x = u[0];
         double carrot_y = u[1];
@@ -112,7 +113,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
 
 std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise, int commandNumber)
 {
-    arma ::colvec x = trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    arma ::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
     geometry_msgs::PoseStamped msg;
 
     msg.pose.position.x = wayX;
@@ -130,7 +131,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     control_pub_.publish(msg);
     //std::cout << "[CSpaceInfo] Published: " << wayX << " " << wayY << " " << wayZ << std::endl;
     CarrotVisualizer::updateTrueState(trueState_);
-    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(200));
 
     raven_rviz::Waypoint wayMsg;
     wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO test if properly parsed quadName_ to remove brackets
@@ -148,9 +149,9 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     control_pub_waypoint_.publish(wayMsg);
 
 
-    double xTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getX();
-    double yTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getY();
-    double zTrue = trueState_->as<CarrotBeliefSpace::StateType>()->getZ();
+    double xTrue = belief_->as<CarrotBeliefSpace::StateType>()->getX();
+    double yTrue = belief_->as<CarrotBeliefSpace::StateType>()->getY();
+    double zTrue = belief_->as<CarrotBeliefSpace::StateType>()->getZ();
     std::vector<double> location = {xTrue, yTrue, zTrue};
     return location;
 }

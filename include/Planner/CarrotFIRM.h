@@ -400,11 +400,18 @@ protected:
     const firm::CarrotSpaceInformation::SpaceInformationPtr            siF_;
     //const firm::ROSSpaceInformation::SpaceInformationPtr               si_ROS_;
 
-    /** \brief A table that stores the edge controllers according to the edges */
+    /** \brief A table that stores the FIRM edge controllers according to the edges */
     std::map <Edge, EdgeControllerType > edgeControllers_;
+
+    /** \brief A table that stores the PRM edge controllers according
+ * to the vertices */
+    std::map <Vertex, EdgeControllerType > prmEdgeControllers_;
 
     /** \brief A table that stores the node controllers according to the node (vertex) ids */
     std::map <Vertex, NodeControllerType > nodeControllers_;
+
+    /** \brief A table that stores the PRM node controllers according to the node (vertex) ids */
+    std::map <Vertex, NodeControllerType > prmNodeControllers_;
 
     std::map <Vertex, double> costToGo_;
 
