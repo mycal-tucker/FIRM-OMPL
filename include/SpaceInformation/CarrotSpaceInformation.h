@@ -93,7 +93,11 @@ namespace firm
                 int argc = 0;
                 ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
                 ros::NodeHandle n;
+<<<<<<< HEAD
+                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1,&CarrotSpaceInformation::stateCallback,this);
+=======
                 ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1000,&CarrotSpaceInformation::stateCallback,this);
+>>>>>>> ros_integration
                 state_sub_ = state_sub;
             }
 

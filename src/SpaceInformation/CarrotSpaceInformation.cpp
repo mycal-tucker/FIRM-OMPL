@@ -106,8 +106,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
-
+        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
     }
     CarrotVisualizer::updateTrueState(trueState_);
 }

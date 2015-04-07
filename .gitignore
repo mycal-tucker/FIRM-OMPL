@@ -8,3 +8,6 @@
 *.map
 FIRM-OMPL_linux.*
 FIRMRoadMap.xml
+FIRM-OMPL_linux.cbp
+FIRM-OMPL_linux.layout
+bin/Debug/FIRM-OMPL
