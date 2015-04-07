@@ -91,7 +91,7 @@ namespace ompl
 
         static const double DP_CONVERGENCE_THRESHOLD = 1e-3;
 
-        static const double DEFAULT_NEAREST_NEIGHBOUR_RADIUS = 2.5;
+        static const double DEFAULT_NEAREST_NEIGHBOUR_RADIUS = 1.5;
 
         static const double KIDNAPPING_INNOVATION_CHANGE_THRESHOLD = 5.0; // 50%
 
@@ -153,7 +153,7 @@ void CarrotFIRM::setup(void)
     {
         //connectionStrategy_ = ompl::geometric::KStarStrategy<Vertex>(boost::bind(&FIRM::milestoneCount, this), nn_, si_->getStateDimension());
         connectionStrategy_ = FStrategy<Vertex>(ompl::magic::DEFAULT_NEAREST_NEIGHBOUR_RADIUS, nn_);
-        //connectionStrategy_ = KStrategy<Vertex>(magic::DEFAULT_NEAREST_NEIGHBORS, nn_);
+        //connectionStrategy_ = ompl::geometric::KStrategy<Vertex>(ompl::magic::DEFAULT_NEAREST_NEIGHBORS, nn_);
     }
 
     int np = ompl::magic::NUM_MONTE_CARLO_PARTICLES;
@@ -1104,7 +1104,8 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
     //execute the shortest path
 
     std::ofstream myfile;
-    remove("loggingPRM.txt");//remove the log from the last prm trial
+    //line below not necessary since we are now making individual files
+    //remove("loggingPRM.txt");//remove the log from the last prm trial
     myfile.open("loggingPRM.txt", std::ios::app);
 
     bool simulation = false;

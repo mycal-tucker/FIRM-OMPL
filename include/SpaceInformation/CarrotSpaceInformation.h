@@ -39,6 +39,8 @@
 
 
 #include "ros/ros.h"
+#include <ctime> //for logging time (Chris)
+#include <iostream> //for building time string (Chris)
 #include "geometry_msgs/PoseStamped.h"
 #include "ompl/control/SpaceInformation.h"
 #include "../MotionModels/CarrotMotionModelMethod.h"
@@ -76,6 +78,11 @@ namespace firm
                 isSimulation_ = true; // set to false when executing feedback path
                 quadName_ = "/BQ02s/";
                 quadSpeed_ = 1;
+                time_t t = time(0); // grab the current time
+                struct tm* now = localtime(&t);
+                std::ostringstream os;
+                os << (now->tm_year-100) << "_" << (now->tm_mon+1) << "_" << now->tm_mday << "_" << now->tm_hour << now->tm_min << now->tm_sec << "_";
+                startTime_ = os.str();
                 // set up ROS subscriber (state) and publisher (control)
 
             }
@@ -154,6 +161,11 @@ namespace firm
                 this->copyState(state, trueState_);
             }
 
+            void getBelief(ompl::base::State *state)
+            {
+                this->copyState(state, belief_);
+            }
+
             /** \brief Checks whether the true system state is in valid or not*/
             bool checkTrueStateValidity(void)
             {
@@ -188,6 +200,21 @@ namespace firm
                 return isSimulation_;
             }
 
+            std::string getTimestamp( void )
+            {
+                return startTime_;
+            }
+
+            void setPlannerString( std::string plan )
+            {
+                plan_ = plan;
+            }
+
+            std::string getPlannerString( void )
+            {
+                return plan_;
+            }
+
 
         protected:
 
@@ -201,6 +228,8 @@ namespace firm
             ros::Publisher control_pub_waypoint_; //mycals correct publisher for quad control
             std::string quadName_; // name of quad we're pubbing topics to e.g. 'BQ04'
             double quadSpeed_; //speed used in quad command messages
+            std::string startTime_; //created upon initialization, for organizing logged data
+            std::string plan_; // "FIRM" or "PRM"
 
 
 
