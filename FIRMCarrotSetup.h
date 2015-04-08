@@ -161,13 +161,20 @@ public:
         pdef_->setStartAndGoalStates(start_, goal_, 1.0);
     }
 
-    void setup()
+    void setup( bool prm )
     {
-        std::cout << "Running FIRM Setup" << std::endl;
-        this->setupFIRM();
+        if ( prm )
+        {
+            std::cout << "Running PRM Setup" << std::endl;
+        }
+        else
+        {
+            std::cout << "Running FIRM Setup" << std::endl;
+        }
+        this->setupPlanner( prm );
     }
 
-    void setupFIRM()
+    void setupPlanner( bool prm )
     {
 
         if(!setup_)
@@ -182,6 +189,11 @@ public:
                 throw ompl::Exception("Robot/Environment mesh files not setup!");
             }
 
+        // for correct log naming
+        std::string plan;
+        if (prm) plan = "PRM_";
+        else plan = "FIRM_";
+        siF_->setPlannerString(plan);
 		ompl::base::RealVectorBounds bounds(3);
 		// set X bound
         bounds.setLow(0,-2.0);
@@ -250,7 +262,7 @@ public:
     {
         if(!setup_)
         {
-            this->setup();
+            this->setup( prm );
         }
 
         std::string pathXML = "FIRMRoadMap.xml";

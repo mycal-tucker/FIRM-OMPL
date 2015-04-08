@@ -468,6 +468,10 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
 
   TiXmlNode* child = 0;
 
+  std::ofstream landmarks;
+  remove("landmarks.txt");
+  landmarks.open("landmarks.txt", ios::app);
+
   //Iterate through all the landmarks and put them into the "landmarks_" list
   while( (child = landmarkElement ->IterateChildren(child)))
   {
@@ -486,9 +490,13 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
     landmark[2] = attributeVal;
     landmark[3] = 0; // all landmarks on ground
 
+    landmarks << landmark[1] << "," << landmark[2] << "," << landmark[3] << "\n";
+
     this->landmarks_.push_back(landmark);
 
   }
+
+  landmarks.close();
 
     OMPL_INFORM("CarrotObservationModel: Total number of landmarks loaded successfully : %u", landmarks_.size() );
 

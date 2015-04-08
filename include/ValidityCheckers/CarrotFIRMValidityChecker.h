@@ -58,6 +58,8 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
 
     virtual bool isValid(const ompl::base::State *state) const
     {
+
+        double pad = 0.254; // length of quad arm+extended prop = 10in. = 0.254m (Chris)
         double x = state->as<StateType>()->getX();
         double y = state->as<StateType>()->getY();
         double z = state->as<StateType>()->getZ();
@@ -67,34 +69,24 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
         //y >=-6.8, y <=0.9
         //z >= 0, z <=2
 
-        bool withinTestArea = isInsideBox(state, -1.9, 1.0, -6.8, 0.9) && (z >=-0.1 && z <= 2);
+        bool withinTestArea = isInsideBox(state, -2.0+pad, 1.1-pad, -6.9+pad, 1.0-pad) && (z >=-0.1 && z <= 2);
 
-          /*if (x <= -1.9 || x >= 1.0) {
-              //std::cout << "invalid x: " << x << std::endl;
-              return false;
-          }
-          if (y <= -6.8 || y >= 0.9) {
-              //std::cout << "invalid y: " << y << std::endl;
-              return false;
-          }
-          if (z <= 1 || z >= 2) {
-              //std::cout << "invalid z: " << z << std::endl;
-              return false;
-          }*/
 
           //obs1:
           //x between -1.37 and -0.405
           //y between -1.46 and -2.40
 
-          bool outsideObstacle1 = !isInsideBox(state, -1.13, -0.439, -1.81, -0.95);
+          bool outsideObstacle1 = !isInsideBox(state, -0.95-pad, 0.05+pad, -1.225-pad, -0.225+pad);
 
           //obs2:
           //x between -0.095 and 0.90
           //y between -0.85 and -2.98
 
-          bool outsideObstacle2 = !isInsideBox(state, 0.215, 0.973, -3.05, -0.85);
+          bool outsideObstacle2 = !isInsideBox(state, -0.95-pad, 0.05+pad, -3.45-pad, -2.45+pad);
 
-          return withinTestArea && outsideObstacle1 && outsideObstacle2;
+          bool outsideObstacle3 = !isInsideBox(state, -0.95-pad, 0.05+pad, -5.675-pad, -4.675+pad);
+
+          return withinTestArea && outsideObstacle1 && outsideObstacle2 && outsideObstacle3;
 
       //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
 /*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());
@@ -113,8 +105,9 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
     /** \brief Checks if the state is within a bounding box */
     bool isInsideBox(const ompl::base::State *state, double xl, double xr, double yb, double yt) const
     {
+
         arma::colvec pos = state->as<StateType>()->getArmaData();
-        double eps = 0.20;
+        double eps = 0.0;
         if(pos[0] >= xl-eps && pos[0] <= xr+eps )
             {
             if(pos[1] >= yb-eps && pos[1] <= yt+eps)

@@ -63,13 +63,13 @@ void plan()
     //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
 
-    bool prm = true; //set to true if want to solve prm, not FIRM
+    bool prm = false; //set to true if want to solve prm, not FIRM
 
     OMPL_INFORM("Loaded Setup File");
 
     mySetup->setPathToSetupFile(setupFilePath.c_str());
 
-    mySetup->setup();
+    mySetup->setup( prm );
 
     CarrotVisualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
     //Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
