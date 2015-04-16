@@ -1103,10 +1103,10 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
 
     //execute the shortest path
 
-    std::ofstream myfile;
+    //std::ofstream myfile;
     //line below not necessary since we are now making individual files
     //remove("loggingPRM.txt");//remove the log from the last prm trial
-    myfile.open("loggingPRM.txt", std::ios::app);
+    //myfile.open("loggingPRM.txt", std::ios::app);
 
     bool simulation = false;
     siF_->setSimulation(simulation);
@@ -1115,6 +1115,7 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
     boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
     vertex_t currentVertex = start;
+    siF_->takeoff(stateProperty_[start]);
     // goal already declared above (Chris)
     //vertex_t goal = goalM_[0];
 
@@ -1143,7 +1144,7 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
         if (controller.Execute(cstartState, cendState, cost, false))
         {
             std::cout<<"CarrotFIRM: Controller executing from state "<<
-                cstartState->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
+            cstartState->as<CarrotBeliefSpace::StateType>()->getArmaData()<<std::endl;
             currentVertex = path[++pathIndex];
         }
         else
@@ -1153,8 +1154,9 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
         }
         si_->copyState(cstartState, cendState);
     }
-    myfile.close();
+//    myfile.close();
     std::cout<<"Reached goal"<<std::endl;
+    siF_->land();
 }
 
 void CarrotFIRM::executeFeedback(void)
@@ -1165,8 +1167,12 @@ void CarrotFIRM::executeFeedback(void)
     siF_->initializePublisher();
     boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
+
     Vertex start = startM_[0];
     Vertex goal  = goalM_[0] ;
+
+    // take off to starting point
+    siF_->takeoff(stateProperty_[start]);
 
     siF_->setTrueState(stateProperty_[start]);
     siF_->setBelief(stateProperty_[start]);
@@ -1238,6 +1244,7 @@ void CarrotFIRM::executeFeedback(void)
         }
         si_->copyState(cstartState, cendState);
     }
+    siF_->land();
 }
 
 // Experimental

@@ -72,6 +72,9 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
     else
     // we are running on hardware now
     {
+        // to update true state with state callback
+        ros::spinOnce();
+
         arma::colvec u = motionModel_->OMPL2ARMA(control);
         arma ::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
         geometry_msgs::PoseStamped msg;
@@ -93,10 +96,11 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         //std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
 
         raven_rviz::Waypoint wayMsg;
-        wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
-        wayMsg.goal_pose.position.x = carrot_x + belief_->as<CarrotBeliefSpace::StateType>()->getX();;
-        wayMsg.goal_pose.position.y = carrot_y + belief_->as<CarrotBeliefSpace::StateType>()->getY();;
-        wayMsg.goal_pose.position.z = carrot_z + belief_->as<CarrotBeliefSpace::StateType>()->getZ();;
+        int endIdx = quadName_.length();
+        wayMsg.header.frame_id = quadName_.substr(1, endIdx-2); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
+        wayMsg.goal_pose.position.x = carrot_x + belief_->as<CarrotBeliefSpace::StateType>()->getX();
+        wayMsg.goal_pose.position.y = carrot_y + belief_->as<CarrotBeliefSpace::StateType>()->getY();
+        wayMsg.goal_pose.position.z = carrot_z + belief_->as<CarrotBeliefSpace::StateType>()->getZ();
         wayMsg.goal_pose.orientation.w = 1;
         wayMsg.goal_pose.orientation.x = 0;
         wayMsg.goal_pose.orientation.y = 0;
@@ -106,14 +110,88 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        ros::spinOnce();
+
+        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
     }
     CarrotVisualizer::updateTrueState(trueState_);
 }
 
+void firm::CarrotSpaceInformation::takeoff(ompl::base::State* state)
+{
+    arma::colvec x = state->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    raven_rviz::Waypoint wayMsg;
+    int endIdx = quadName_.length();
+    wayMsg.header.frame_id = quadName_.substr(1, endIdx-2); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
+    for (int step=1; step <=5; ++step)
+    {
+        wayMsg.goal_pose.position.x = x[0];
+        wayMsg.goal_pose.position.y = x[1];
+        wayMsg.goal_pose.position.z = step*x[2]/5.0;
+        wayMsg.goal_pose.orientation.w = 1;
+        wayMsg.goal_pose.orientation.x = 0;
+        wayMsg.goal_pose.orientation.y = 0;
+        wayMsg.goal_pose.orientation.z = 0;
+        wayMsg.takeoff = true;
+        wayMsg.land = false;
+        wayMsg.velocity = quadSpeed_;
+        control_pub_waypoint_.publish(wayMsg);
+        ros::spinOnce();
+        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+    }
+    //sleep 2 seconds
+    boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+
+}
+
+void firm::CarrotSpaceInformation::land( void )
+{
+    ompl::base::State* state = this->allocState();
+    this->getTrueState(state);
+    arma::colvec x = state->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    std::cout << "[CSI] Landing state:\n" << x << std::endl;
+    raven_rviz::Waypoint wayMsg;
+    int endIdx = quadName_.length();
+    wayMsg.header.frame_id = quadName_.substr(1, endIdx-2); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
+    double z_inc = (x[2]-0.1)/10;
+    for (int step = 1; step <= 10; ++step)
+    {
+        wayMsg.goal_pose.position.x = x[0];
+        wayMsg.goal_pose.position.y = x[1];
+        wayMsg.goal_pose.position.z = x[2]-step*z_inc;
+        wayMsg.goal_pose.orientation.w = 1;
+        wayMsg.goal_pose.orientation.x = 0;
+        wayMsg.goal_pose.orientation.y = 0;
+        wayMsg.goal_pose.orientation.z = 0;
+        wayMsg.takeoff = true;
+        wayMsg.land = false;
+        wayMsg.velocity = quadSpeed_;
+        control_pub_waypoint_.publish(wayMsg);
+        ros::spinOnce();
+        //wait till it descends to next wpt (Chris)
+        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+    }
+    //land it (Chris)
+    wayMsg.goal_pose.position.x = x[0];
+    wayMsg.goal_pose.position.y = x[1];
+    wayMsg.goal_pose.position.z = 0.1;
+    wayMsg.goal_pose.orientation.w = 1;
+    wayMsg.goal_pose.orientation.x = 0;
+    wayMsg.goal_pose.orientation.y = 0;
+    wayMsg.goal_pose.orientation.z = 0;
+    wayMsg.takeoff = false;
+    wayMsg.land = true;
+    wayMsg.velocity = quadSpeed_;
+    control_pub_waypoint_.publish(wayMsg);
+    ros::spinOnce();
+    this->freeState(state);
+}
+
 std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, double wayY, double wayZ, bool withNoise, int commandNumber)
 {
-    arma ::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
+    arma::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
     geometry_msgs::PoseStamped msg;
 
     msg.pose.position.x = wayX;
@@ -134,7 +212,8 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     boost::this_thread::sleep(boost::posix_time::milliseconds(200));
 
     raven_rviz::Waypoint wayMsg;
-    wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO test if properly parsed quadName_ to remove brackets
+    int endIdx = quadName_.length();
+    wayMsg.header.frame_id = quadName_.substr(1, endIdx-2); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
     wayMsg.goal_pose.position.x = wayX;
     wayMsg.goal_pose.position.y = wayY;
     wayMsg.goal_pose.position.z = wayZ;

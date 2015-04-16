@@ -76,7 +76,7 @@ namespace firm
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
                 isSimulation_ = true; // set to false when executing feedback path
-                quadName_ = "/BQ02s/";
+                quadName_ = "/BQ02/";
                 quadSpeed_ = 1;
                 time_t t = time(0); // grab the current time
                 struct tm* now = localtime(&t);
@@ -93,11 +93,7 @@ namespace firm
                 int argc = 0;
                 ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
                 ros::NodeHandle n;
-<<<<<<< HEAD
-                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1,&CarrotSpaceInformation::stateCallback,this);
-=======
                 ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1000,&CarrotSpaceInformation::stateCallback,this);
->>>>>>> ros_integration
                 state_sub_ = state_sub;
             }
 
@@ -107,8 +103,8 @@ namespace firm
                 ros::init(argc,NULL,"control_publisher");
                 ros::NodeHandle n;
                 //ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
-                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypointXYZ",10);
-                ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 10);
+                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypointXYZ",100);
+                ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 100);
                 control_pub_ = control_pub;
                 control_pub_waypoint_ = control_pub_waypoint;
             }
@@ -218,6 +214,11 @@ namespace firm
             {
                 return plan_;
             }
+
+            void takeoff(ompl::base::State* state);
+
+            void land( void );
+
 
 
         protected:

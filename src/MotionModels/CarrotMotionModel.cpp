@@ -207,8 +207,8 @@ CarrotMotionModel::getNoiseJacobian(const ompl::base::State *state, const ompl::
     using namespace arma;
     typedef typename CarrotMotionModelMethod::StateType StateType;
 
-    colvec xData = state->as<StateType>()->getArmaData();
-    assert (xData.n_rows == (size_t)this->stateDim_);
+    //colvec xData = state->as<StateType>()->getArmaData();
+    //assert (xData.n_rows == (size_t)this->stateDim_);
     //const colvec& Un = w.subvec(0,this->controlDim_-1);
     //const colvec& Wg = w.subvec(this->controlDim_,this->noiseDim_-1);
 

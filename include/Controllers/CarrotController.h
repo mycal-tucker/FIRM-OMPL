@@ -262,10 +262,6 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
   while(!this->isTerminated(tempEndState, k))
   {
-    //using namespace std;
-
-
-
     this->Evolve(internalState, k, tempEndState) ;
 
     si_->copyState(internalState, tempEndState);
@@ -299,10 +295,13 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     arma::colvec endTrueStateVec = endTrueState->as<StateType>()->getArmaData();
 
     if (!constructionMode){
-        stateFile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
-        covFile << cov[0] << "," << cov[1] << "," << cov[2] << "," << cov[3] << "," << cov[4] << "," << cov[5] << "," << cov[6] << "," << cov[7] << ","
-        << cov[8] << "\n";
-        ros::spinOnce();
+        stateFile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << ","
+                  << endTrueStateVec[0] << "," << endTrueStateVec[1] << "," << endTrueStateVec[2] << ","
+                  << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
+        covFile   << cov[0] << "," << cov[1] << "," << cov[2] << ","
+                  << cov[3] << "," << cov[4] << "," << cov[5] << ","
+                  << cov[6] << "," << cov[7] << "," << cov[8] << "\n";
+        //ros::spinOnce();
 
         //Print out if quad is not in a valid state. This counts as a crude collision
         if (!(si_->checkTrueStateValidity()))
@@ -317,8 +316,8 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     {
 
         si_->copyState(endState, internalState);
-        std::cout << "[CarrotController.h] Deviation of " << deviation <<
-		" exceeds threshold" << std::endl;
+        /*std::cout << "[CarrotController.h] Deviation of " << deviation <<
+		" exceeds threshold" << std::endl;*/
         return false;
 
     }
@@ -462,7 +461,7 @@ void CarrotController<SeparatedControllerType, FilterType>::Evolve(const ompl::b
 
   si_->applyControl(control);
 
-  if (!si_->isSimulation()) boost::this_thread::sleep(boost::posix_time::milliseconds(20));
+  //if (!si_->isSimulation()) boost::this_thread::sleep(boost::posix_time::milliseconds(20));
 
 
   ObservationType zCorrected = si_->getObservation();

@@ -69,22 +69,22 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
         //y >=-6.8, y <=0.9
         //z >= 0, z <=2
 
-        bool withinTestArea = isInsideBox(state, -2.0+pad, 1.1-pad, -6.9+pad, 1.0-pad) && (z >=-0.1 && z <= 2);
+        bool withinTestArea = isInsideBox(state, -2.0+pad, 1.1-pad, -6.9+pad, 1.0-pad) && (z >=0.1 && z <= 2);
 
 
           //obs1:
           //x between -1.37 and -0.405
           //y between -1.46 and -2.40
 
-          bool outsideObstacle1 = !isInsideBox(state, -0.95-pad, 0.05+pad, -1.225-pad, -0.225+pad);
+          bool outsideObstacle1 = !isInsideBox(state, -0.9-pad, 0.40+pad, -1.475-pad, -0.125+pad);
 
           //obs2:
           //x between -0.095 and 0.90
           //y between -0.85 and -2.98
 
-          bool outsideObstacle2 = !isInsideBox(state, -0.95-pad, 0.05+pad, -3.45-pad, -2.45+pad);
+          bool outsideObstacle2 = !isInsideBox(state, -1.1-pad, 0.40+pad, -3.7-pad, -2.2+pad);
 
-          bool outsideObstacle3 = !isInsideBox(state, -0.95-pad, 0.05+pad, -5.675-pad, -4.675+pad);
+          bool outsideObstacle3 = !isInsideBox(state, -1.1-pad, 0.40+pad, -5.6-pad, -4.425+pad);
 
           return withinTestArea && outsideObstacle1 && outsideObstacle2 && outsideObstacle3;
 

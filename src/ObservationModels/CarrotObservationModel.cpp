@@ -285,7 +285,7 @@ CarrotObservationModel::getObservationJacobian(const ompl::base::State *state, c
         mat H_i((landmarkInfoDim),stateDim);
 
         H_i <<   -diff[0]/r_3    <<  -diff[1]/r_3    <<   -diff[2]/r_3 << endr
-            <<   -diff[1]/(r_2*r_2)  <<  -diff[0]/(r_2*r_2)  <<  0 << endr
+            <<   diff[1]/(r_2*r_2)  <<  -diff[0]/(r_2*r_2)  <<  0 << endr
             <<   -diff[0]*diff[2]/(r_2*r_3*r_3)
             <<   -diff[1]*diff[2]/(r_2*r_3*r_3)
             <<    r_2/(r_3*r_3) << endr;
@@ -488,7 +488,7 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
     landmark[1] = attributeVal;
     itemElement->QueryDoubleAttribute("y", &attributeVal) ;
     landmark[2] = attributeVal;
-    landmark[3] = 0; // all landmarks on ground
+    landmark[3] = 1.0; // all landmarks on ground
 
     landmarks << landmark[1] << "," << landmark[2] << "," << landmark[3] << "\n";
 
