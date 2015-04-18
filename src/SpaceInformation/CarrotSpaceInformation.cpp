@@ -73,7 +73,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
     // we are running on hardware now
     {
         // to update true state with state callback
-        ros::spinOnce();
+//        ros::spinOnce();
 
         arma::colvec u = motionModel_->OMPL2ARMA(control);
         arma ::colvec x = belief_->as<CarrotBeliefSpace::StateType>()->getArmaData();
@@ -109,10 +109,11 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
+        //ros::spinOnce();
+        //boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
+        ros::Duration(0.2).sleep();
+        //ros::spinOnce();
 
-        ros::spinOnce();
-
-        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
     }
     CarrotVisualizer::updateTrueState(trueState_);
 }
@@ -137,11 +138,11 @@ void firm::CarrotSpaceInformation::takeoff(ompl::base::State* state)
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
         ros::spinOnce();
-        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(750));
 
     }
     //sleep 2 seconds
-    boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
 
 }
 
@@ -168,7 +169,7 @@ void firm::CarrotSpaceInformation::land( void )
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
-        ros::spinOnce();
+        //ros::spinOnce();
         //wait till it descends to next wpt (Chris)
         boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 
@@ -287,5 +288,6 @@ std::vector<double> firm::CarrotSpaceInformation::flyAlongVector(double vecX, do
 
 ObservationModelMethod::ObservationType firm::CarrotSpaceInformation::getObservation()
 {
+    if (!this->isSimulation()) ros::spinOnce();
     return observationModel_->getObservation(trueState_, true);
 }

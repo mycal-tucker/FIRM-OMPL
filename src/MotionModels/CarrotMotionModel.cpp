@@ -62,7 +62,7 @@ void CarrotMotionModel::Evolve(const ompl::base::State *state, const ompl::contr
 
     //colvec xPrev = x;
 
-    x += u + Un + Wg;
+    x += u + Un;
     //std::cout << "[MotionModel] End state: " << x <<std::endl;
 
     result->as<StateType>()->setXYZ(x[0],x[1],x[2]);
@@ -82,15 +82,27 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     colvec end = endState->as<StateType>()->getArmaData(); // turn into colvec
     //std::cout << "start: " << start << " end: " << end << std::endl;
 
-    colvec x_c, y_c, z_c;
+    /*colvec x_c, y_c, z_c;
     x_c << start[0] << endr
       << end[0] << endr;
     y_c << start[1] << endr
       << end[1] << endr;
     z_c << start[2] << endr
-      << end[2] << endr;
+      << end[2] << endr;*/
 
-    double delta_x = 0;
+    double delta_x = end[0]-start[0];
+    double delta_y = end[1]-start[1];
+    double delta_z = end[2]-start[2];
+    colvec diff;
+    diff << delta_x << delta_y << delta_z << endr;
+
+    double dist = norm(diff,2);
+    double steps = fabs(dist/(maxVelocity_*this->dt_));
+    double fsteps = 0;
+    if (steps > 1) fsteps = floor(steps);
+    else fsteps = steps;
+
+    /*double delta_x = 0;
     double delta_y = 0;
     double delta_z = 0;
     double x_steps = 0;
@@ -99,7 +111,7 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     int kf = 0;
 
     // count x steps
-    delta_x = x_c[1]-x_c[0];
+
     x_steps = fabs(delta_x/(maxXVelocity_*this->dt_));
 
     // count y steps
@@ -121,26 +133,31 @@ void CarrotMotionModel::generateOpenLoopControls(const ompl::base::State *startS
     } else {
         si = z_steps;
         csi = ceil(si);
-    }
+    }*/
 
-    const double x_carrot = delta_x/csi;
-    const double y_carrot = delta_y/csi;
-    const double z_carrot = delta_z/csi;
+    const double x_carrot = delta_x/fsteps;
+    const double y_carrot = delta_y/fsteps;
+    const double z_carrot = delta_z/fsteps;
 
     colvec u_const_trans;
 
-    if(u_const_trans.n_rows == 0) {
-      u_const_trans << x_carrot<< endr
-                    << y_carrot<< endr
-                    << z_carrot<< endr;
+    u_const_trans << x_carrot<< endr
+                << y_carrot<< endr
+                << z_carrot<< endr;
+
+    for(int j=0; j<fsteps; ++j)
+    {
+        ompl::control::Control *tempControl = si_->allocControl();
+        ARMA2OMPL(u_const_trans, tempControl);
+        openLoopControls.push_back(tempControl);
+    }
+    if (steps > fsteps)
+    {
+        ompl::control::Control *tempControl = si_->allocControl();
+        ARMA2OMPL(u_const_trans*(steps-fsteps), tempControl);
+        openLoopControls.push_back(tempControl);
     }
 
-    for(int j=0; j<csi; ++j)
-    {
-      ompl::control::Control *tempControl = si_->allocControl();
-      ARMA2OMPL(u_const_trans, tempControl);
-      openLoopControls.push_back(tempControl);
-    }
 
 }
 
@@ -289,9 +306,12 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     double etaOmega=0;
     double windNoisePos=0;
     double windNoiseAng = 0;
+/*
     double maxXVelocity=0;
     double maxYVelocity=0;
     double maxZVelocity =0;
+*/
+    double maxVelocity = 0;
     double dt = 0;
 
     itemElement->QueryDoubleAttribute("sigmaV", &sigmaV) ;
@@ -299,10 +319,11 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     //itemElement->QueryDoubleAttribute("sigmaOmega", &sigmaOmega) ;
     //itemElement->QueryDoubleAttribute("etaOmega", &etaOmega) ;
     itemElement->QueryDoubleAttribute("wind_noise_pos", &windNoisePos) ;
-    //itemElement->QueryDoubleAttribute("wind_noise_ang", &windNoiseAng) ;
-    itemElement->QueryDoubleAttribute("max_x_velocity", &maxXVelocity) ;
-    itemElement->QueryDoubleAttribute("max_y_velocity", &maxYVelocity) ;
-    itemElement->QueryDoubleAttribute("max_z_velocity", &maxZVelocity) ;
+    //itemElement->QueryDoubleAttribute("wind_noise_ang", &windNoiseAng) ;=
+    //itemElement->QueryDoubleAttribute("max_x_velocity", &maxXVelocity) ;
+    //itemElement->QueryDoubleAttribute("max_y_velocity", &maxYVelocity) ;
+    //itemElement->QueryDoubleAttribute("max_z_velocity", &maxZVelocity) ;
+    itemElement->QueryDoubleAttribute("max_velocity", &maxVelocity) ;
     itemElement->QueryDoubleAttribute("dt", &dt) ;
 
     this->sigma_ << sigmaV << sigmaV << sigmaV << endr;
@@ -312,9 +333,10 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     Wg_root_vec << windNoisePos << windNoisePos << windNoisePos << endr;
     P_Wg_ = diagmat(square(Wg_root_vec));
 
-    maxXVelocity_  = maxXVelocity;
+    /*maxXVelocity_  = maxXVelocity;
     maxYVelocity_  = maxYVelocity;
-    maxZVelocity_ = maxZVelocity;
+    maxZVelocity_ = maxZVelocity;*/
+    maxVelocity_ = maxVelocity;
     dt_                 = dt;
 
     OMPL_INFORM("CarrotMotionModel: sigma_ = ");
@@ -326,6 +348,7 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
     OMPL_INFORM("CarrotMotionModel: P_Wg_ = ");
     std::cout<<P_Wg_<<std::endl;
 
+    /*
     OMPL_INFORM("CarrotMotionModel: max X Velocity (m/s)    = %f",
     maxXVelocity_ );
 
@@ -334,7 +357,9 @@ void CarrotMotionModel::loadParameters(const char *pathToSetupFile)
 
     OMPL_INFORM("CarrotMotionModel: max Z Velocity (rad/s) =%f",
     maxZVelocity_);
-
+    */
+    OMPL_INFORM("CarrotMotionModel: max Velocity (m/s)    = %f",
+    maxVelocity_);
     OMPL_INFORM("CarrotMotionModel: Timestep (seconds) = %f", dt_);
 
 }

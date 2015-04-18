@@ -1108,8 +1108,7 @@ generate controllers for vertices and edges not in this shortest path (Chris)*/
     //remove("loggingPRM.txt");//remove the log from the last prm trial
     //myfile.open("loggingPRM.txt", std::ios::app);
 
-    bool simulation = false;
-    siF_->setSimulation(simulation);
+    siF_->setSimulation(false);
     siF_->initializeSubscriber();
     siF_->initializePublisher();
     boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
@@ -1165,8 +1164,7 @@ void CarrotFIRM::executeFeedback(void)
     siF_->setSimulation(false); // running in hardware now
     siF_->initializeSubscriber();
     siF_->initializePublisher();
-    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-
+    boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
 
     Vertex start = startM_[0];
     Vertex goal  = goalM_[0] ;
@@ -1186,9 +1184,9 @@ void CarrotFIRM::executeFeedback(void)
 
     ompl::base::State *cendState = si_->allocState();
 
-    std::cout << "[CarrotFIRM.cpp] Uninitialized start State" << cendState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
+    //std::cout << "[CarrotFIRM.cpp] Uninitialized start State" << cendState->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
 
-    OMPL_INFORM("CarrotFIRM: Running policy execution");
+    OMPL_INFORM("[CarrotFIRM.cpp] Running FIRM policy execution");
 
     bool kidnapped_flag = false;
 
@@ -1200,8 +1198,6 @@ void CarrotFIRM::executeFeedback(void)
         Edge e = feedback_[currentVertex];
         controller = edgeControllers_[e];
         ompl::base::Cost cost;
-        std::cout << "edge info: " << e << std::endl;
-        //std::cout << "Execute cstartState: " << cstartState << " cendState: " << cendState << std::endl;
 
         if(controller.Execute(cstartState, cendState, cost, false))
         {
@@ -1215,11 +1211,8 @@ void CarrotFIRM::executeFeedback(void)
             std::cout << "[CarrotFIRM.cpp] Could not execute edge..." << std::endl;
             // get a copy of the true state
             ompl::base::State *tempTrueStateCopy = si_->allocState();
-            //ompl::base::State *tempROSTrueStateCopy = si_ROS_->allocState();
-
 
             siF_->getTrueState(tempTrueStateCopy);
-            //si_ROS_->getTrueState(tempROSTrueStateCopy);
 
             int numVerticesBefore = boost::num_vertices(g_);
 
@@ -1230,11 +1223,7 @@ void CarrotFIRM::executeFeedback(void)
             // Set true state back to its correct value after Monte Carlo (happens during adding state to Graph)
             siF_->setTrueState(tempTrueStateCopy);
 
-
-//            std::cout << "true state of deviation: " << tempTrueStateCopy->as<CarrotMotionModel::StateType>()->getArmaData() << std::endl;
-
             siF_->freeState(tempTrueStateCopy);
-            //si_ROS_->freeState(tempROSTrueStateCopy);
 
             assert(numVerticesAfter-numVerticesBefore >0);
 

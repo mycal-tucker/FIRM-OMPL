@@ -276,7 +276,7 @@ bool Controller<SeparatedControllerType, FilterType>::Execute(const ompl::base::
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec.subvec(0,1) - endStateVec.subvec(0,1);
 
-    if(abs(norm(deviation,2)) > nominalTrajDeviationThreshold_)
+    if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
         si_->copyState(endState, internalState);

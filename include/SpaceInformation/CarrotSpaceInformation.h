@@ -77,7 +77,7 @@ namespace firm
                 belief_    = this->allocState();
                 isSimulation_ = true; // set to false when executing feedback path
                 quadName_ = "/BQ02/";
-                quadSpeed_ = 1;
+                quadSpeed_ = 0.1;
                 time_t t = time(0); // grab the current time
                 struct tm* now = localtime(&t);
                 std::ostringstream os;
@@ -93,7 +93,7 @@ namespace firm
                 int argc = 0;
                 ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
                 ros::NodeHandle n;
-                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1000,&CarrotSpaceInformation::stateCallback,this);
+                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",10,&CarrotSpaceInformation::stateCallback,this);
                 state_sub_ = state_sub;
             }
 
@@ -103,10 +103,11 @@ namespace firm
                 ros::init(argc,NULL,"control_publisher");
                 ros::NodeHandle n;
                 //ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypoint",1000);
-                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypointXYZ",100);
-                ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 100);
+                ros::Publisher control_pub = n.advertise<geometry_msgs::PoseStamped>(quadName_+"quad_waypointXYZ",10);
+                ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 10);
                 control_pub_ = control_pub;
                 control_pub_waypoint_ = control_pub_waypoint;
+
             }
 
             // state callback for subscriber
@@ -118,7 +119,7 @@ namespace firm
                 double y = msg.pose.position.y;
                 double z = msg.pose.position.z;
                 trueState->as<CarrotBeliefSpace::StateType>()->setXYZ(x,y,z);
-                this->copyState(trueState_,trueState);
+                this->setTrueState(trueState);
                 this->freeState(trueState);
                 //std::cout << "State set to: " << trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
                 //ROS_INFO("State set to [%s]", msg.pose.c_str());

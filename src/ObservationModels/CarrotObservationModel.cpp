@@ -273,7 +273,7 @@ CarrotObservationModel::getObservationJacobian(const ompl::base::State *state, c
         colvec candidate;
 
         int Indx = this->findCorrespondingLandmark(state,
-        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
+                        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
 
         colvec diff =  landmarks_[Indx].subvec(1,3) - xVec.subvec(0,2);
         //xVec[0] = 0; xVec[1] = 0; //fix this eventually
