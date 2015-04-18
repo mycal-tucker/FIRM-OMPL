@@ -488,7 +488,8 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
     landmark[1] = attributeVal;
     itemElement->QueryDoubleAttribute("y", &attributeVal) ;
     landmark[2] = attributeVal;
-    landmark[3] = 1.0; // all landmarks on ground
+    itemElement->QueryDoubleAttribute("z", &attributeVal) ;
+    landmark[3] = attributeVal;
 
     landmarks << landmark[1] << "," << landmark[2] << "," << landmark[3] << "\n";
 

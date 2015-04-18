@@ -89,18 +89,21 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         msg.pose.orientation.x = 0;
         msg.pose.orientation.y = 0;
         msg.pose.orientation.z = 0;
-        /*msg.takeoff =false;
-        msg.land = false;
-        msg.velocity = 1;*/
         control_pub_.publish(msg);
         //std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
 
+        std::ofstream controlFile;
+        std::string controlName = this->getPlannerString() + this->getTimestamp() + "control.txt";
+        controlFile.open(controlName, std::ios::app);
         raven_rviz::Waypoint wayMsg;
         int endIdx = quadName_.length();
         wayMsg.header.frame_id = quadName_.substr(1, endIdx-2); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
-        wayMsg.goal_pose.position.x = carrot_x + belief_->as<CarrotBeliefSpace::StateType>()->getX();
-        wayMsg.goal_pose.position.y = carrot_y + belief_->as<CarrotBeliefSpace::StateType>()->getY();
-        wayMsg.goal_pose.position.z = carrot_z + belief_->as<CarrotBeliefSpace::StateType>()->getZ();
+        double wpt_x = carrot_x + belief_->as<CarrotBeliefSpace::StateType>()->getX();
+        double wpt_y = carrot_y + belief_->as<CarrotBeliefSpace::StateType>()->getY();
+        double wpt_z = carrot_z + belief_->as<CarrotBeliefSpace::StateType>()->getZ();
+        wayMsg.goal_pose.position.x = wpt_x;
+        wayMsg.goal_pose.position.y = wpt_y;
+        wayMsg.goal_pose.position.z = wpt_z;
         wayMsg.goal_pose.orientation.w = 1;
         wayMsg.goal_pose.orientation.x = 0;
         wayMsg.goal_pose.orientation.y = 0;
@@ -109,9 +112,11 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
+        controlFile << wpt_x << "," << wpt_y << "," << wpt_z << std::endl;
+        controlFile.close();
         //ros::spinOnce();
         //boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
-        ros::Duration(0.2).sleep();
+        ros::Duration(0.5).sleep();
         //ros::spinOnce();
 
     }

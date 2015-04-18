@@ -76,13 +76,14 @@ namespace firm
                 trueState_ = this->allocState();
                 belief_    = this->allocState();
                 isSimulation_ = true; // set to false when executing feedback path
-                quadName_ = "/BQ02/";
-                quadSpeed_ = 0.1;
+                quadName_ = "/BQ02s/";
+                quadSpeed_ = 1;
                 time_t t = time(0); // grab the current time
                 struct tm* now = localtime(&t);
                 std::ostringstream os;
                 os << (now->tm_year-100) << "_" << (now->tm_mon+1) << "_" << now->tm_mday << "_" << now->tm_hour << now->tm_min << now->tm_sec << "_";
                 startTime_ = os.str();
+
                 // set up ROS subscriber (state) and publisher (control)
 
             }
@@ -219,6 +220,7 @@ namespace firm
             void takeoff(ompl::base::State* state);
 
             void land( void );
+
 
 
 

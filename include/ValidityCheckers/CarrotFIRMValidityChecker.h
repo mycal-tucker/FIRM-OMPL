@@ -76,17 +76,18 @@ class CarrotFIRMValidityChecker : public ompl::base::StateValidityChecker
           //x between -1.37 and -0.405
           //y between -1.46 and -2.40
 
-          bool outsideObstacle1 = !isInsideBox(state, -0.9-pad, 0.40+pad, -1.475-pad, -0.125+pad);
+          bool outsideObstacle = !isInsideBox(state, -0.7-pad, 0.30+pad, -5.2-pad, -0.7+pad);
 
           //obs2:
           //x between -0.095 and 0.90
           //y between -0.85 and -2.98
 
-          bool outsideObstacle2 = !isInsideBox(state, -1.1-pad, 0.40+pad, -3.7-pad, -2.2+pad);
+          //bool outsideObstacle2 = !isInsideBox(state, -1.1-pad, 0.40+pad, -3.7-pad, -2.2+pad);
 
-          bool outsideObstacle3 = !isInsideBox(state, -1.1-pad, 0.40+pad, -5.6-pad, -4.425+pad);
+          //bool outsideObstacle3 = !isInsideBox(state, -1.1-pad, 0.40+pad, -5.6-pad, -4.425+pad);
 
-          return withinTestArea && outsideObstacle1 && outsideObstacle2 && outsideObstacle3;
+          //return withinTestArea && outsideObstacle1 && outsideObstacle2 && outsideObstacle3;
+          return withinTestArea && outsideObstacle;
 
       //ompl::base::SE3StateSpace::StateType *pos = state->as<ompl::base::SE3StateSpace::StateType>();
 /*      ompl::base::StateSpacePtr si(new ompl::base::SE3StateSpace());

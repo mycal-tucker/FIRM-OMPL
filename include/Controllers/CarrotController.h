@@ -290,9 +290,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
     ompl::base::State* endTrueState = si_->allocState();
-    //ompl::base::State* endBelief = si_->allocState(); //grab covariance from this for logging (Chris)
     si_->getTrueState(endTrueState);
-    //si_->getBelief(endBelief);
     arma::mat cov = tempEndState->as<StateType>()->getCovariance();
     arma::colvec endTrueStateVec = endTrueState->as<StateType>()->getArmaData();
 
