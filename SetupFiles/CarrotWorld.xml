@@ -17,9 +17,9 @@
   <CarrotObservationModel
     sigma_range="0.01"
     sigma_angle="0.1"
-    eta_rd="0.005"
-    eta_rphi = "0.05"
-    eta_thetad="0.05"
+    eta_rd="0.1"
+    eta_rphi = "0.5"
+    eta_thetad="0.5"
     eta_thetaphi = "0.0"
     vcLabel = "cd1"
   >

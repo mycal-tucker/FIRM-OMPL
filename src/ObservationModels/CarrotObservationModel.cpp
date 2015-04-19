@@ -61,15 +61,13 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
 
 
         double landmarkRange = 0; double landmarkBearing = 0; double landmarkPitch;
-        this->calculateRangeBearingPitchToLandmark(state,landmarks_[i],landmarkRange,landmarkBearing,landmarkPitch);
-
-        //cout<<"Trying to resize"<<endl;
-        z.resize((counter+1)*singleObservationDim ,  1);
-
-        colvec noise = zeros<colvec>(landmarkInfoDim);
-
-        if(isSimulation)
+        if(isLandmarkVisible(state, landmarks_[i], landmarkRange , landmarkBearing, landmarkPitch))
         {
+
+            //cout<<"Trying to resize"<<endl;
+            z.resize((counter+1)*singleObservationDim ,  1);
+
+            colvec noise = zeros<colvec>(landmarkInfoDim);
 
             // generate gaussian noise
             //get standard deviations of noise (sqrt of covariance matrix)
@@ -85,16 +83,15 @@ CarrotObservationModel::ObservationType CarrotObservationModel::getObservation(c
             //normal distribution N(0,1) to N(0,eta*range + sigma)
             //(shifting was done in GetNoiseCovariance)
             noise = noise_std%randNoiseVec;
+
+
+            z[singleObservationDim*counter] = landmarks_[i](0) ; // id of the landmark
+            z[singleObservationDim*counter+1] = landmarkRange + noise[0]; // distance to landmark
+            z[singleObservationDim*counter+2] = landmarkBearing + noise[1];
+            z[singleObservationDim*counter+3] = landmarkPitch + noise[2];
+
+            counter++;
         }
-
-        z[singleObservationDim*counter] = landmarks_[i](0) ; // id of the landmark
-        z[singleObservationDim*counter+1] = landmarkRange + noise[0]; // distance to landmark
-        z[singleObservationDim*counter+2] = landmarkBearing + noise[1];
-        z[singleObservationDim*counter+3] = landmarkPitch + noise[2];
-        // bearing to landmark
-
-
-        counter++;
     }
 
   return z;
@@ -253,6 +250,34 @@ int CarrotObservationModel::findCorrespondingLandmark(const ompl::base::State *s
     assert(candidateIndx>=0);
 
     return candidateIndx;
+
+}
+
+bool CarrotObservationModel::isLandmarkVisible(const ompl::base::State *state, const arma::colvec& landmark,
+                                                              double& range, double& bearing, double& pitch)
+{
+    using namespace arma;
+
+    colvec xVec = state->as<CarrotBeliefSpace::StateType>()->getArmaData();
+
+    this->calculateRangeBearingPitchToLandmark(state, landmark, range , bearing, pitch);
+
+    double landY = landmark[2];
+
+    bool inBlindSpot = (xVec[1] < -0.7 && xVec[1] > -5.2 && xVec[0] > 0.3);
+    bool blindLandmark = (landY < -0.7 && landY > -5.2);
+
+    if(range < 1e-2)
+    {
+        range = 1e-2;
+    }
+
+    if( !(inBlindSpot && blindLandmark))
+    {
+        return true;
+    }
+
+    return false;
 
 }
 
