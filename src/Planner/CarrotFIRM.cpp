@@ -338,7 +338,7 @@ bool CarrotFIRM::addedNewSolution(void) const
 
 ompl::base::PlannerStatus CarrotFIRM::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
-    int numMapsToConstruct = 1; //edit value if want more
+    int numMapsToConstruct = 2; //edit value if want more
     int numMapsConstructed = 0;
     ompl::base::PathPtr sol; //added for scope
     const ompl::base::State *startState = si_->cloneState(pis_.nextStart());

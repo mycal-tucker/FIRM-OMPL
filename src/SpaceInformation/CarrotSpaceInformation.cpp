@@ -93,7 +93,7 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         //std::cout << "[CSpaceInfo] Published: " << carrot_x << " " << carrot_y << " " << carrot_z << std::endl;
 
         raven_rviz::Waypoint wayMsg;
-        wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO set to quadName but remove the bracketing slashes (5 for sim, 4 for real)
+        wayMsg.header.frame_id = quadName_.substr(1, quadName_.length()-2);
         wayMsg.goal_pose.position.x = carrot_x + belief_->as<CarrotBeliefSpace::StateType>()->getX();;
         wayMsg.goal_pose.position.y = carrot_y + belief_->as<CarrotBeliefSpace::StateType>()->getY();;
         wayMsg.goal_pose.position.z = carrot_z + belief_->as<CarrotBeliefSpace::StateType>()->getZ();;
@@ -101,12 +101,12 @@ void firm::CarrotSpaceInformation::applyControl(const ompl::control::Control *co
         wayMsg.goal_pose.orientation.x = 0;
         wayMsg.goal_pose.orientation.y = 0;
         wayMsg.goal_pose.orientation.z = 0;
-        wayMsg.takeoff = true; //TODO investigate whether can leave always as true
+        wayMsg.takeoff = true;
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
     }
     CarrotVisualizer::updateTrueState(trueState_);
 }
@@ -134,7 +134,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     boost::this_thread::sleep(boost::posix_time::milliseconds(200));
 
     raven_rviz::Waypoint wayMsg;
-    wayMsg.header.frame_id = quadName_.substr(1, 5); //TODO test if properly parsed quadName_ to remove brackets
+    wayMsg.header.frame_id = quadName_.substr(1, quadName_.length() -2);
     wayMsg.goal_pose.position.x = wayX;
     wayMsg.goal_pose.position.y = wayY;
     wayMsg.goal_pose.position.z = wayZ;
@@ -142,7 +142,7 @@ std::vector<double> firm::CarrotSpaceInformation::flyToWaypoint(double wayX, dou
     wayMsg.goal_pose.orientation.x = 0;
     wayMsg.goal_pose.orientation.y = 0;
     wayMsg.goal_pose.orientation.z = 0;
-    wayMsg.takeoff = true; //TODO test if can reset takeoff values
+    wayMsg.takeoff = true;
     if (commandNumber == 1){ wayMsg.takeoff = true;}
     wayMsg.land = false;
     wayMsg.velocity = quadSpeed_;
