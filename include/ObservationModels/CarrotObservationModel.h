@@ -54,7 +54,7 @@ class CarrotObservationModel : public ObservationModelMethod
 
   static const int stateDim = 3;
   //static const int singleObservationDim = 3;
-  static const int landmarkInfoDim = 3; /*x,y,z(=0)*/
+  static const int landmarkInfoDim = 3; /*x,y,z(=1)*/
   static const int numLandmarksForObservability = 2;
   //static const int obsNoiseDim = 3;
 
