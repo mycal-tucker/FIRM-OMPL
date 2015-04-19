@@ -142,7 +142,6 @@ void firm::CarrotSpaceInformation::takeoff(ompl::base::State* state)
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
-        ros::spinOnce();
         boost::this_thread::sleep(boost::posix_time::milliseconds(750));
 
     }
@@ -174,7 +173,6 @@ void firm::CarrotSpaceInformation::land( void )
         wayMsg.land = false;
         wayMsg.velocity = quadSpeed_;
         control_pub_waypoint_.publish(wayMsg);
-        //ros::spinOnce();
         //wait till it descends to next wpt (Chris)
         boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 
@@ -191,7 +189,6 @@ void firm::CarrotSpaceInformation::land( void )
     wayMsg.land = true;
     wayMsg.velocity = quadSpeed_;
     control_pub_waypoint_.publish(wayMsg);
-    ros::spinOnce();
     this->freeState(state);
 }
 

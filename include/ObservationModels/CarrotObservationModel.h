@@ -108,7 +108,7 @@ class CarrotObservationModel : public ObservationModelMethod
     /** \brief Checks if there is a clear line of sight from the robot to the landmark */
     //bool hasClearLineOfSight(const ompl::base::State *state, const arma::colvec& landmark);
 
-    //bool isLandmarkVisible(const ompl::base::State *state, const arma::colvec& landmark, double& range, double& bearing, double& viewingAngle);
+    bool isLandmarkVisible(const ompl::base::State *state, const arma::colvec& landmark, double& range, double& bearing, double& pitch);
 
     //void WriteLandmarks();
 

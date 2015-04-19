@@ -51,19 +51,12 @@
 
 using namespace std;
 
-void plan()
+void plan(bool prm)
 {
 
-           // OMPL_INFORM("Creating New Carrot");
-
     FIRMCarrotSetup *mySetup(new FIRMCarrotSetup);
-    //FIRM2DSetup *mySetup(new FIRM2DSetup);
 
-
-    //std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
     std::string setupFilePath = "./SetupFiles/CarrotWorld.xml";
-
-    bool prm = false; //set to true if want to solve prm, not FIRM
 
     OMPL_INFORM("Loaded Setup File");
 
@@ -72,18 +65,10 @@ void plan()
     mySetup->setup( prm );
 
     CarrotVisualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
-    //Visualizer::updateRenderer(*dynamic_cast<const ompl::app::RigidBodyGeometry*>(mySetup), mySetup->getGeometricStateExtractor());
-
 
     CarrotVisualizer::updateSpaceInformation(mySetup->getSpaceInformation());
-    //Visualizer::updateSpaceInformation(mySetup->getSpaceInformation());
-
 
     CarrotVisualizer::setMode(CarrotVisualizer::VZRDrawingMode::PRMViewMode);
-    //Visualizer::setMode(Visualizer::VZRDrawingMode::PRMViewMode);
-
-
-
 
     bool solved = false;
 
@@ -109,6 +94,29 @@ void plan()
 int main(int argc, char *argv[])
 {
 
+    if (argc != 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <PLANNER>" << std::endl;
+        return 1;
+    }
+    std::string planner = argv[1];
+    bool prm;
+    if (planner.compare("prm") == 0)
+    {
+        prm = true;
+        std::cout << "Planning with PRM..." << std::endl;
+    }
+    else if (planner.compare("firm") == 0)
+    {
+        prm = false;
+        std::cout << "Planning with FIRM..." << std::endl;
+    }
+    else
+    {
+        std::cerr << "For planner, type either 'firm' or 'prm'" << std::endl;
+        return 1;
+    }
+
     srand(1234567);
 
     arma_rng::set_seed(1234567);
@@ -123,7 +131,7 @@ int main(int argc, char *argv[])
 
     window.resetCamera();
 
-    boost::thread solveThread(plan);
+    boost::thread solveThread(plan, prm);
 
     app.exec();
 

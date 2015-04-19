@@ -55,7 +55,7 @@ public:
     ss_(ompl::base::StateSpacePtr(new CarrotBeliefSpace()))
     {
         // set static variables
-        CarrotRHC::setControlQueueSize(1);
+        CarrotRHC::setControlQueueSize(10);
         CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.05);// meters
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTries(200);
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(0.3); // meters
