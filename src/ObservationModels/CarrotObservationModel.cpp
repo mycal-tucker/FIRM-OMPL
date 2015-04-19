@@ -273,7 +273,7 @@ CarrotObservationModel::getObservationJacobian(const ompl::base::State *state, c
         colvec candidate;
 
         int Indx = this->findCorrespondingLandmark(state,
-        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
+                        z.subvec(i*singleObservationDim,i*singleObservationDim+3), candidate);
 
         colvec diff =  landmarks_[Indx].subvec(1,3) - xVec.subvec(0,2);
         //xVec[0] = 0; xVec[1] = 0; //fix this eventually
@@ -488,7 +488,8 @@ void CarrotObservationModel::loadLandmarks(const char *pathToSetupFile)
     landmark[1] = attributeVal;
     itemElement->QueryDoubleAttribute("y", &attributeVal) ;
     landmark[2] = attributeVal;
-    landmark[3] = 1; // all landmarks are 1 meter off ground
+    itemElement->QueryDoubleAttribute("z", &attributeVal) ;
+    landmark[3] = attributeVal;
 
     landmarks << landmark[1] << "," << landmark[2] << "," << landmark[3] << "\n";
 

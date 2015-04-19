@@ -55,15 +55,15 @@ public:
     ss_(ompl::base::StateSpacePtr(new CarrotBeliefSpace()))
     {
         // set static variables
-        CarrotRHC::setControlQueueSize(5);
+        CarrotRHC::setControlQueueSize(1);
         CarrotController<CarrotRHC, CarrotExtendedKF>::setNodeReachedDistance(0.05);// meters
         CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTries(200);
-        CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(6.0); // meters
+        CarrotController<CarrotRHC, CarrotExtendedKF>::setMaxTrajectoryDeviation(0.3); // meters
 
         // setting the mean and norm weights (used in reachability check)
         StateType::covNormWeight_  =  1.0;
         StateType::meanNormWeight_ =  2.0;
-        StateType::reachDist_ =  0.2;
+        StateType::reachDist_ =  0.02;
 
         // set the state component norm weights
         arma::colvec normWeights(3);

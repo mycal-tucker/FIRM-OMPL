@@ -262,10 +262,6 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
 
   while(!this->isTerminated(tempEndState, k))
   {
-    //using namespace std;
-
-
-
     this->Evolve(internalState, k, tempEndState) ;
 
     si_->copyState(internalState, tempEndState);
@@ -274,10 +270,12 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     // in hardware, we want the flight to continue even if the true state is not valid
     if(!si_->checkTrueStateValidity())
     {
-        si_->copyState(endState, internalState);
-        /*std::cout << "[CarrotController.h] State " << endState->as<StateType>()->getArmaData() <<
-		" not valid" << std::endl;*/
-		if (constructionMode) {
+		if (!constructionMode) {
+		        std::cout << "[CarrotController.h] Invalid state:\n " << endState->as<StateType>()->getArmaData() << std::endl;
+        }
+        else
+        {
+            si_->copyState(endState, internalState);
             return false;
         }
     }
@@ -292,25 +290,18 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     arma::colvec endStateVec =  tempEndState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec - endStateVec;
     ompl::base::State* endTrueState = si_->allocState();
-    ompl::base::State* endBelief = si_->allocState(); //grab covariance from this for logging (Chris)
     si_->getTrueState(endTrueState);
-    si_->getBelief(endBelief);
-    arma::mat cov = endBelief->as<StateType>()->getCovariance();
+    arma::mat cov = tempEndState->as<StateType>()->getCovariance();
     arma::colvec endTrueStateVec = endTrueState->as<StateType>()->getArmaData();
 
-    if (!constructionMode){
-        stateFile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << "," <<
-        endTrueStateVec[0] << ", " << endTrueStateVec[1] << ", " << endTrueStateVec[2] << ", " <<
-        endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
-        covFile << cov[0] << "," << cov[1] << "," << cov[2] << "," << cov[3] << "," << cov[4] << "," << cov[5] << "," << cov[6] << "," << cov[7] << ","
-        << cov[8] << "\n";
-        ros::spinOnce();
-
-        //Print out if quad is not in a valid state. This counts as a crude collision
-        if (!(si_->checkTrueStateValidity()))
-        {
-            std::cout<<"True state deviated enough that quad is no longer in valid state"<<std::endl;
-        }
+    if (!constructionMode)
+    {
+        stateFile << nomXVec[0] << "," << nomXVec[1] << "," << nomXVec[2] << ","
+                  << endTrueStateVec[0] << "," << endTrueStateVec[1] << "," << endTrueStateVec[2] << ","
+                  << endStateVec[0] << "," << endStateVec[1] << "," << endStateVec[2] << "\n";
+        covFile   << cov[0] << "," << cov[1] << "," << cov[2] << ","
+                  << cov[3] << "," << cov[4] << "," << cov[5] << ","
+                  << cov[6] << "," << cov[7] << "," << cov[8] << "\n";
     }
 
     si_->freeState(endTrueState);
@@ -318,10 +309,16 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     if(abs(arma::norm(deviation,2)) > nominalTrajDeviationThreshold_)
     {
 
-        si_->copyState(endState, internalState);
-        std::cout << "[CarrotController.h] Deviation of " << deviation <<
-		" exceeds threshold" << std::endl;
-        return false;
+        if (constructionMode)
+        {
+            si_->copyState(endState, internalState);
+            return false;
+        }
+        else
+        {
+            std::cout << "[CarrotController.h] Deviation of " << deviation <<
+                         " exceeds threshold" << std::endl;
+        }
 
     }
 
@@ -340,10 +337,10 @@ bool CarrotController<SeparatedControllerType, FilterType>::Execute(const ompl::
     //the original line is commented out below
     //cost += arma::trace(tempEndState->as<StateType>()->getCovariance());
 
-    if(!constructionMode)
+    /*if(!constructionMode)
     {
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-    }
+    }*/
   }
   stateFile.close();
   covFile.close();
@@ -402,7 +399,7 @@ bool CarrotController<SeparatedControllerType, FilterType>::executeOneStep(const
     arma::colvec endStateVec = endState->as<StateType>()->getArmaData();
     arma::colvec deviation = nomXVec.subvec(0,2) - endStateVec.subvec(0,2);
 
-    if(abs(norm(deviation,2)) > nominalTrajDeviationThreshold_)
+    if(arma::norm(deviation,2) > nominalTrajDeviationThreshold_)
     {
       return false;
     }
@@ -464,8 +461,7 @@ void CarrotController<SeparatedControllerType, FilterType>::Evolve(const ompl::b
 
   si_->applyControl(control);
 
-  if (!si_->isSimulation()) boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-
+  //if (!si_->isSimulation()) boost::this_thread::sleep(boost::posix_time::milliseconds(20));
 
   ObservationType zCorrected = si_->getObservation();
 
@@ -522,7 +518,7 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
     while(!goal_->as<StateType>()->isReached(tempState1) && tries_ < maxTries_)
     {
-        OMPL_INFORM("stabilizing");
+        //OMPL_INFORM("stabilizing");
         this->Evolve(tempState1, k, tempState2);
 
         k++;
@@ -533,10 +529,10 @@ void CarrotController<SeparatedControllerType, FilterType>::Stabilize(const ompl
 
         tries_++;
 
-        if(!constructionMode)
+        /*if(!constructionMode)
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-        }
+        }*/
 
     }
 

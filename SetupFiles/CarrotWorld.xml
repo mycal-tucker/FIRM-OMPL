@@ -1,37 +1,25 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LandmarkList>
-<landmark id = 1 x = -1.5  y = 0.5 />
-<landmark id = 2 x = -1.5  y = 0.0 />
-<landmark id = 3 x = -1.5  y = -0.5 />
-<landmark id = 4 x = -1.5  y = -1.0 />
-<landmark id = 5 x = -1.5  y = -1.5 />
-<landmark id = 6 x = -1.5  y = -2.0 />
-<landmark id = 7 x = -1.5  y = -2.5 />
-<landmark id = 8 x = -1.5  y = -3.0 />
-<landmark id = 9 x = -1.5  y = -3.5 />
-<landmark id = 10 x = -1.5  y = -4.0 />
-<landmark id = 11 x = -1.5  y = -4.5 />
-<landmark id = 12 x = -1.5  y = -5.0 />
-<landmark id = 13 x = -1.5  y = -5.5 />
-<landmark id = 14 x = -1.5  y = -6.0 />
-<landmark id = 15 x = -1.5  y = -6.5 />
-<landmark id = 16 x = -0.5  y = 0.5 />
-<landmark id = 17 x = 0.5  y = 0.5 />
-<landmark id = 18 x = -0.5  y = -6.5 />
-<landmark id = 19 x = 0.5  y = -6.5 />
-<landmark id = 20 x = -1.25  y = -6.0 />
-<landmark id = 21 x = -1.0  y = -6.0 />
-<landmark id = 22 x = -1.25  y = 0.1 />
-<landmark id = 23 x = -1.0  y = 0.1 />
+<landmark id = 1 x = 0.5  y = 0.0  z = 0.75/>
+<landmark id = 2 x = -0.5  y = 0.0  z = 1.25/>
+<landmark id = 3 x = -1.25  y = -0.25  z = 1.25/>
+<landmark id = 4 x = -1.5  y = -1.0  z = 1.25/>
+<landmark id = 5 x = -1.5  y = -2.0  z = 1.25/>
+<landmark id = 6 x = -1.5  y = -3.0  z = 1.25/>
+<landmark id = 7 x = -1.5  y = -4.0  z = 1.25/>
+<landmark id = 8 x = -1.5  y = -5.0  z = 1.25/>
+<landmark id = 9 x = -1.25  y = -5.75  z = 1.25/>
+<landmark id = 10 x = -0.5  y = -6.0  z = 1.25/>
+<landmark id = 11 x = 0.5  y = -6.0  z = 1.25/>
 </LandmarkList>
 
 <ObservationModels>
   <CarrotObservationModel
-    sigma_range="0.001"
+    sigma_range="0.01"
     sigma_angle="0.1"
-    eta_rd="0.001"
-    eta_rphi = "0.1"
-    eta_thetad="0.1"
+    eta_rd="0.005"
+    eta_rphi = "0.05"
+    eta_thetad="0.05"
     eta_thetaphi = "0.0"
     vcLabel = "cd1"
   >
@@ -53,7 +41,7 @@
     dt= 0.1
     /> <!--No Noise--> 
   <CarrotMotionModel
-    sigmaV="0.005"
+    sigmaV="0.01"
     etaV="0.01"
     sigmaOmega="0.0001"
     etaOmega="0.003"
@@ -61,9 +49,7 @@
     orbit_radius=5.0
     wind_noise_pos="0.0001"
     wind_noise_ang="0.0001" 
-    max_x_velocity= 0.5
-    max_y_velocity= 0.5
-    max_z_velocity= 0.5
+    max_velocity= 1.0
     dt= 0.1
     /> <!--omega is in radians--> 
   <OmnidirectionalMotionModel 
@@ -82,23 +68,23 @@
 </MotionModels>
 <PlanningProblem>
     <Environment
-        environmentFile = "./Models/3_obstacles.obj"
+        environmentFile = "./Models/corridor.obj"
     />
     <Robot
         robotFile = "./Models/quad.obj"
     />
      <StartPose
-        x = "0.6"
+        x = "0.60"
         y = "0.4"
         z = "1.0"
     />
     <GoalPose
-        x = "0.6"
-        y = "-6.25"
+        x = "0.60"
+        y = "-6.4"
         z = "1.0"
     />
     <PlanningTime
-        maxTime = "24000"
+        maxTime = "2400"
     />
     <FIRMNodes
         minNodes = "140"

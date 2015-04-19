@@ -112,14 +112,10 @@ class CarrotMotionModel : public CarrotMotionModelMethod
     /** \brief  Covariance of state additive noise */
     arma::mat    P_Wg_; //
 
-    /** \brief max X velocity */
-    double maxXVelocity_; //
+    /** \brief max velocity */
+    double maxVelocity_; //
 
-    /** \brief max Y velocity */
-    double maxYVelocity_; //
 
-    /** \brief max Z velocity */
-    double maxZVelocity_; //
 
 
 };

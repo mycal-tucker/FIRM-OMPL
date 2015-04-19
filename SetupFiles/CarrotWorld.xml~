@@ -1,43 +1,37 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <LandmarkList>
-<<<<<<< HEAD
-<landmark id = 1 x = -2  y = -1.0 />
-<landmark id = 2 x = -2  y = -1.5 />
-<landmark id = 3 x = -2  y = -2.0 />
-<landmark id = 4 x = -2  y = -2.5 />
-<landmark id = 5 x = -2  y = -3.0 />
+<landmark id = 1 x = -1.5  y = 0.5 />
+<landmark id = 2 x = -1.5  y = 0.0 />
+<landmark id = 3 x = -1.5  y = -0.5 />
+<landmark id = 4 x = -1.5  y = -1.0 />
+<landmark id = 5 x = -1.5  y = -1.5 />
+<landmark id = 6 x = -1.5  y = -2.0 />
+<landmark id = 7 x = -1.5  y = -2.5 />
+<landmark id = 8 x = -1.5  y = -3.0 />
+<landmark id = 9 x = -1.5  y = -3.5 />
+<landmark id = 10 x = -1.5  y = -4.0 />
+<landmark id = 11 x = -1.5  y = -4.5 />
+<landmark id = 12 x = -1.5  y = -5.0 />
+<landmark id = 13 x = -1.5  y = -5.5 />
+<landmark id = 14 x = -1.5  y = -6.0 />
+<landmark id = 15 x = -1.5  y = -6.5 />
+<landmark id = 16 x = -0.5  y = 0.5 />
+<landmark id = 17 x = 0.5  y = 0.5 />
+<landmark id = 18 x = -0.5  y = -6.5 />
+<landmark id = 19 x = 0.5  y = -6.5 />
+<landmark id = 20 x = -1.0  y = -6.0 />
+<landmark id = 21 x = -1.25  y = -6.0 />
+<landmark id = 22 x = -1.0 y = 0.1 />
+<landmark id = 23 x = -1.25  y = 0.1 />
 </LandmarkList>
+
 <ObservationModels>
   <CarrotObservationModel
-    sigma_range="10.00"
-=======
-<landmark id = 1 x = -1.2  y = -1.0 />
-<landmark id = 2 x = -1.2  y = -1.5 />
-<landmark id = 3 x = -1.2  y = -2.0 />
-<landmark id = 4 x = -1.2  y = -2.5 />
-<landmark id = 5 x = -1.2  y = -3.0 />
-<landmark id = 6 x = -1.2  y = -3.5 />
-<landmark id = 7 x = -1.2  y = -4.0 />
-<landmark id = 8 x = -1.2  y = -4.5 />
-<landmark id = 9 x = -1.2  y = -5.0 />
-<landmark id = 10 x = -1.2  y = -1.25 />
-<landmark id = 11 x = -1.2  y = -1.75 />
-<landmark id = 12 x = -1.2  y = -2.25 />
-<landmark id = 13 x = -1.2  y = -2.75 />
-<landmark id = 14 x = -1.2  y = -3.25 />
-<landmark id = 15 x = -1.2  y = -3.75 />
-<landmark id = 16 x = -1.2  y = -4.25 />
-<landmark id = 17 x = -1.2  y = -4.75 />
-<landmark id = 18 x = -1.2  y = -5.25 />
-</LandmarkList>
-<ObservationModels>
-  <CarrotObservationModel
-    sigma_range="0.10"
->>>>>>> ros_integration
-    sigma_angle="10"
-    eta_rd="0.0"
-    eta_rphi = "0.0"
-    eta_thetad="0.0"
+    sigma_range="0.001"
+    sigma_angle="0.1"
+    eta_rd="0.004"
+    eta_rphi = "0.1"
+    eta_thetad="0.1"
     eta_thetaphi = "0.0"
     vcLabel = "cd1"
   >
@@ -59,8 +53,8 @@
     dt= 0.1
     /> <!--No Noise--> 
   <CarrotMotionModel
-    sigmaV="0.001"
-    etaV="0.01"
+    sigmaV="0.005"
+    etaV="0.005"
     sigmaOmega="0.0001"
     etaOmega="0.003"
     P_Wg_filename=""
@@ -88,26 +82,26 @@
 </MotionModels>
 <PlanningProblem>
     <Environment
-        environmentFile = "./Models/2_obstacles.obj"
+        environmentFile = "./Models/3_skew_obstacles_2.obj"
     />
     <Robot
-        robotFile = "./Models/quadrotor.obj"
+        robotFile = "./Models/quad.obj"
     />
      <StartPose
-        x = "0.0"
-        y = "0.0"
-        z = "0.1"
+        x = "0.60"
+        y = "0.4"
+        z = "1.0"
     />
     <GoalPose
-        x = "0.0"
-        y = "-6.0"
-        z = "0.1"
+        x = "0.60"
+        y = "-6.25"
+        z = "1.0"
     />
     <PlanningTime
         maxTime = "2400"
     />
     <FIRMNodes
-        minNodes = "50"
+        minNodes = "140"
 
     />
     <KidnappedState

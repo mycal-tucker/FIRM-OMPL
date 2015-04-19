@@ -83,6 +83,7 @@ namespace firm
                 std::ostringstream os;
                 os << (now->tm_year-100) << "_" << (now->tm_mon+1) << "_" << now->tm_mday << "_" << now->tm_hour << now->tm_min << now->tm_sec << "_";
                 startTime_ = os.str();
+
                 // set up ROS subscriber (state) and publisher (control)
 
             }
@@ -93,7 +94,7 @@ namespace firm
                 int argc = 0;
                 ros::init(argc,NULL,"state_listener"); // not command line, argc, argv not needed
                 ros::NodeHandle n;
-                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",1,&CarrotSpaceInformation::stateCallback,this);
+                ros::Subscriber state_sub = n.subscribe(quadName_+"pose",10,&CarrotSpaceInformation::stateCallback,this);
                 state_sub_ = state_sub;
             }
 
@@ -107,6 +108,7 @@ namespace firm
                 ros::Publisher control_pub_waypoint = n.advertise<raven_rviz::Waypoint>(quadName_+"quad_waypoint", 10);
                 control_pub_ = control_pub;
                 control_pub_waypoint_ = control_pub_waypoint;
+
             }
 
             // state callback for subscriber
@@ -118,7 +120,7 @@ namespace firm
                 double y = msg.pose.position.y;
                 double z = msg.pose.position.z;
                 trueState->as<CarrotBeliefSpace::StateType>()->setXYZ(x,y,z);
-                this->copyState(trueState_,trueState);
+                this->setTrueState(trueState);
                 this->freeState(trueState);
                 //std::cout << "State set to: " << trueState_->as<CarrotBeliefSpace::StateType>()->getArmaData() << std::endl;
                 //ROS_INFO("State set to [%s]", msg.pose.c_str());
@@ -214,6 +216,12 @@ namespace firm
             {
                 return plan_;
             }
+
+            void takeoff(ompl::base::State* state);
+
+            void land( void );
+
+
 
 
         protected:
